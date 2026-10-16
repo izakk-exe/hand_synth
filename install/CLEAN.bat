@@ -1,10 +1,10 @@
 @echo off
 REM =====================================================================
-REM  hand synth — clean build artifacts
+REM  Palma — clean build artifacts
 REM  Built by 1Z4K
 REM =====================================================================
 setlocal EnableExtensions
-title Hand Synth — clean
+title Palma — clean
 
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"

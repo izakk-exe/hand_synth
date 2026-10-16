@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+    </pattern>
+    <pattern id="grid-major" width="200" height="200" patternUnits="userSpaceOnUse">
+      <path d="M 200 0 L 0 0 0 200" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="700" fill="#0a0a10"/>
+  <rect width="1200" height="700" fill="url(#grid)"/>
+  <rect width="1200" height="700" fill="url(#grid-major)"/>
+
+  <!-- HAND node -->
+  <g transform="translate(140 160)">
+    <rect width="200" height="200" rx="12" fill="rgba(14,14,20,.95)" stroke="rgba(255,255,255,.1)"/>
+    <rect width="200" height="40" rx="12" fill="rgba(255,255,255,.05)"/>
+    <text x="14" y="26" font-family="monospace" font-size="12" font-weight="700" fill="#44e0ff" letter-spacing="2">HAND</text>
+    <text x="186" y="26" text-anchor="end" font-family="monospace" font-size="9" fill="#8b8b96" letter-spacing="1">IN</text>
+
+    <text x="185" y="68" text-anchor="end" font-family="monospace" font-size="10" fill="#8b8b96">x</text>
+    <text x="150" y="68" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">0.42</text>
+    <circle cx="200" cy="64" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+
+    <text x="185" y="98" text-anchor="end" font-family="monospace" font-size="10" fill="#8b8b96">y</text>
+    <text x="150" y="98" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">-0.18</text>
+    <circle cx="200" cy="94" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+
+    <text x="185" y="128" text-anchor="end" font-family="monospace" font-size="10" fill="#8b8b96">pinch</text>
+    <text x="150" y="128" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">1.00</text>
+    <circle cx="200" cy="124" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+
+    <text x="185" y="158" text-anchor="end" font-family="monospace" font-size="10" fill="#8b8b96">fist</text>
+    <text x="150" y="158" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">0.00</text>
+    <circle cx="200" cy="154" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+
+    <text x="185" y="188" text-anchor="end" font-family="monospace" font-size="10" fill="#8b8b96">extended</text>
+    <text x="150" y="188" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">0.60</text>
+    <circle cx="200" cy="184" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+  </g>
+
+  <!-- MAP node -->
+  <g transform="translate(480 220)">
+    <rect width="200" height="150" rx="12" fill="rgba(14,14,20,.95)" stroke="rgba(255,255,255,.1)"/>
+    <rect width="200" height="40" rx="12" fill="rgba(255,255,255,.05)"/>
+    <text x="14" y="26" font-family="monospace" font-size="12" font-weight="700" fill="#ffd166" letter-spacing="2">MAP</text>
+    <text x="186" y="26" text-anchor="end" font-family="monospace" font-size="9" fill="#8b8b96" letter-spacing="1">MATH</text>
+
+    <circle cx="0" cy="64" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+    <text x="14" y="68" font-family="monospace" font-size="10" fill="#8b8b96">in</text>
+    <text x="186" y="68" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">0.60</text>
+
+    <text x="14" y="98" font-family="monospace" font-size="9" fill="#8b8b96">in min / in max</text>
+    <text x="186" y="98" text-anchor="end" font-family="monospace" font-size="9" fill="#fff">0 / 1</text>
+    <text x="14" y="118" font-family="monospace" font-size="9" fill="#8b8b96">out min / out max</text>
+    <text x="186" y="118" text-anchor="end" font-family="monospace" font-size="9" fill="#fff">0.3 / 2</text>
+
+    <text x="140" y="142" text-anchor="end" font-family="monospace" font-size="10" fill="#8b8b96">val</text>
+    <text x="186" y="142" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">1.32</text>
+  </g>
+
+  <!-- SPHERE node -->
+  <g transform="translate(820 180)">
+    <rect width="220" height="230" rx="12" fill="rgba(14,14,20,.95)" stroke="rgba(255,255,255,.1)"/>
+    <rect width="220" height="40" rx="12" fill="rgba(255,255,255,.05)"/>
+    <text x="14" y="26" font-family="monospace" font-size="12" font-weight="700" fill="#ff2d7a" letter-spacing="2">SPHERE</text>
+    <text x="206" y="26" text-anchor="end" font-family="monospace" font-size="9" fill="#8b8b96" letter-spacing="1">OUT</text>
+
+    <circle cx="0" cy="64" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+    <text x="14" y="68" font-family="monospace" font-size="10" fill="#8b8b96">x</text>
+    <text x="206" y="68" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">0.42</text>
+
+    <circle cx="0" cy="94" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+    <text x="14" y="98" font-family="monospace" font-size="10" fill="#8b8b96">y</text>
+    <text x="206" y="98" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">-0.18</text>
+
+    <circle cx="0" cy="124" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+    <text x="14" y="128" font-family="monospace" font-size="10" fill="#8b8b96">scale</text>
+    <text x="206" y="128" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">1.32</text>
+
+    <circle cx="0" cy="154" r="6" fill="#1a1a24" stroke="#9cff6b" stroke-width="2"/>
+    <text x="14" y="158" font-family="monospace" font-size="10" fill="#8b8b96">hue</text>
+    <text x="206" y="158" text-anchor="end" font-family="monospace" font-size="10" font-weight="700" fill="#fff">0.3</text>
+
+    <!-- preview -->
+    <g transform="translate(110 198)">
+      <circle r="22" fill="#44e0ff" fill-opacity="0.3"/>
+      <circle r="22" fill="none" stroke="#fff" stroke-width="1"/>
+      <ellipse rx="22" ry="8" fill="none" stroke="#fff" stroke-width="1" opacity="0.6"/>
+      <ellipse rx="8" ry="22" fill="none" stroke="#fff" stroke-width="1" opacity="0.6"/>
+    </g>
+  </g>
+
+  <!-- bezier wires -->
+  <g stroke="#9cff6b" stroke-width="2" fill="none" opacity="0.9" style="filter: drop-shadow(0 0 4px rgba(156,255,107,.5))">
+    <!-- HAND.extended → MAP.in -->
+    <path d="M 340 344 C 410 344 410 284 480 284"/>
+    <!-- HAND.x → SPHERE.x -->
+    <path d="M 340 224 C 580 224 580 244 820 244"/>
+    <!-- HAND.y → SPHERE.y -->
+    <path d="M 340 254 C 580 254 580 274 820 274"/>
+    <!-- MAP.val → SPHERE.scale -->
+    <path d="M 680 362 C 750 362 750 304 820 304"/>
+  </g>
+
+  <!-- top legend -->
+  <text x="40" y="55" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="12" letter-spacing="4" fill="#8b8b96">PATCH MODE · WIRE INPUTS TO OUTPUTS · BUILD YOUR OWN INSTRUMENT</text>
+
+  <!-- bottom hint pills -->
+  <g transform="translate(600 640)" font-family="-apple-system,Segoe UI,sans-serif" font-size="10" fill="#8b8b96" text-anchor="middle" letter-spacing="2">
+    <rect x="-180" y="-18" width="110" height="36" rx="18" fill="rgba(14,14,20,.72)" stroke="rgba(255,255,255,.1)"/>
+    <text y="4" x="-125">+ ADD NODE</text>
+    <rect x="-60" y="-18" width="110" height="36" rx="18" fill="rgba(14,14,20,.72)" stroke="rgba(255,255,255,.1)"/>
+    <text y="4" x="-5">◆ PRESET</text>
+    <rect x="60" y="-18" width="110" height="36" rx="18" fill="rgba(14,14,20,.72)" stroke="rgba(255,255,255,.1)"/>
+    <text y="4" x="115">✕ CLEAR</text>
+  </g>
+</svg>

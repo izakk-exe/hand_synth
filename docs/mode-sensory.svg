@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a0f22"/>
+      <stop offset="1" stop-color="#0a0a10"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#9c7cff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#9c7cff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#bg2)"/>
+  <circle cx="600" cy="350" r="320" fill="url(#glow)"/>
+
+  <!-- central wireframe orb with 6 handles -->
+  <g transform="translate(600 350)">
+    <!-- translucent fill -->
+    <circle r="140" fill="#ff4a9c" fill-opacity="0.35"/>
+    <!-- wireframe lines -->
+    <g stroke="#fff" stroke-width="1.5" fill="none" opacity="0.85">
+      <circle r="140"/>
+      <ellipse rx="140" ry="46"/>
+      <ellipse rx="140" ry="90"/>
+      <ellipse rx="140" ry="124"/>
+      <ellipse rx="46"  ry="140"/>
+      <ellipse rx="90"  ry="140"/>
+      <ellipse rx="124" ry="140"/>
+    </g>
+    <!-- 6 directional handle dots -->
+    <g fill="#fff2d0" stroke="#fff" stroke-width="2">
+      <circle cx="140"  cy="0" r="10"/>
+      <circle cx="-140" cy="0" r="10"/>
+      <circle cx="0" cy="140" r="10"/>
+      <circle cx="0" cy="-140" r="10"/>
+      <circle cx="99"  cy="99"  r="10"/>
+      <circle cx="-99" cy="-99" r="10"/>
+    </g>
+  </g>
+
+  <!-- left pinching hand (OK gesture) -->
+  <g transform="translate(240 320) rotate(-10)" stroke="#00ff5a" stroke-width="2.5" fill="none">
+    <path d="M 0 60 L -5 15 L -5 -18 L 0 -40"/>
+    <path d="M 0 60 L -22 32 L -30 2 L -32 -22"/>
+    <path d="M 0 60 L -36 48 L -56 32 L -70 15 L -75 -2"/>
+    <path d="M 0 60 L -42 55 L -62 42 L -72 25"/>
+    <path d="M 0 60 L -46 60 L -62 52 L -70 42"/>
+    <g fill="#ff2d4a">
+      <circle cx="0" cy="60" r="4"/>
+      <circle cx="0" cy="-40" r="3"/>
+      <circle cx="-32" cy="-22" r="3"/>
+      <circle cx="-75" cy="-2" r="3"/>
+      <circle cx="-72" cy="25" r="3"/>
+      <circle cx="-70" cy="42" r="3"/>
+    </g>
+    <!-- white pinch rings on thumb (0,-40) + index (-32,-22) -->
+    <circle cx="0" cy="-40" r="12" fill="none" stroke="#fff" stroke-width="2"/>
+    <circle cx="-32" cy="-22" r="12" fill="none" stroke="#fff" stroke-width="2"/>
+    <line x1="0" y1="-40" x2="-32" y2="-22" stroke="#fff" stroke-width="1.5"/>
+  </g>
+
+  <!-- right pinching hand (OK gesture) -->
+  <g transform="translate(960 320) rotate(10)" stroke="#00ff5a" stroke-width="2.5" fill="none">
+    <path d="M 0 60 L 5 15 L 5 -18 L 0 -40"/>
+    <path d="M 0 60 L 22 32 L 30 2 L 32 -22"/>
+    <path d="M 0 60 L 36 48 L 56 32 L 70 15 L 75 -2"/>
+    <path d="M 0 60 L 42 55 L 62 42 L 72 25"/>
+    <path d="M 0 60 L 46 60 L 62 52 L 70 42"/>
+    <g fill="#ff2d4a">
+      <circle cx="0" cy="60" r="4"/>
+      <circle cx="0" cy="-40" r="3"/>
+      <circle cx="32" cy="-22" r="3"/>
+      <circle cx="75" cy="-2" r="3"/>
+      <circle cx="72" cy="25" r="3"/>
+      <circle cx="70" cy="42" r="3"/>
+    </g>
+    <circle cx="0" cy="-40" r="12" fill="none" stroke="#fff" stroke-width="2"/>
+    <circle cx="32" cy="-22" r="12" fill="none" stroke="#fff" stroke-width="2"/>
+    <line x1="0" y1="-40" x2="32" y2="-22" stroke="#fff" stroke-width="1.5"/>
+  </g>
+
+  <!-- top -->
+  <text x="40" y="55" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="12" letter-spacing="4" fill="#8b8b96">SENSORY MODE · PINCH TO SUMMON · SPREAD TO GROW · TWO FISTS TO SPIN</text>
+
+  <!-- bottom scene picker -->
+  <g transform="translate(600 640)" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif"
+     font-size="12" letter-spacing="2">
+    <rect x="-280" y="-18" width="80" height="36" rx="18" fill="#9c7cff"/>
+    <text y="4" x="-240" fill="#000" font-weight="700">✎ draw</text>
+    <rect x="-190" y="-18" width="80" height="36" rx="18" fill="rgba(255,255,255,0.08)"/>
+    <text y="4" x="-150" fill="#8b8b96">⬢ sculpt</text>
+    <rect x="-100" y="-18" width="80" height="36" rx="18" fill="rgba(255,255,255,0.08)"/>
+    <text y="4" x="-60" fill="#8b8b96">▦ cards</text>
+    <rect x="-10"  y="-18" width="80" height="36" rx="18" fill="rgba(255,255,255,0.08)"/>
+    <text y="4" x="30" fill="#8b8b96">◉ ball</text>
+    <rect x="80"   y="-18" width="80" height="36" rx="18" fill="rgba(255,255,255,0.08)"/>
+    <text y="4" x="120" fill="#8b8b96">∥ taffy</text>
+    <rect x="170"  y="-18" width="80" height="36" rx="18" fill="rgba(255,255,255,0.08)"/>
+    <text y="4" x="210" fill="#8b8b96">▢ canvas</text>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-// hand synth — pull mediapipe + tone.js locally so the exe runs offline
+// Palma — pull mediapipe + tone.js locally so the exe runs offline
 // Built by 1Z4K
 // node fetch_vendor.js
 
@@ -43,7 +43,7 @@ function fetch(url, dest, redirects){
   return new Promise((resolve, reject) => {
     if (redirects > 5) return reject(new Error("too many redirects"));
 
-    const req = https.get(url, { headers: { "User-Agent": "hand-synth-fetch/1.0" } }, (res) => {
+    const req = https.get(url, { headers: { "User-Agent": "palma-fetch/1.0" } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location){
         res.resume();
         const next = new URL(res.headers.location, url).toString();

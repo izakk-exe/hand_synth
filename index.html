@@ -1,13 +1,13 @@
 <!doctype html>
 <!--
-  hand synth — music + 3D sensory playground
+  Palma — music + 3D sensory playground
   Built by 1Z4K
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>hand synth — 1Z4K</title>
+<title>Palma — 1Z4K</title>
 <style>
   :root{
     --bg:#07070b;
@@ -180,7 +180,7 @@
 </head>
 <body>
 <div class="titlebar" id="titlebar">
-  hand synth — 1Z4K
+  Palma — 1Z4K
   <div class="wincontrols">
     <button id="win-min" title="minimize">—</button>
     <button id="win-max" title="maximize">▢</button>
@@ -194,8 +194,8 @@
   <canvas id="bones"></canvas>
 
   <div id="start" class="status">
-    <h1>Hand Synth</h1>
-    <p class="tagline">make music · shape light</p>
+    <h1>Palma</h1>
+    <p class="tagline">make music · shape light · with your hands</p>
     <p>a two-mode playground driven by your webcam. switch between <b style="color:var(--hot)">MUSIC</b> and <b style="color:var(--violet)">SENSORY</b> at any time.</p>
     <div class="split">
       <div class="side music">
@@ -224,7 +224,7 @@
   <div class="hud hide" id="hud">
     <!-- top bar -->
     <div class="top">
-      <div class="brand"><span class="dot"></span>HAND SYNTH <span class="sig">· 1Z4K</span></div>
+      <div class="brand"><span class="dot"></span>PALMA <span class="sig">· 1Z4K</span></div>
       <div class="modebar" id="modebar">
         <button id="mode-music" class="on" data-mode="music">music</button>
         <button id="mode-sense" data-mode="sense">sensory</button>
@@ -403,7 +403,7 @@
 <script>
 "use strict";
 // --------------------------------------------------------------------------
-// hand synth — Built by 1Z4K
+// Palma — Built by 1Z4K
 // --------------------------------------------------------------------------
 
 const el    = (id) => document.getElementById(id);
@@ -3283,7 +3283,7 @@ function wireUI(){
         el("btn-rec").classList.remove("on");
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url; a.download = `hand-synth-${Date.now()}.webm`; a.click();
+        a.href = url; a.download = `palma-${Date.now()}.webm`; a.click();
         setTimeout(() => URL.revokeObjectURL(url), 2000);
       }
     } else {

@@ -1,4 +1,4 @@
-// hand synth — electron main
+// Palma — electron main
 // Built by 1Z4K
 
 const { app, BrowserWindow, ipcMain, session, shell } = require("electron");
@@ -32,7 +32,7 @@ function createWindow(){
     frame: false,
     titleBarStyle: "hidden",
     autoHideMenuBar: true,
-    title: "Hand Synth — 1Z4K",
+    title: "Palma — 1Z4K",
     icon: path.join(__dirname, "assets", "icon.ico"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),

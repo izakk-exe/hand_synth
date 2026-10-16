@@ -1,4 +1,4 @@
-// hand synth — preload bridge
+// Palma — preload bridge
 // Built by 1Z4K
 
 const { contextBridge, ipcRenderer } = require("electron");

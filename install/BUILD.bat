@@ -1,6 +1,6 @@
 @echo off
 REM =====================================================================
-REM  hand synth — one-click build (install bay)
+REM  Palma — one-click build (install bay)
 REM  Built by 1Z4K
 REM =====================================================================
 REM  double-click this file. it does the whole job:
@@ -12,7 +12,7 @@ REM    5) copies the finished exes to this install/ folder
 REM =====================================================================
 
 setlocal EnableExtensions EnableDelayedExpansion
-title Hand Synth — build by 1Z4K
+title Palma — build by 1Z4K
 
 REM project root is one level up from this install bay
 set "SCRIPT_DIR=%~dp0"
@@ -128,8 +128,8 @@ REM  [5/5] copy exes next to this script
 REM ---------------------------------------------------------------------
 echo [5/5] copying finished .exe files into install/...
 if not exist "%SCRIPT_DIR%\output" mkdir "%SCRIPT_DIR%\output"
-copy /y "%ROOT%\dist\HandSynth-*-x64-win.exe"    "%SCRIPT_DIR%\output\" >nul 2>nul
-copy /y "%ROOT%\dist\HandSynth-*-portable.exe"   "%SCRIPT_DIR%\output\" >nul 2>nul
+copy /y "%ROOT%\dist\Palma-*-x64-win.exe"    "%SCRIPT_DIR%\output\" >nul 2>nul
+copy /y "%ROOT%\dist\Palma-*-portable.exe"   "%SCRIPT_DIR%\output\" >nul 2>nul
 echo.
 
 echo  ============================================================

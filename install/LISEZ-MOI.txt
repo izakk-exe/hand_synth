@@ -1,16 +1,16 @@
 ==========================================================
-  HAND SYNTH — installation
+  PALMA — installation
   Built by 1Z4K
 ==========================================================
 
 Deux options d'installation (dans le dossier install/output/):
 
-  1) HandSynth-1.0.0-x64-win.exe        <-- installateur classique
+  1) Palma-1.0.0-x64-win.exe        <-- installateur classique
      double-clique, choisis le dossier d'installation,
      ca cree des raccourcis bureau + menu demarrer.
-     DESINSTALLATION : Programmes et fonctionnalites > Hand Synth.
+     DESINSTALLATION : Programmes et fonctionnalites > Palma.
 
-  2) HandSynth-1.0.0-portable.exe       <-- version portable
+  2) Palma-1.0.0-portable.exe       <-- version portable
      fichier unique a copier sur n'importe quelle machine,
      cle USB, dossier Dropbox, etc. Pas d'installation.
      Double-clique et ca marche.

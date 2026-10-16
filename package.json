@@ -1,7 +1,7 @@
 {
-  "name": "hand-synth",
+  "name": "palma",
   "version": "1.0.0",
-  "description": "webcam gesture synth — built by 1Z4K",
+  "description": "Palma — gesture-driven music + 3D art playground for accessible expression. Built by 1Z4K.",
   "author": "1Z4K",
   "main": "main.js",
   "scripts": {
@@ -15,8 +15,8 @@
     "electron-builder": "25.1.8"
   },
   "build": {
-    "appId": "com.1z4k.handsynth",
-    "productName": "HandSynth",
+    "appId": "com.1z4k.palma",
+    "productName": "Palma",
     "copyright": "Built by 1Z4K",
     "files": [
       "main.js",
@@ -33,7 +33,7 @@
         { "target": "nsis",     "arch": ["x64"] },
         { "target": "portable", "arch": ["x64"] }
       ],
-      "artifactName": "HandSynth-${version}-${arch}-${os}.${ext}"
+      "artifactName": "Palma-${version}-${arch}-${os}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -41,11 +41,11 @@
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Hand Synth",
-      "uninstallDisplayName": "Hand Synth — 1Z4K"
+      "shortcutName": "Palma",
+      "uninstallDisplayName": "Palma — 1Z4K"
     },
     "portable": {
-      "artifactName": "HandSynth-${version}-portable.${ext}"
+      "artifactName": "Palma-${version}-portable.${ext}"
     }
   }
 }

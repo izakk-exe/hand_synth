@@ -1,10 +1,10 @@
 @echo off
 REM =====================================================================
-REM  hand synth — run without packing (dev launch)
+REM  Palma — run without packing (dev launch)
 REM  Built by 1Z4K
 REM =====================================================================
 setlocal EnableExtensions
-title Hand Synth — dev run
+title Palma — dev run
 
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"

@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a0f1f"/>
+      <stop offset="1" stop-color="#0a0a10"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#bg)"/>
+
+  <!-- central huge note -->
+  <text x="600" y="380" text-anchor="middle"
+        font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="280" font-weight="800" fill="#ff2d7a"
+        style="filter: drop-shadow(0 0 40px rgba(255,45,122,.5))">G</text>
+  <text x="600" y="430" text-anchor="middle"
+        font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="14" letter-spacing="12" fill="#8b8b96">SING THIS NOTE</text>
+  <text x="600" y="490" text-anchor="middle"
+        font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="26" font-weight="700" fill="#44e0ff">Gmaj</text>
+
+  <!-- left hand bones (CHORD) -->
+  <g transform="translate(220 400) scale(1.2)" stroke="#00ff5a" stroke-width="2.5" fill="none">
+    <path d="M 0 60 L -5 15 L -10 -20 L -12 -42"/>
+    <path d="M 0 60 L 18 20 L 28 -10 L 34 -32 L 38 -50"/>
+    <path d="M 0 60 L 32 25 L 48 -5 L 60 -28 L 68 -48"/>
+    <path d="M 0 60 L 42 32 L 60 10 L 72 -12 L 80 -30"/>
+    <path d="M 0 60 L 50 42 L 68 28 L 78 10 L 85 -8"/>
+    <g fill="#ff2d4a">
+      <circle cx="0" cy="60" r="4"/>
+      <circle cx="-12" cy="-42" r="3"/>
+      <circle cx="38" cy="-50" r="3"/>
+      <circle cx="68" cy="-48" r="3"/>
+      <circle cx="80" cy="-30" r="3"/>
+      <circle cx="85" cy="-8" r="3"/>
+    </g>
+  </g>
+  <rect x="130" y="470" width="110" height="26" rx="13" fill="#44e0ff"/>
+  <text x="185" y="488" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="12" font-weight="700" fill="#000" letter-spacing="2">CHORD</text>
+
+  <!-- right hand bones (MELODY) -->
+  <g transform="translate(980 400) scale(1.2)" stroke="#00ff5a" stroke-width="2.5" fill="none">
+    <path d="M 0 60 L 5 15 L 10 -20 L 12 -42"/>
+    <path d="M 0 60 L -18 20 L -28 -10 L -34 -32 L -38 -50"/>
+    <path d="M 0 60 L -32 25 L -48 -5 L -60 -28 L -68 -48"/>
+    <path d="M 0 60 L -42 32 L -60 10 L -72 -12 L -80 -30"/>
+    <path d="M 0 60 L -50 42 L -68 28 L -78 10 L -85 -8"/>
+    <g fill="#ff2d4a">
+      <circle cx="0" cy="60" r="4"/>
+      <circle cx="12" cy="-42" r="3"/>
+      <circle cx="-38" cy="-50" r="3"/>
+      <circle cx="-68" cy="-48" r="3"/>
+      <circle cx="-80" cy="-30" r="3"/>
+      <circle cx="-85" cy="-8" r="3"/>
+    </g>
+  </g>
+  <rect x="925" y="470" width="110" height="26" rx="13" fill="#ff2d7a"/>
+  <text x="980" y="488" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="12" font-weight="700" fill="#fff" letter-spacing="2">MELODY</text>
+
+  <!-- bottom pills -->
+  <rect x="400" y="620" width="80" height="40" rx="20" fill="#44e0ff" fill-opacity="0.15" stroke="#44e0ff"/>
+  <text x="440" y="645" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="14" font-weight="700" fill="#fff">G maj</text>
+  <rect x="490" y="620" width="80" height="40" rx="20" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)"/>
+  <text x="530" y="645" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="13" fill="#8b8b96">C maj</text>
+  <rect x="580" y="620" width="80" height="40" rx="20" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)"/>
+  <text x="620" y="645" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="13" fill="#8b8b96">D maj</text>
+  <rect x="670" y="620" width="80" height="40" rx="20" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)"/>
+  <text x="710" y="645" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="13" fill="#8b8b96">A min</text>
+  <rect x="760" y="620" width="80" height="40" rx="20" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)"/>
+  <text x="800" y="645" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="13" fill="#8b8b96">E min</text>
+
+  <!-- top -->
+  <text x="40" y="55" font-family="-apple-system,Segoe UI,sans-serif"
+        font-size="12" letter-spacing="4" fill="#8b8b96">MUSIC MODE · RIGHT = MELODY · LEFT = CHORD</text>
+</svg>
