@@ -1,0 +1,51 @@
+{
+  "name": "hand-synth",
+  "version": "1.0.0",
+  "description": "webcam gesture synth — built by 1Z4K",
+  "author": "1Z4K",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --win --x64",
+    "pack:portable": "electron-builder --win portable --x64",
+    "pack:all": "electron-builder --win nsis portable --x64"
+  },
+  "devDependencies": {
+    "electron": "32.2.0",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.1z4k.handsynth",
+    "productName": "HandSynth",
+    "copyright": "Built by 1Z4K",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "vendor/**/*",
+      "assets/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis",     "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "artifactName": "HandSynth-${version}-${arch}-${os}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Hand Synth",
+      "uninstallDisplayName": "Hand Synth — 1Z4K"
+    },
+    "portable": {
+      "artifactName": "HandSynth-${version}-portable.${ext}"
+    }
+  }
+}

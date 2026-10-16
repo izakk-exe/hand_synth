@@ -1,0 +1,78 @@
+==========================================================
+  HAND SYNTH — installation
+  Built by 1Z4K
+==========================================================
+
+Deux options d'installation (dans le dossier install/output/):
+
+  1) HandSynth-1.0.0-x64-win.exe        <-- installateur classique
+     double-clique, choisis le dossier d'installation,
+     ca cree des raccourcis bureau + menu demarrer.
+     DESINSTALLATION : Programmes et fonctionnalites > Hand Synth.
+
+  2) HandSynth-1.0.0-portable.exe       <-- version portable
+     fichier unique a copier sur n'importe quelle machine,
+     cle USB, dossier Dropbox, etc. Pas d'installation.
+     Double-clique et ca marche.
+
+CONFIGURATION MINIMALE
+----------------------
+  - Windows 10 ou 11 (64 bits)
+  - 4 Go de RAM
+  - Webcam
+  - Carte graphique avec WebGL (99% des PCs recents sont compatibles)
+  - PAS d'admin requis pour installer (installation en mode utilisateur)
+  - PAS besoin d'internet apres la premiere installation
+
+AUTORISATION CAMERA
+-------------------
+  Au premier lancement, Windows peut demander l'autorisation
+  d'acceder a la camera. Autorise, c'est obligatoire pour l'app.
+
+SI LE PROGRAMME NE SE LANCE PAS
+-------------------------------
+  - Clic droit sur l'exe > Executer en tant qu'administrateur
+  - Verifie que l'antivirus ne bloque pas (il est OK d'autoriser,
+    l'app ne communique avec aucun serveur)
+  - Mets a jour les drivers de la carte graphique
+
+RECONSTRUIRE L'EXE DEPUIS LE CODE
+---------------------------------
+  Si tu veux modifier le code source :
+    double-clique BUILD.bat  (installe Node.js si besoin, puis build)
+    double-clique RUN_DEV.bat (lance sans packer, pour tester)
+    double-clique CLEAN.bat   (supprime les fichiers temporaires)
+
+CONTROLES
+---------
+  Mode MUSIQUE  (touche 1)
+    - main droite = melodie (le doigt le plus haut gagne)
+    - main gauche = accord (nombre de doigts leves = quel accord)
+    - gros tuner central = la note a chanter
+
+  Mode SENSORIEL (touche 2)
+    - pince pouce+index = fait apparaitre l'objet entre tes doigts
+    - ecarte tes doigts = l'objet grandit
+    - 2 pinces (une par main) = etire l'objet entre les 2 mains
+    - 2 poings fermes = fait tourner l'objet sur lui-meme
+    - 1 poing ferme = deplace l'objet
+    - bouton X rouge en haut a droite = fait disparaitre l'objet
+
+  Mode PATCH   (touche 3)
+    - construit ton propre instrument en reliant des blocs
+    - clique sur le menu de gauche pour ajouter un bloc
+    - connecte les sorties (droite) aux entrees (gauche)
+    - charge un preset en bas pour voir un exemple
+
+RACCOURCIS
+----------
+  1 / 2 / 3   changer de mode
+  R           enregistrer
+  M           metronome (mode musique)
+  C           effacer (mode sensoriel)
+  F11         plein ecran
+  Espace      mute (mode musique)
+
+==========================================================
+  Built by 1Z4K
+==========================================================

@@ -1,0 +1,3426 @@
+<!doctype html>
+<!--
+  hand synth — music + 3D sensory playground
+  Built by 1Z4K
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>hand synth — 1Z4K</title>
+<style>
+  :root{
+    --bg:#07070b;
+    --ink:#f4f4f6;
+    --dim:#8b8b96;
+    --hot:#ff2d7a;
+    --cold:#44e0ff;
+    --warm:#ffd166;
+    --lime:#9cff6b;
+    --violet:#c689ff;
+    --panel:rgba(14,14,20,.78);
+    --edge:rgba(255,255,255,.1);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#000;color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased;user-select:none}
+  #stage{position:fixed;inset:0}
+
+  /* ---------- camera + canvas layers (video full brightness) ---------- */
+  video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0}
+  canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  canvas#fx{z-index:1;mix-blend-mode:screen}
+  canvas#three{z-index:2}
+  canvas#bones{z-index:6}
+
+  /* ---------- clean hud ---------- */
+  .hud{position:absolute;inset:0;pointer-events:none;z-index:5}
+
+  /* top bar — logo pill + mode toggle, nothing else */
+  .top{position:absolute;left:16px;right:16px;top:16px;display:flex;align-items:center;gap:10px;pointer-events:none}
+  .brand{display:inline-flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--edge);padding:9px 14px;border-radius:999px;backdrop-filter:blur(16px);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;pointer-events:auto}
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--hot);box-shadow:0 0 10px var(--hot);animation:p 1.4s infinite}
+  @keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+  .brand .sig{color:var(--cold);margin-left:4px}
+
+  .modebar{display:flex;background:var(--panel);border:1px solid var(--edge);border-radius:999px;padding:4px;backdrop-filter:blur(16px);pointer-events:auto}
+  .modebar button{background:transparent;border:none;color:var(--dim);padding:7px 16px;font:inherit;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:999px;transition:all .15s}
+  .modebar button:hover{color:var(--ink)}
+  .modebar button.on{background:var(--hot);color:#fff}
+  .modebar button.on.sense{background:var(--violet)}
+  .modebar button.on.patch{background:var(--lime);color:#000}
+
+  /* ---------- patch mode (node graph) ---------- */
+  .patch-stage{position:absolute;inset:0;background:rgba(7,7,11,.82);z-index:4;pointer-events:auto;overflow:hidden}
+  .patch-stage.hide{display:none}
+  .patch-grid{position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px),
+      linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+    background-size:20px 20px, 20px 20px, 100px 100px, 100px 100px;
+    pointer-events:none}
+  .patch-stage svg.wires{position:absolute;inset:0;pointer-events:none;z-index:1}
+  .patch-stage svg.wires path{fill:none;stroke:#9cff6b;stroke-width:2;opacity:.85;filter:drop-shadow(0 0 4px rgba(156,255,107,.6))}
+  .patch-stage svg.wires path.pending{stroke-dasharray:6 4;opacity:.6}
+  .node{position:absolute;background:rgba(14,14,20,.92);border:1px solid var(--edge);border-radius:10px;color:var(--ink);font-family:var(--mono);font-size:11px;min-width:160px;z-index:2;backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  .node.selected{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime),0 6px 24px rgba(0,0,0,.5)}
+  .node .head{padding:7px 10px;background:rgba(255,255,255,.05);border-radius:9px 9px 0 0;cursor:move;display:flex;align-items:center;gap:6px;letter-spacing:.14em;text-transform:uppercase;font-size:10px;font-weight:700;color:var(--ink);border-bottom:1px solid var(--edge);user-select:none}
+  .node .head .tag{font-size:9px;color:var(--dim);font-weight:400;letter-spacing:.1em;margin-left:auto}
+  .node .head.in{color:var(--cold)}
+  .node .head.math{color:var(--warm)}
+  .node .head.visual{color:var(--hot)}
+  .node .head.audio{color:var(--violet)}
+  .node .body{padding:6px 8px;position:relative}
+  .node .pin-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;gap:8px;font-size:10px;color:var(--dim)}
+  .node .pin{width:12px;height:12px;border-radius:50%;background:#1a1a24;border:2px solid var(--dim);cursor:crosshair;flex-shrink:0;transition:all .1s}
+  .node .pin:hover{background:var(--lime);border-color:var(--lime);box-shadow:0 0 10px rgba(156,255,107,.8)}
+  .node .pin.in{margin-right:6px;margin-left:-14px}
+  .node .pin.out{margin-left:6px;margin-right:-14px}
+  .node .val{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;margin-left:auto;font-size:10px;letter-spacing:.03em}
+  .node .param input[type=number],.node .param input[type=range]{background:#1a1a24;border:1px solid var(--edge);color:var(--ink);border-radius:4px;font:inherit;font-size:10px;padding:2px 4px;width:60px}
+  .node .param input[type=range]{width:72px;height:3px}
+  .node .close{position:absolute;top:5px;right:5px;background:transparent;border:none;color:var(--dim);width:18px;height:18px;border-radius:3px;cursor:pointer;font-size:12px;line-height:1;padding:0}
+  .node .close:hover{color:var(--hot);background:rgba(255,45,122,.1)}
+  .patch-palette{position:absolute;left:16px;top:76px;background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;backdrop-filter:blur(10px);z-index:5}
+  .patch-palette h4{margin:4px 6px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .patch-palette button{background:#111118;border:1px solid var(--edge);color:var(--ink);padding:7px 10px;border-radius:6px;cursor:pointer;font:inherit;font-size:10px;letter-spacing:.08em;text-transform:uppercase;text-align:left;display:flex;align-items:center;gap:6px;transition:all .1s}
+  .patch-palette button:hover{border-color:var(--lime);color:var(--lime)}
+  .patch-palette button .cat{font-size:8px;color:var(--dim);margin-left:auto}
+  .patch-footer{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:8px;background:var(--panel);border:1px solid var(--edge);border-radius:999px;padding:6px;backdrop-filter:blur(10px);z-index:5}
+  .patch-footer button{background:transparent;border:none;color:var(--dim);padding:7px 14px;font:inherit;font-size:10px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:999px}
+  .patch-footer button:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+  .patch-footer button.danger:hover{color:var(--hot);background:rgba(255,45,122,.1)}
+
+  .top-right{margin-left:auto;display:flex;gap:8px;align-items:center;pointer-events:auto}
+  .mini-chip{background:var(--panel);border:1px solid var(--edge);border-radius:999px;padding:7px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);backdrop-filter:blur(16px);font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .mini-chip b{color:var(--ink);margin-left:4px}
+  .icon-btn{background:var(--panel);border:1px solid var(--edge);width:36px;height:36px;border-radius:50%;color:var(--dim);cursor:pointer;backdrop-filter:blur(16px);display:grid;place-items:center;transition:all .15s;padding:0}
+  .icon-btn:hover{color:var(--ink);border-color:var(--violet)}
+  .icon-btn.on{color:var(--violet);border-color:var(--violet);box-shadow:0 0 14px rgba(198,137,255,.4)}
+  .icon-btn svg{width:18px;height:18px}
+
+  /* bottom center — single scene palette pill */
+  .bottom{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .scene-palette{display:flex;gap:4px;background:var(--panel);border:1px solid var(--edge);border-radius:999px;padding:5px;backdrop-filter:blur(16px);box-shadow:0 10px 40px rgba(0,0,0,.4)}
+  .scene-palette button{background:transparent;border:none;color:var(--dim);padding:9px 14px;font:inherit;font-size:11px;letter-spacing:.08em;cursor:pointer;border-radius:999px;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px;font-weight:500}
+  .scene-palette button:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+  .scene-palette button.on{background:var(--violet);color:#000;font-weight:700}
+  .scene-palette .glyph{font-size:14px;line-height:1}
+  .scene-palette .sep{width:1px;background:var(--edge);margin:4px 2px}
+  .scene-caption{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);text-align:center}
+
+  /* floating hint (spawn gesture) — subtle, centered under top bar */
+  .hint{position:absolute;left:50%;top:72px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--violet);color:var(--violet);padding:8px 16px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;backdrop-filter:blur(16px);pointer-events:none;z-index:6;opacity:0;transition:opacity .3s ease}
+  .hint.show{opacity:1}
+  .hint .dot{display:inline-block;width:6px;height:6px;background:var(--violet);border-radius:50%;margin-right:8px;animation:p 1.4s infinite}
+
+  /* ---------- music mode tuner (clean) ---------- */
+  .tuner{position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);text-align:center;pointer-events:none;z-index:4}
+  .tuner .note{font-size:clamp(90px, 20vw, 240px);font-weight:800;letter-spacing:-.02em;line-height:.9;color:#fff;text-shadow:0 0 40px rgba(255,255,255,.5),0 4px 24px rgba(0,0,0,.6);transition:transform .08s ease;font-family:var(--sans)}
+  .tuner .note.on{color:var(--hot);text-shadow:0 0 80px var(--hot),0 4px 24px rgba(0,0,0,.6)}
+  .tuner .sub{font-size:12px;letter-spacing:.4em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:12px;font-weight:500}
+  .tuner .chord{font-size:clamp(26px, 4vw, 42px);font-weight:700;color:var(--cold);letter-spacing:.08em;margin-top:16px;text-shadow:0 0 24px var(--cold),0 2px 10px rgba(0,0,0,.6);min-height:1.2em}
+
+  /* ---------- settings drawer (slides from right) ---------- */
+  .drawer{position:absolute;top:16px;right:16px;width:320px;max-height:calc(100% - 32px);background:var(--panel);border:1px solid var(--edge);border-radius:14px;backdrop-filter:blur(16px);padding:18px;pointer-events:auto;overflow-y:auto;transform:translateX(calc(100% + 40px));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:7;font-family:var(--mono);box-shadow:0 10px 40px rgba(0,0,0,.4)}
+  .drawer.open{transform:translateX(0)}
+  .drawer h3{margin:16px 0 8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);font-weight:600}
+  .drawer h3:first-child{margin-top:0}
+  .drawer .close{position:absolute;top:10px;right:10px;background:transparent;border:none;color:var(--dim);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px}
+  .drawer .close:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+  .row{display:grid;grid-template-columns:70px 1fr 48px;gap:8px;align-items:center;margin:7px 0;font-size:11px}
+  .row label{color:var(--dim);letter-spacing:.08em;text-transform:uppercase;font-size:9px}
+  .row output{color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+  input[type=range]{appearance:none;width:100%;height:3px;background:linear-gradient(90deg,var(--cold),var(--hot));border-radius:999px;outline:none}
+  input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #000;cursor:pointer}
+  select,.drawer button.action{font:inherit;color:var(--ink);background:#111118;border:1px solid var(--edge);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:11px;width:100%}
+  .drawer .btn-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .drawer .btn-row button{flex:1;min-width:70px;padding:8px 10px;background:#111118;border:1px solid var(--edge);color:var(--ink);border-radius:8px;cursor:pointer;font:inherit;font-size:11px;letter-spacing:.06em}
+  .drawer .btn-row button:hover{border-color:var(--violet)}
+  .drawer .btn-row button.on{background:var(--cold);color:#000;border-color:var(--cold)}
+  .drawer .btn-row button.rec-on{background:var(--hot);color:#fff;border-color:var(--hot)}
+  .drawer .mini-legend{font-size:10px;color:var(--dim);line-height:1.6;margin-top:12px;padding-top:12px;border-top:1px solid var(--edge)}
+  .drawer .mini-legend b{color:var(--ink)}
+  .drawer kbd{font-family:var(--mono);font-size:9px;background:#1a1a24;border:1px solid var(--edge);border-radius:3px;padding:1px 4px;color:var(--ink)}
+
+  /* ---------- start screen ---------- */
+  .status{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;background:var(--panel);border:1px solid var(--edge);padding:36px 42px;border-radius:20px;max-width:520px;z-index:10;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .status h1{margin:0 0 8px;font-size:28px;letter-spacing:-.02em;font-weight:800}
+  .status .tagline{color:var(--dim);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 24px;font-weight:500}
+  .status p{margin:0 0 10px;color:var(--dim);font-size:13px;line-height:1.6}
+  .status .sig{color:var(--cold);letter-spacing:.3em;font-weight:700}
+  .status .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0;text-align:left}
+  .status .side{background:#111118;border:1px solid var(--edge);border-radius:12px;padding:14px}
+  .status .side h4{margin:0 0 8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;font-weight:700}
+  .status .side.music h4{color:var(--hot)}
+  .status .side.sense h4{color:var(--violet)}
+  .status .side ul{margin:0;padding-left:16px;color:var(--dim);font-size:11px;line-height:1.7}
+  .status .side ul b{color:var(--ink)}
+  .status button.primary{background:var(--hot);color:#fff;border:none;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:14px 28px;border-radius:999px;cursor:pointer;font-size:12px;margin-top:8px;transition:all .15s}
+  .status button.primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .hide{display:none !important}
+
+  @media (max-width: 820px){
+    .scene-palette{flex-wrap:wrap;max-width:95vw;justify-content:center}
+    .drawer{width:calc(100% - 32px)}
+    .status .split{grid-template-columns:1fr}
+    .mini-chip{display:none}
+  }
+
+  /* ---------- electron titlebar ---------- */
+  .titlebar{position:absolute;top:0;left:0;right:0;height:28px;-webkit-app-region:drag;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,0));display:flex;align-items:center;padding:0 10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+  .titlebar .wincontrols{margin-left:auto;-webkit-app-region:no-drag;display:flex;gap:4px}
+  .titlebar .wincontrols button{background:transparent;border:none;color:var(--dim);width:28px;height:22px;padding:0;border-radius:4px;cursor:pointer;font-size:14px}
+  .titlebar .wincontrols button:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+  .titlebar .wincontrols button.close:hover{background:#ff2d7a;color:#fff}
+</style>
+</head>
+<body>
+<div class="titlebar" id="titlebar">
+  hand synth — 1Z4K
+  <div class="wincontrols">
+    <button id="win-min" title="minimize">—</button>
+    <button id="win-max" title="maximize">▢</button>
+    <button id="win-close" class="close" title="close">✕</button>
+  </div>
+</div>
+<div id="stage">
+  <video id="cam" playsinline muted></video>
+  <canvas id="fx"></canvas>
+  <canvas id="three"></canvas>
+  <canvas id="bones"></canvas>
+
+  <div id="start" class="status">
+    <h1>Hand Synth</h1>
+    <p class="tagline">make music · shape light</p>
+    <p>a two-mode playground driven by your webcam. switch between <b style="color:var(--hot)">MUSIC</b> and <b style="color:var(--violet)">SENSORY</b> at any time.</p>
+    <div class="split">
+      <div class="side music">
+        <h4>music</h4>
+        <ul>
+          <li>right hand → melody</li>
+          <li>left hand → chord</li>
+          <li>pentatonic lock</li>
+          <li>tuner for singing</li>
+        </ul>
+      </div>
+      <div class="side sense">
+        <h4>sensory</h4>
+        <ul>
+          <li>join your hands then spread them</li>
+          <li>cards, lens, taffy, goo</li>
+          <li>PBR 3D rendering</li>
+          <li>record the result</li>
+        </ul>
+      </div>
+    </div>
+    <button class="primary" id="go">start</button>
+    <p style="margin-top:16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Built by <span class="sig">1Z4K</span></p>
+  </div>
+
+  <div class="hud hide" id="hud">
+    <!-- top bar -->
+    <div class="top">
+      <div class="brand"><span class="dot"></span>HAND SYNTH <span class="sig">· 1Z4K</span></div>
+      <div class="modebar" id="modebar">
+        <button id="mode-music" class="on" data-mode="music">music</button>
+        <button id="mode-sense" data-mode="sense">sensory</button>
+        <button id="mode-patch" data-mode="patch">patch</button>
+      </div>
+      <div class="top-right">
+        <div class="mini-chip" id="chip-key">KEY<b id="r-key">G maj</b></div>
+        <div class="mini-chip">FPS<b id="r-fps">0</b></div>
+        <button class="icon-btn" id="btn-dismiss" title="dismiss summoned object" style="color:var(--hot)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-rec" title="record (R)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="7"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-settings" title="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- spawn hint -->
+    <div class="hint" id="hint"><span class="dot"></span><span id="hint-text">join your hands</span></div>
+
+    <!-- music tuner -->
+    <div class="tuner" id="tuner">
+      <div class="note" id="t-note">—</div>
+      <div class="sub">sing this note</div>
+      <div class="chord" id="t-chord">&nbsp;</div>
+    </div>
+
+    <!-- bottom scene palette -->
+    <div class="bottom">
+      <!-- music palette -->
+      <div class="scene-palette" id="palette-music">
+        <button class="on" data-scale-shortcut="g-maj"><span class="glyph">G</span>major</button>
+        <button data-scale-shortcut="c-maj"><span class="glyph">C</span>major</button>
+        <button data-scale-shortcut="d-maj"><span class="glyph">D</span>major</button>
+        <button data-scale-shortcut="a-min"><span class="glyph">A</span>minor</button>
+        <button data-scale-shortcut="e-min"><span class="glyph">E</span>minor</button>
+      </div>
+      <!-- sense palette -->
+      <div class="scene-palette hide" id="palette-sense">
+        <button class="on" data-scene="draw"><span class="glyph">✎</span>air draw</button>
+        <button data-scene="sculpt"><span class="glyph">⬢</span>sculpt</button>
+        <span class="sep"></span>
+        <button data-scene="cards"><span class="glyph">▦</span>cards</button>
+        <button data-scene="card"><span class="glyph">▢</span>canvas</button>
+        <button data-scene="lens"><span class="glyph">◉</span>ball</button>
+        <button data-scene="taffy"><span class="glyph">∥</span>taffy</button>
+        <span class="sep"></span>
+        <button data-scene="sphere"><span class="glyph">◯</span>sphere</button>
+        <button data-scene="blob"><span class="glyph">◍</span>blob</button>
+        <button data-scene="wave"><span class="glyph">∿</span>wave</button>
+        <button data-scene="galaxy"><span class="glyph">✦</span>galaxy</button>
+        <span class="sep"></span>
+        <button data-scene="goo"><span class="glyph">●</span>goo</button>
+        <button data-scene="warp"><span class="glyph">#</span>warp</button>
+      </div>
+      <div class="scene-caption" id="scene-caption">RIGHT HAND = MELODY · LEFT HAND = CHORD</div>
+    </div>
+
+    <!-- patch stage (node graph) -->
+    <div class="patch-stage hide" id="patch-stage">
+      <div class="patch-grid"></div>
+      <svg class="wires" id="patch-wires"></svg>
+      <div class="patch-palette" id="patch-palette">
+        <h4>Inputs</h4>
+        <button data-ntype="hand"><span>⌘</span> hand<span class="cat">in</span></button>
+        <button data-ntype="osc"><span>∿</span> osc<span class="cat">in</span></button>
+        <h4>Math</h4>
+        <button data-ntype="map"><span>⇄</span> map<span class="cat">math</span></button>
+        <button data-ntype="lerp"><span>↔</span> lerp<span class="cat">math</span></button>
+        <h4>Visual</h4>
+        <button data-ntype="sphere"><span>◉</span> sphere<span class="cat">out</span></button>
+        <button data-ntype="cube"><span>⬢</span> cube<span class="cat">out</span></button>
+        <button data-ntype="trail"><span>∿</span> trail<span class="cat">out</span></button>
+        <h4>Audio</h4>
+        <button data-ntype="tone"><span>♪</span> tone<span class="cat">out</span></button>
+      </div>
+      <div class="patch-footer">
+        <button id="patch-clear" class="danger">clear all</button>
+        <button id="patch-preset-wave">load: hand → sphere</button>
+        <button id="patch-preset-chord">load: hand → tone</button>
+      </div>
+    </div>
+
+    <!-- settings drawer -->
+    <div class="drawer" id="drawer">
+      <button class="close" id="drawer-close">✕</button>
+      <div id="drawer-music">
+        <h3>Music</h3>
+        <div class="row"><label>key</label>
+          <select id="key">
+            <option>C</option><option>C#</option><option>D</option><option>D#</option>
+            <option>E</option><option>F</option><option>F#</option>
+            <option value="G" selected>G</option>
+            <option>G#</option><option>A</option><option>A#</option><option>B</option>
+          </select><output></output>
+        </div>
+        <div class="row"><label>mode</label>
+          <select id="scalemode">
+            <option value="maj" selected>major</option>
+            <option value="min">minor</option>
+          </select><output></output>
+        </div>
+        <div class="row"><label>octave</label>
+          <input type="range" id="oct" min="3" max="5" step="1" value="4" />
+          <output id="o-oct">4</output>
+        </div>
+        <div class="row"><label>sound</label>
+          <select id="sound">
+            <option value="piano" selected>piano</option>
+            <option value="pad">pad</option>
+            <option value="pluck">pluck</option>
+            <option value="organ">organ</option>
+            <option value="flute">flute</option>
+          </select><output></output>
+        </div>
+        <div class="row"><label>mel vol</label>
+          <input type="range" id="volM" min="-30" max="0" step="1" value="-8" />
+          <output id="o-volM">-8</output>
+        </div>
+        <div class="row"><label>chord vol</label>
+          <input type="range" id="volC" min="-30" max="0" step="1" value="-14" />
+          <output id="o-volC">-14</output>
+        </div>
+        <div class="row"><label>reverb</label>
+          <input type="range" id="rev" min="0" max="1" step="0.01" value="0.35" />
+          <output id="o-rev">0.35</output>
+        </div>
+        <div class="row"><label>sensitivity</label>
+          <input type="range" id="sens" min="0.6" max="1.5" step="0.01" value="1" />
+          <output id="o-sens">1.00</output>
+        </div>
+        <div class="btn-row">
+          <button id="metro">metronome</button>
+          <button id="mute">mute</button>
+        </div>
+      </div>
+      <div id="drawer-sense" class="hide">
+        <h3>Sensory</h3>
+        <div class="row"><label>intensity</label>
+          <input type="range" id="s-intensity" min="0.2" max="2" step="0.01" value="1" />
+          <output id="o-s-int">1.00</output>
+        </div>
+        <div class="row"><label>force</label>
+          <input type="range" id="s-force" min="0.5" max="4" step="0.01" value="1.6" />
+          <output id="o-s-force">1.60</output>
+        </div>
+        <div class="row"><label>hue</label>
+          <input type="range" id="s-hue" min="0" max="360" step="1" value="300" />
+          <output id="o-s-hue">300</output>
+        </div>
+        <div class="row"><label>particles</label>
+          <input type="range" id="s-count" min="200" max="4000" step="100" value="1400" />
+          <output id="o-s-count">1400</output>
+        </div>
+        <div class="row"><label>sensitivity</label>
+          <input type="range" id="s-sens" min="0.6" max="1.5" step="0.01" value="1" />
+          <output id="o-s-sens">1.00</output>
+        </div>
+        <div class="btn-row">
+          <button id="s-clear">clear</button>
+          <button id="s-cam">hide cam</button>
+        </div>
+      </div>
+      <div class="mini-legend" id="legend-text"></div>
+    </div>
+  </div>
+</div>
+
+<script src="./vendor/hands.js"></script>
+<script src="./vendor/tone.js"></script>
+<script src="./vendor/three.min.js"></script>
+
+<script>
+"use strict";
+// --------------------------------------------------------------------------
+// hand synth — Built by 1Z4K
+// --------------------------------------------------------------------------
+
+const el    = (id) => document.getElementById(id);
+const clamp = (v,a,b) => v<a?a:v>b?b:v;
+const lerp  = (a,b,t) => a + (b-a)*t;
+const dist  = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+const TAU   = Math.PI * 2;
+
+if (window.winctl){
+  el("win-min").addEventListener("click",   () => window.winctl.minimize());
+  el("win-max").addEventListener("click",   () => window.winctl.maximize());
+  el("win-close").addEventListener("click", () => window.winctl.close());
+} else { el("titlebar").style.display = "none"; }
+
+// ===========================================================================
+//  AUDIO
+// ===========================================================================
+let AUDIO_READY = false;
+let mel, chord, filtMel, filtChord, reverb, delay, master, limiter, recorder, click;
+
+const PRESETS = {
+  piano:  { osc:{type:"triangle"}, env:{attack:0.004, decay:1.0, sustain:0.2, release:1.1} },
+  pad:    { osc:{type:"sawtooth"}, env:{attack:0.5,   decay:0.3, sustain:0.8, release:1.6} },
+  pluck:  { osc:{type:"triangle"}, env:{attack:0.001, decay:0.25,sustain:0.0, release:0.3} },
+  organ:  { osc:{type:"sine"},     env:{attack:0.01,  decay:0.1, sustain:0.9, release:0.3} },
+  flute:  { osc:{type:"sine"},     env:{attack:0.08,  decay:0.1, sustain:0.9, release:0.4} }
+};
+
+async function initAudio(){
+  await Tone.start();
+  Tone.context.lookAhead = 0.02;
+  master    = new Tone.Gain(0.95);
+  limiter   = new Tone.Limiter(-1);
+  reverb    = new Tone.Reverb({ decay: 5, wet: 0.35 });
+  delay     = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.28, wet: 0.15 });
+  filtMel   = new Tone.Filter({ type: "lowpass", frequency: 4800, Q: 0.5 });
+  filtChord = new Tone.Filter({ type: "lowpass", frequency: 1800, Q: 0.3 });
+
+  mel = new Tone.MonoSynth({
+    oscillator: PRESETS.piano.osc, envelope: PRESETS.piano.env,
+    filterEnvelope: { attack:0.01, decay:0.3, sustain:0.4, release:0.6, baseFrequency:800, octaves:2.5 },
+    portamento: 0.015, volume: -8
+  });
+  chord = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: "triangle" },
+    envelope:   { attack: 0.08, decay: 0.4, sustain: 0.65, release: 1.4 }, volume: -14
+  });
+  click = new Tone.MembraneSynth({
+    pitchDecay: 0.01, octaves: 2,
+    envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.1 }, volume: -16
+  }).connect(master);
+
+  mel.chain(filtMel,   delay, reverb, master, limiter, Tone.getDestination());
+  chord.chain(filtChord,       reverb, master);
+
+  await reverb.generate();
+  recorder = new Tone.Recorder();
+  Tone.getDestination().connect(recorder);
+  AUDIO_READY = true;
+}
+
+function setSound(name){
+  if (!AUDIO_READY) return;
+  const p = PRESETS[name] || PRESETS.piano;
+  mel.set({ oscillator: p.osc, envelope: p.env });
+}
+
+// ===========================================================================
+//  MUSIC THEORY
+// ===========================================================================
+const MODE_INTERVALS = { maj: [0,2,4,5,7,9,11], min: [0,2,3,5,7,8,10] };
+const ROOTS = { C:0,"C#":1,D:2,"D#":3,E:4,F:5,"F#":6,G:7,"G#":8,A:9,"A#":10,B:11 };
+const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const PENTATONIC = { maj: [0,2,4,7,9], min: [0,3,5,7,10] };
+function midiFromRoot(rk, oct, semi){ return 12*(oct+1) + ROOTS[rk] + semi; }
+function midiToName(m){ return Tone.Frequency(m, "midi").toNote(); }
+function midiToPc(m){ return NOTE_NAMES[((m%12)+12)%12]; }
+function melodyNotes(rk, mode, oct){ return PENTATONIC[mode].map(s => midiFromRoot(rk, oct, s)); }
+
+const CHORD_DEGREES   = { maj:[0,3,4,5,1], min:[0,3,4,5,1] };
+const CHORD_QUALITIES = { maj:["maj","maj","maj","min","min"], min:["min","min","min","maj","dim"] };
+const CHORD_LABELS    = { maj:["I","IV","V","vi","ii"], min:["i","iv","v","VI","ii°"] };
+
+function chordFor(n, rk, mode, oct){
+  n = clamp(n,1,5);
+  const degIdx  = CHORD_DEGREES[mode][n-1];
+  const scale   = MODE_INTERVALS[mode];
+  const rootStep= scale[degIdx];
+  const quality = CHORD_QUALITIES[mode][n-1];
+  const rootMidi= midiFromRoot(rk, oct-1, rootStep);
+  let third, fifth;
+  if (quality==="maj")      { third=rootMidi+4; fifth=rootMidi+7; }
+  else if (quality==="min") { third=rootMidi+3; fifth=rootMidi+7; }
+  else                      { third=rootMidi+3; fifth=rootMidi+6; }
+  const notes  = [rootMidi, third, fifth].map(midiToName);
+  const symbol = midiToPc(rootMidi) + (quality==="maj"?"":quality==="min"?"m":"°");
+  return { notes, symbol };
+}
+
+// ===========================================================================
+//  CANVASES
+// ===========================================================================
+const video = el("cam");
+const fxc   = el("fx");
+const threeC= el("three");
+const bonesC= el("bones");
+const fx    = fxc.getContext("2d");
+const g     = bonesC.getContext("2d");
+
+let W = 1, H = 1, DPR = 1;
+
+function sizeCanvas(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  for (const c of [fxc, bonesC]){
+    c.width  = Math.floor(W * DPR);
+    c.height = Math.floor(H * DPR);
+    c.style.width  = W + "px";
+    c.style.height = H + "px";
+    c.getContext("2d").setTransform(DPR,0,0,DPR,0,0);
+  }
+  threeC.width  = Math.floor(W * DPR);
+  threeC.height = Math.floor(H * DPR);
+  threeC.style.width  = W + "px";
+  threeC.style.height = H + "px";
+  if (renderer){
+    renderer.setPixelRatio(DPR);
+    renderer.setSize(W, H, false);
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+  }
+}
+window.addEventListener("resize", sizeCanvas);
+
+// ===========================================================================
+//  HANDS
+// ===========================================================================
+let hands, fpsAt = 0, fpsCount = 0;
+let latest = { multiHandLandmarks: [], multiHandedness: [] };
+
+async function initHands(){
+  hands = new Hands({ locateFile: (f) => `./vendor/${f}` });
+  hands.setOptions({
+    maxNumHands: 2, modelComplexity: 1,
+    minDetectionConfidence: 0.65, minTrackingConfidence: 0.6,
+    selfieMode: true
+  });
+  hands.onResults((r) => {
+    latest = r;
+    fpsCount++;
+    const now = performance.now();
+    if (now - fpsAt > 500){
+      el("r-fps").textContent = Math.round(fpsCount * 1000 / (now - fpsAt));
+      fpsAt = now; fpsCount = 0;
+    }
+  });
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "user", width: {ideal: 1280}, height: {ideal: 720} },
+    audio: false
+  });
+  video.srcObject = stream;
+  await video.play();
+  const loop = async () => {
+    if (video.readyState >= 2) await hands.send({ image: video });
+    requestAnimationFrame(loop);
+  };
+  loop();
+}
+
+const FINGERS = [
+  { name:"thumb",  color:"#ffd166", mcp:2,  pip:3,  tip:4  },
+  { name:"index",  color:"#44e0ff", mcp:5,  pip:6,  tip:8  },
+  { name:"middle", color:"#ff2d7a", mcp:9,  pip:10, tip:12 },
+  { name:"ring",   color:"#9cff6b", mcp:13, pip:14, tip:16 },
+  { name:"pinky",  color:"#c689ff", mcp:17, pip:18, tip:20 }
+];
+
+function detectExtended(lm, sens){
+  const wrist = lm[0], out = [];
+  for (let i = 0; i < 5; i++){
+    const f = FINGERS[i];
+    const tip = lm[f.tip], pip = lm[f.pip], mcp = lm[f.mcp];
+    if (i === 0){
+      const palm = lm[9];
+      out.push(dist(tip,palm) > dist(mcp,palm) * (1.15/sens));
+    } else {
+      if (dist(tip,wrist) < dist(pip,wrist) * (1.05/sens)){ out.push(false); continue; }
+      const a = {x:pip.x-mcp.x, y:pip.y-mcp.y}, b = {x:tip.x-pip.x, y:tip.y-pip.y};
+      const la = Math.hypot(a.x,a.y)||1e-6, lb = Math.hypot(b.x,b.y)||1e-6;
+      out.push((a.x*b.x + a.y*b.y)/(la*lb) > (0.55/sens));
+    }
+  }
+  return out;
+}
+
+// map a mediapipe landmark (unit coords in the full camera frame) to screen pixels,
+// accounting for the webcam's object-fit: cover crop so hand bones + object anchors
+// line up with the visible video.
+function lmToPx(x, y){
+  const vw = video.videoWidth  || W;
+  const vh = video.videoHeight || H;
+  const scale = Math.max(W/vw, H/vh);
+  const dispW = vw * scale, dispH = vh * scale;
+  const offX = (dispW - W) / 2;
+  const offY = (dispH - H) / 2;
+  return { x: x * dispW - offX, y: y * dispH - offY };
+}
+function toScreen(pt){
+  const p = lmToPx(pt.x, pt.y);
+  return { x: p.x, y: p.y, z: pt.z || 0 };
+}
+
+function screenToWorld(sx, sy, depth){
+  const z = depth || 0;
+  const camZ = 10, fov = 50 * Math.PI/180;
+  const h = 2 * Math.tan(fov/2) * (camZ - z);
+  const w = h * (W/H);
+  return { x: (sx / W - 0.5) * w, y: -(sy / H - 0.5) * h, z: z };
+}
+
+// ===========================================================================
+//  PINCH DETECTOR + SPAWN
+// ===========================================================================
+// pinch = thumb tip (lm[4]) ↔ index tip (lm[8]) distance below threshold,
+// normalized by palm width so it works at any distance from camera.
+// Hysteresis: once "held", the pinch stays active until fingers spread much wider.
+// This lets the user START by touching fingers (close), then SPREAD them to grow the
+// object, without the gesture dropping out mid-interaction.
+const PINCH_ON  = 0.55;   // start pinching when ratio drops below this
+const PINCH_OFF = 3.50;   // very loose end threshold so wide finger spread still counts as pinching
+const pinchHold = { Right: false, Left: false };
+
+function detectPinchRaw(lm){
+  const thumb = lm[4], index = lm[8];
+  const palmW = dist(lm[5], lm[17]) || 1e-6;
+  const pDist = dist(thumb, index);
+  const ratio = pDist / palmW;
+  const t = lmToPx(thumb.x, thumb.y);
+  const i = lmToPx(index.x, index.y);
+  const px = (t.x + i.x) / 2;
+  const py = (t.y + i.y) / 2;
+  const pz = ((thumb.z||0) + (index.z||0)) / 2;
+  return {
+    ratio,
+    strength: 1 - clamp(ratio / PINCH_ON, 0, 1),
+    x: px, y: py, z: pz,
+    thumbX: t.x, thumbY: t.y,
+    indexX: i.x, indexY: i.y,
+    spread: ratio
+  };
+}
+
+function collectPinches(){
+  const list = latest.multiHandLandmarks || [];
+  const handed = latest.multiHandedness || [];
+  const seen = { Right: false, Left: false };
+  const out = [];
+  for (let i = 0; i < list.length; i++){
+    const p = detectPinchRaw(list[i]);
+    const ext = detectExtended(list[i], 1.0);
+    const extCount = ext.filter(Boolean).length;
+    p.fist = extCount === 0;
+    const palmU = { x:(list[i][0].x+list[i][9].x+list[i][13].x)/3, y:(list[i][0].y+list[i][9].y+list[i][13].y)/3 };
+    const palmPx = lmToPx(palmU.x, palmU.y);
+    p.palmX = palmPx.x;
+    p.palmY = palmPx.y;
+    const label = handed[i]?.label || (i === 0 ? "Right" : "Left");
+    p.label = label;
+    seen[label] = true;
+
+    // hysteresis: start pinching when fingers touch, stay pinching until wide open
+    if (pinchHold[label]){
+      if (p.ratio > PINCH_OFF) pinchHold[label] = false;
+    } else {
+      if (p.ratio < PINCH_ON) pinchHold[label] = true;
+    }
+    p.pinching = pinchHold[label];
+
+    out.push(p);
+  }
+  // clear hold for hands that left the frame
+  if (!seen.Right) pinchHold.Right = false;
+  if (!seen.Left)  pinchHold.Left  = false;
+  return out;
+}
+
+// spawn state: once summoned via pinch, stays active until the dismiss button clears it.
+const spawn = { active:false, spawnedScale:0, hadPinch:false };
+
+function updateSpawnState(pinches){
+  const anyPinch = pinches.some(p => p && p.pinching);
+  if (anyPinch && !spawn.active){
+    spawn.active = true;
+    showHint("");
+  }
+  if (!spawn.active){
+    showHint("pinch to summon · two pinches to stretch · two fists to spin · ✕ to dismiss");
+  }
+  spawn.spawnedScale = lerp(spawn.spawnedScale, spawn.active ? 1 : 0, 0.2);
+  spawn.hadPinch = anyPinch;
+}
+
+// explicit dismiss — called by the ✕ button in the HUD
+function dismissSense(){
+  spawn.active = false;
+  spawn.spawnedScale = 0;
+  // rebuild the current scene to reset its internal state
+  if (SENSE_SCENE === "cards")  buildSceneCards();
+  if (SENSE_SCENE === "card")   buildSceneCard();
+  if (SENSE_SCENE === "lens")   buildSceneLens();
+  if (SENSE_SCENE === "taffy")  buildSceneTaffy();
+  if (SENSE_SCENE === "sculpt") buildSceneSculpt();
+  if (SENSE_SCENE === "draw")   buildSceneDraw();
+  if (SENSE_SCENE === "sphere") buildSceneSphere();
+  if (SENSE_SCENE === "blob")   buildSceneBlob();
+  if (SENSE_SCENE === "wave")   buildSceneWave();
+  if (SENSE_SCENE === "galaxy") buildSceneGalaxy(parseInt(el("s-count").value, 10));
+  clearFx();
+}
+
+// ---------------------------------------------------------------------------
+//  Two-fist rotation helper
+//  When both hands are closed fists, the group spins around itself.
+//  roll (z) ← rotation of the line between the two hands
+//  yaw  (y) ← horizontal translation of the midpoint
+//  pitch(x) ← vertical translation of the midpoint
+// ---------------------------------------------------------------------------
+const rotAnchors = {};
+
+function applyTwoFistRotation(group, pinches, key){
+  const bothFist = pinches[0] && pinches[1] && pinches[0].fist && pinches[1].fist;
+  if (!bothFist){ rotAnchors[key] = null; return false; }
+  const l = pinches[0], r = pinches[1];
+  // use palm centers (fists have no reliable pinch tip)
+  const lx = l.palmX, ly = l.palmY, rx = r.palmX, ry = r.palmY;
+  const curAngle = Math.atan2(ry - ly, rx - lx);
+  const mid = { x: (lx + rx) / 2, y: (ly + ry) / 2 };
+  if (!rotAnchors[key]){
+    rotAnchors[key] = {
+      angleStart: curAngle,
+      midStart:   mid,
+      rotStart:   { x: group.rotation.x, y: group.rotation.y, z: group.rotation.z }
+    };
+  } else {
+    const a = rotAnchors[key];
+    const k = 0.012; // rad per pixel for yaw/pitch
+    group.rotation.z = a.rotStart.z + (curAngle - a.angleStart);
+    group.rotation.y = a.rotStart.y + (mid.x - a.midStart.x) * k;
+    group.rotation.x = a.rotStart.x - (mid.y - a.midStart.y) * k;
+  }
+  return true;
+}
+
+function showHint(text){
+  const hint = el("hint");
+  if (!text || MODE !== "sense"){ hint.classList.remove("show"); return; }
+  if (!usesPinch(SENSE_SCENE)){ hint.classList.remove("show"); return; }
+  hint.classList.add("show");
+  el("hint-text").textContent = text;
+}
+
+// ===========================================================================
+//  MODE SWITCHING
+// ===========================================================================
+let MODE = "music";
+let SENSE_SCENE = "draw";
+let musicMuted = false;
+
+function setMode(m){
+  MODE = m;
+  el("mode-music").classList.toggle("on", m === "music");
+  el("mode-sense").classList.toggle("on", m === "sense");
+  el("mode-sense").classList.toggle("sense", m === "sense");
+  el("mode-patch").classList.toggle("on", m === "patch");
+  el("mode-patch").classList.toggle("patch", m === "patch");
+  el("palette-music").classList.toggle("hide", m !== "music");
+  el("palette-sense").classList.toggle("hide", m !== "sense");
+  el("btn-dismiss").style.display = (m === "sense") ? "grid" : "none";
+  el("drawer-music").classList.toggle("hide", m !== "music");
+  el("drawer-sense").classList.toggle("hide", m !== "sense");
+  el("tuner").classList.toggle("hide",   m !== "music");
+  el("chip-key").classList.toggle("hide",m !== "music");
+  el("patch-stage").classList.toggle("hide", m !== "patch");
+  threeC.style.display = (m === "patch") ? "block" : (m === "sense" && is3DScene(SENSE_SCENE)) ? "block" : "none";
+  // bottom caption only in sense/music
+  el("scene-caption").parentElement.style.display = (m === "patch") ? "none" : "flex";
+  if (m === "sense"){
+    stopMelody(); stopChord();
+    if (AUDIO_READY) master.gain.rampTo(0, 0.1);
+    el("scene-caption").textContent = describeScene(SENSE_SCENE);
+    clearPatchThree();
+  } else if (m === "music"){
+    if (AUDIO_READY && !musicMuted) master.gain.rampTo(0.95, 0.1);
+    el("scene-caption").textContent = "RIGHT HAND = MELODY · LEFT HAND = CHORD";
+    clearPatchThree();
+  } else if (m === "patch"){
+    stopMelody(); stopChord();
+    if (AUDIO_READY) master.gain.rampTo(0.95, 0.1); // allow patch audio
+    clearThree(); // wipe sensory scene objects
+  }
+  updateLegend();
+  clearFx();
+}
+
+el("mode-music").addEventListener("click", () => setMode("music"));
+el("mode-sense").addEventListener("click", () => setMode("sense"));
+el("mode-patch").addEventListener("click", () => setMode("patch"));
+
+const SCENES_3D   = ["sphere","wave","blob","galaxy","cards","card","lens","taffy","draw","sculpt"];
+const SCENES_SPAWN= ["cards","card","lens","taffy"];
+const SCENES_PINCH= ["draw","sculpt","cards","card","lens","taffy"];
+function is3DScene(s){ return SCENES_3D.includes(s); }
+function needsSpawn(s){ return SCENES_SPAWN.includes(s); }
+function usesPinch(s){ return SCENES_PINCH.includes(s); }
+
+function describeScene(s){
+  const names = {
+    draw:"AIR DRAW · PINCH TO DRAW · RELEASE TO MATERIALIZE",
+    sculpt:"SCULPT · PINCH CORNER HANDLES TO DEFORM",
+    cards:"CARD STACK · PINCH BOTH HANDS TO SUMMON",
+    card:"LIVE CANVAS · PINCH BOTH HANDS TO STRETCH",
+    lens:"DEFORM BALL · PINCH BOTH HANDS TO SUMMON · PINCH HANDLES TO SCULPT",
+    taffy:"TAFFY · PINCH BOTH HANDS TO SHAPE",
+    sphere:"ORB · HANDS DRIVE POSITION AND SPIN",
+    blob:"DEFORM BLOB · FINGERTIPS PULL VERTICES",
+    wave:"WAVE · PALMS BECOME ENDPOINTS",
+    galaxy:"GALAXY · FINGERS PULL · PALMS PUSH",
+    goo:"METABALLS · FINGERTIPS GLOW · PALMS BLEND",
+    warp:"WARP GRID · HANDS WARP THE MESH"
+  };
+  return names[s] || s.toUpperCase();
+}
+
+// ===========================================================================
+//  THREE.JS SETUP + PBR ENV MAP
+// ===========================================================================
+let renderer, scene, camera;
+let obj3D = {};
+let videoTexture = null;
+let cardTextures = [];
+let envMap = null;
+
+function initThree(){
+  renderer = new THREE.WebGLRenderer({ canvas: threeC, antialias: true, alpha: true });
+  renderer.setPixelRatio(DPR);
+  renderer.setSize(W, H, false);
+  renderer.setClearColor(0x000000, 0);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(50, W/H, 0.1, 100);
+  camera.position.set(0, 0, 10);
+  camera.lookAt(0,0,0);
+
+  // procedural env map (gradient sky + colored ground + soft lights)
+  envMap = buildEnvMap();
+  scene.environment = envMap;
+
+  // scene lights
+  const amb = new THREE.AmbientLight(0xffffff, 0.4); scene.add(amb);
+  const key = new THREE.DirectionalLight(0xffeedd, 1.1); key.position.set(5, 6, 7); scene.add(key);
+  const rim = new THREE.PointLight(0xff2d7a, 1.5, 20); rim.position.set(-4, -2, 4); scene.add(rim);
+  const fill= new THREE.PointLight(0x44e0ff, 1.0, 20); fill.position.set(4, -3, 3); scene.add(fill);
+
+  videoTexture = new THREE.VideoTexture(video);
+  videoTexture.colorSpace = THREE.SRGBColorSpace;
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
+
+  cardTextures = makeCardTextures(16);
+}
+
+// build a reflective PMREM env from a tiny procedural scene
+function buildEnvMap(){
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  pmrem.compileEquirectangularShader();
+
+  // paint a 512x256 equirect gradient with colored hotspots
+  const size = 512;
+  const c = document.createElement("canvas");
+  c.width = size; c.height = size/2;
+  const ctx = c.getContext("2d");
+  // sky gradient
+  const sky = ctx.createLinearGradient(0, 0, 0, c.height);
+  sky.addColorStop(0, "#1a0a30");
+  sky.addColorStop(0.5, "#2a1a4a");
+  sky.addColorStop(1, "#301020");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, c.width, c.height);
+  // hot spots
+  const spots = [
+    { x: 60, y: 50, r: 90, col: "rgba(255, 60, 150, 0.85)" },
+    { x: 280, y: 70, r: 100, col: "rgba(60, 200, 255, 0.75)" },
+    { x: 420, y: 40, r: 80, col: "rgba(255, 210, 120, 0.6)" },
+    { x: 180, y: 180, r: 90, col: "rgba(180, 100, 255, 0.5)" },
+    { x: 380, y: 200, r: 90, col: "rgba(100, 255, 180, 0.4)" }
+  ];
+  ctx.globalCompositeOperation = "lighter";
+  for (const s of spots){
+    const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r);
+    g.addColorStop(0, s.col);
+    g.addColorStop(1, "transparent");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, TAU); ctx.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const envTex = pmrem.fromEquirectangular(tex).texture;
+  tex.dispose();
+  pmrem.dispose();
+  return envTex;
+}
+
+function makeCardTextures(n){
+  const tex = [];
+  for (let i = 0; i < n; i++){
+    const c = document.createElement("canvas");
+    c.width = 256; c.height = 384;
+    const ctx = c.getContext("2d");
+    const hue = (i * 360 / n + Math.random()*20) % 360;
+    const grad = ctx.createLinearGradient(0,0,0,c.height);
+    grad.addColorStop(0, `hsl(${hue}, 85%, 60%)`);
+    grad.addColorStop(1, `hsl(${(hue+60)%360}, 80%, 35%)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,c.width,c.height);
+    const kind = i % 5;
+    ctx.globalCompositeOperation = "lighter";
+    if (kind === 0){
+      for (let k = 0; k < 40; k++){
+        ctx.fillStyle = `hsla(${(hue+180)%360}, 100%, 70%, 0.4)`;
+        ctx.beginPath();
+        ctx.arc(Math.random()*c.width, Math.random()*c.height, 8+Math.random()*30, 0, TAU);
+        ctx.fill();
+      }
+    } else if (kind === 1){
+      ctx.fillStyle = `hsla(${(hue+90)%360}, 100%, 80%, 0.5)`;
+      for (let y = 0; y < c.height; y += 24) ctx.fillRect(0, y, c.width, 8);
+    } else if (kind === 2){
+      ctx.fillStyle = `hsla(${(hue+200)%360}, 100%, 70%, 0.6)`;
+      for (let x = 0; x < c.width; x += 16)
+        for (let y = 0; y < c.height; y += 16)
+          if ((x+y) % 32 === 0) ctx.fillRect(x, y, 8, 8);
+    } else if (kind === 3){
+      ctx.strokeStyle = `hsla(${(hue+120)%360}, 100%, 85%, 0.5)`;
+      ctx.lineWidth = 2;
+      for (let k = 0; k < 20; k++){
+        ctx.beginPath();
+        ctx.arc(c.width/2, c.height/2, 10 + k*8, 0, TAU); ctx.stroke();
+      }
+    } else {
+      const img = ctx.getImageData(0,0,c.width,c.height);
+      for (let p = 0; p < img.data.length; p += 4){
+        const v = Math.random() * 60 - 30;
+        img.data[p]   = clamp(img.data[p]   + v, 0, 255);
+        img.data[p+1] = clamp(img.data[p+1] + v, 0, 255);
+        img.data[p+2] = clamp(img.data[p+2] + v, 0, 255);
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = "rgba(255,255,255,.85)";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(3, 3, c.width-6, c.height-6);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    tex.push(t);
+  }
+  return tex;
+}
+
+function clearThree(){
+  if (!renderer) return;
+  renderer.clear();
+  for (const k of Object.keys(obj3D)){
+    const o = obj3D[k];
+    if (o && o.parent) o.parent.remove(o);
+    if (o && o.geometry) o.geometry.dispose();
+    if (o && o.material){
+      if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
+      else o.material.dispose();
+    }
+    delete obj3D[k];
+  }
+}
+
+// ===========================================================================
+//  3D SCENE: SPHERE (PBR, physical material with clearcoat)
+// ===========================================================================
+function buildSceneSphere(){
+  clearThree();
+  const geo = new THREE.IcosahedronGeometry(1.3, 5);
+  // translucent neon shell
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x9cff6b, transparent: true, opacity: 0.35,
+    side: THREE.DoubleSide, depthWrite: false
+  });
+  const sphere = new THREE.Mesh(geo, mat);
+  scene.add(sphere);
+  obj3D.sphere = sphere;
+  // bright wireframe overlay
+  const wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
+  const wire = new THREE.LineSegments(new THREE.WireframeGeometry(geo), wireMat);
+  sphere.add(wire);
+  obj3D.sphereWire = wire;
+  // dot pips at a few vertices
+  const dotGeo = new THREE.SphereGeometry(0.06, 10, 8);
+  const dotMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  obj3D.sphereDots = [];
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i += 7){
+    const d = new THREE.Mesh(dotGeo, dotMat);
+    d.position.set(pos.array[i*3], pos.array[i*3+1], pos.array[i*3+2]);
+    sphere.add(d);
+    obj3D.sphereDots.push(d);
+  }
+  obj3D.sphereBase = geo.attributes.position.array.slice();
+  obj3D.rot = { x: 0, y: 0 };
+  obj3D.scale = 1;
+}
+function updateSceneSphere(hp, dt, hue){
+  if (!obj3D.sphere) buildSceneSphere();
+  const sphere = obj3D.sphere;
+
+  if (hp.palms.length === 2){
+    const a = hp.palms[0], b = hp.palms[1];
+    const d = Math.hypot(a.x-b.x, a.y-b.y);
+    obj3D.scale = lerp(obj3D.scale, clamp(d / (W * 0.3), 0.4, 2.6), 0.15);
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const world = screenToWorld(mx, my, 0);
+    sphere.position.x = lerp(sphere.position.x, world.x, 0.2);
+    sphere.position.y = lerp(sphere.position.y, world.y, 0.2);
+    obj3D.rot.x = lerp(obj3D.rot.x, (b.y - a.y) / H * 1.2, 0.1);
+    obj3D.rot.y += dt * (0.4 + Math.abs(a.x - b.x) / W * 2);
+  } else if (hp.palms.length === 1){
+    const world = screenToWorld(hp.palms[0].x, hp.palms[0].y, 0);
+    sphere.position.x = lerp(sphere.position.x, world.x, 0.15);
+    sphere.position.y = lerp(sphere.position.y, world.y, 0.15);
+    obj3D.rot.y += dt * 0.4;
+  } else {
+    sphere.position.x = lerp(sphere.position.x, 0, 0.08);
+    sphere.position.y = lerp(sphere.position.y, 0, 0.08);
+    obj3D.rot.y += dt * 0.3;
+  }
+
+  sphere.scale.setScalar(obj3D.scale);
+  sphere.rotation.x = obj3D.rot.x;
+  sphere.rotation.y = obj3D.rot.y;
+
+  sphere.material.color.setHSL(((hue+120)%360)/360, 1.0, 0.6);
+}
+
+// ===========================================================================
+//  3D SCENE: BLOB (physical, soft)
+// ===========================================================================
+function buildSceneBlob(){
+  clearThree();
+  const geo = new THREE.IcosahedronGeometry(1.6, 6);
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0xc689ff, metalness: 0.3, roughness: 0.2,
+    clearcoat: 0.9, clearcoatRoughness: 0.15,
+    transmission: 0.15, thickness: 1.0,
+    envMapIntensity: 1.3,
+    emissive: 0x221144, emissiveIntensity: 0.3
+  });
+  const blob = new THREE.Mesh(geo, mat);
+  scene.add(blob);
+  obj3D.blob = blob;
+  obj3D.blobBase = geo.attributes.position.array.slice();
+}
+function updateSceneBlob(hp, dt, hue){
+  if (!obj3D.blob) buildSceneBlob();
+  const blob = obj3D.blob;
+  const pos = blob.geometry.attributes.position;
+  const base = obj3D.blobBase;
+  const tipsWorld = hp.tips.map(t => screenToWorld(t.x, t.y, 0));
+  const t = performance.now() * 0.001;
+  for (let i = 0; i < pos.count; i++){
+    const bx = base[i*3], by = base[i*3+1], bz = base[i*3+2];
+    let dx = bx, dy = by, dz = bz;
+    const wob = 0.05 * Math.sin(bx*3 + t) * Math.cos(by*3 + t*0.7);
+    dx += bx * wob; dy += by * wob; dz += bz * wob;
+    for (const tp of tipsWorld){
+      const vx = tp.x - dx, vy = tp.y - dy, vz = -dz;
+      const d2 = vx*vx + vy*vy + vz*vz + 0.5;
+      const F = 1.4 / (d2 * 1.2);
+      dx += vx * F; dy += vy * F; dz += vz * F;
+    }
+    pos.array[i*3]=dx; pos.array[i*3+1]=dy; pos.array[i*3+2]=dz;
+  }
+  pos.needsUpdate = true;
+  blob.geometry.computeVertexNormals();
+  blob.rotation.y += dt * 0.08;
+  blob.material.color.setHSL((hue%360)/360, 0.75, 0.65);
+  blob.material.emissive.setHSL(((hue+180)%360)/360, 0.9, 0.15);
+}
+
+// ===========================================================================
+//  3D SCENE: WAVE
+// ===========================================================================
+function buildSceneWave(){
+  clearThree();
+  const SEG = 100;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((SEG+1)*3), 3));
+  const mat = new THREE.LineBasicMaterial({ color: 0x44e0ff, transparent: true, opacity: 0.95 });
+  const line = new THREE.Line(geo, mat);
+  scene.add(line);
+  obj3D.wave = line;
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((SEG+1)*3), 3));
+  const pMat = new THREE.PointsMaterial({ color: 0xff2d7a, size: 0.16, transparent:true, opacity:0.9, blending:THREE.AdditiveBlending, depthWrite:false });
+  const pts = new THREE.Points(pGeo, pMat);
+  scene.add(pts);
+  obj3D.waveGlow = pts;
+  obj3D.waveSeg = SEG;
+  const orbMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.1, clearcoat: 1, emissive: 0xff2d7a, emissiveIntensity: 0.5 });
+  const orbMat2 = orbMat.clone(); orbMat2.emissive = new THREE.Color(0x44e0ff);
+  obj3D.orbA = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 24), orbMat);
+  obj3D.orbB = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 24), orbMat2);
+  scene.add(obj3D.orbA, obj3D.orbB);
+}
+function updateSceneWave(hp, dt, hue, force){
+  if (!obj3D.wave) buildSceneWave();
+  const SEG = obj3D.waveSeg;
+  const pos = obj3D.wave.geometry.attributes.position;
+  const gpos= obj3D.waveGlow.geometry.attributes.position;
+  const t = performance.now() * 0.001;
+  let A, B;
+  if (hp.palms.length >= 2){
+    A = screenToWorld(hp.palms[0].x, hp.palms[0].y, 0);
+    B = screenToWorld(hp.palms[1].x, hp.palms[1].y, 0);
+    obj3D.orbA.visible = obj3D.orbB.visible = true;
+  } else if (hp.palms.length === 1){
+    const p = screenToWorld(hp.palms[0].x, hp.palms[0].y, 0);
+    A = {x:p.x-3, y:p.y, z:0}; B = p;
+    obj3D.orbA.visible = false; obj3D.orbB.visible = true;
+  } else {
+    A = {x:-3,y:0,z:0}; B = {x:3,y:0,z:0};
+    obj3D.orbA.visible = obj3D.orbB.visible = false;
+  }
+  obj3D.orbA.position.set(A.x, A.y, A.z);
+  obj3D.orbB.position.set(B.x, B.y, B.z);
+  const d = Math.hypot(A.x-B.x, A.y-B.y);
+  const amp = 0.15 + Math.min(d, 10) * 0.08 * force;
+  const freq = 2 + d * 0.4;
+  for (let i = 0; i <= SEG; i++){
+    const u = i / SEG;
+    const x = lerp(A.x, B.x, u);
+    const y = lerp(A.y, B.y, u);
+    const env = Math.sin(u * Math.PI);
+    const yW = y + Math.sin(u * freq + t * 4) * amp * env;
+    const zW =     Math.cos(u * freq + t * 3) * amp * env;
+    pos.array[i*3]=x; pos.array[i*3+1]=yW; pos.array[i*3+2]=zW;
+    gpos.array[i*3]=x; gpos.array[i*3+1]=yW; gpos.array[i*3+2]=zW;
+  }
+  pos.needsUpdate = true; gpos.needsUpdate = true;
+  obj3D.wave.material.color.setHSL(((hue)%360)/360, 1, 0.6);
+  obj3D.waveGlow.material.color.setHSL(((hue+60)%360)/360, 1, 0.65);
+}
+
+// ===========================================================================
+//  3D SCENE: GALAXY
+// ===========================================================================
+function buildSceneGalaxy(count){
+  clearThree();
+  const n = count;
+  const geo = new THREE.BufferGeometry();
+  const positions = new Float32Array(n * 3);
+  const colors    = new Float32Array(n * 3);
+  const vel       = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    const r = 2 + Math.random() * 5;
+    const theta = Math.random() * TAU;
+    const phi = Math.acos(2*Math.random() - 1);
+    positions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+    positions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i*3+2] = r * Math.cos(phi);
+    const col = new THREE.Color(`hsl(${Math.random()*360}, 90%, 70%)`);
+    colors[i*3]=col.r; colors[i*3+1]=col.g; colors[i*3+2]=col.b;
+  }
+  geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.08, vertexColors: true, transparent: true, opacity: 0.95,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  });
+  const pts = new THREE.Points(geo, mat);
+  scene.add(pts);
+  obj3D.galaxy = pts;
+  obj3D.galaxyVel = vel;
+}
+function updateSceneGalaxy(hp, dt, hue, force){
+  const count = parseInt(el("s-count").value, 10);
+  if (!obj3D.galaxy || obj3D.galaxy.geometry.attributes.position.count !== count) buildSceneGalaxy(count);
+  const pos = obj3D.galaxy.geometry.attributes.position;
+  const vel = obj3D.galaxyVel;
+  const tips  = hp.tips.map(t => screenToWorld(t.x, t.y, 0));
+  const palms = hp.palms.map(p => screenToWorld(p.x, p.y, 0));
+  for (let i = 0; i < pos.count; i++){
+    const px = pos.array[i*3], py = pos.array[i*3+1], pz = pos.array[i*3+2];
+    let fx = 0, fy = 0, fz = 0;
+    for (const p of palms){
+      const dx = px - p.x, dy = py - p.y, dz = pz;
+      const d2 = dx*dx + dy*dy + dz*dz + 1;
+      const F = 0.6 * force / d2;
+      fx += dx*F; fy += dy*F; fz += dz*F;
+    }
+    for (const t of tips){
+      const dx = t.x - px, dy = t.y - py, dz = -pz;
+      const d2 = dx*dx + dy*dy + dz*dz + 0.5;
+      const F = 0.4 * force / d2;
+      fx += dx*F; fy += dy*F; fz += dz*F;
+    }
+    const r = Math.hypot(px, py, pz);
+    const ret = (4 - r) * 0.004;
+    fx += px/(r+1e-6) * ret; fy += py/(r+1e-6) * ret; fz += pz/(r+1e-6) * ret;
+    vel[i*3]   = vel[i*3]  * 0.95 + fx * dt * 3;
+    vel[i*3+1] = vel[i*3+1]* 0.95 + fy * dt * 3;
+    vel[i*3+2] = vel[i*3+2]* 0.95 + fz * dt * 3;
+    pos.array[i*3]   += vel[i*3];
+    pos.array[i*3+1] += vel[i*3+1];
+    pos.array[i*3+2] += vel[i*3+2];
+  }
+  pos.needsUpdate = true;
+  obj3D.galaxy.rotation.y += dt * 0.1;
+}
+
+// ===========================================================================
+//  3D SCENE: CARD STACK (physical materials, fresnel edges)
+// ===========================================================================
+function buildSceneCards(){
+  clearThree();
+  const CARDS = 14;
+  const group = new THREE.Group();
+  const cards = [];
+  const geo = new THREE.PlaneGeometry(1.4, 2.1);
+  for (let i = 0; i < CARDS; i++){
+    const mat = new THREE.MeshPhysicalMaterial({
+      map: cardTextures[i % cardTextures.length],
+      metalness: 0.2, roughness: 0.4,
+      clearcoat: 0.6, clearcoatRoughness: 0.3,
+      side: THREE.DoubleSide, transparent: true, envMapIntensity: 0.9
+    });
+    const m = new THREE.Mesh(geo, mat);
+    group.add(m);
+    cards.push(m);
+  }
+  scene.add(group);
+  obj3D.cardGroup = group;
+  obj3D.cards = cards;
+}
+function updateSceneCards(hp, dt, hue, pinches){
+  if (!obj3D.cardGroup) buildSceneCards();
+  const grp = obj3D.cardGroup;
+  const cards = obj3D.cards;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+
+  // two-fist rotation takes priority
+  if (applyTwoFistRotation(grp, pinches, "cards")){
+    grp.scale.setScalar(spawn.spawnedScale);
+    for (let i = 0; i < cards.length; i++){ cards[i].scale.setScalar(spawn.spawnedScale); }
+    showHint("spin · move your fists to rotate");
+    return;
+  }
+
+  const pA = pinches[0] && pinches[0].pinching ? pinches[0] : null;
+  const pB = pinches[1] && pinches[1].pinching ? pinches[1] : null;
+  let A, B;
+  if (pA && pB){
+    A = screenToWorld(pA.x, pA.y, 0);
+    B = screenToWorld(pB.x, pB.y, 0);
+  } else if (pA || pB){
+    const p = pA || pB;
+    A = screenToWorld(p.thumbX, p.thumbY, 0);
+    B = screenToWorld(p.indexX, p.indexY, 0);
+  } else {
+    // no pinch — keep the last pose, just animate the inner wobble
+    grp.scale.setScalar(spawn.spawnedScale);
+    const t2 = performance.now() * 0.001;
+    for (let i = 0; i < cards.length; i++){
+      const c = cards[i];
+      const t = t2 + i * 0.3;
+      c.rotation.y = Math.sin(t*0.7 + i*0.4)*0.5 + Math.PI*0.08*i/cards.length;
+      c.rotation.x = Math.sin(t*0.5 + i)*0.08;
+    }
+    return;
+  }
+  const mid = { x:(A.x+B.x)/2, y:(A.y+B.y)/2 };
+  const d = Math.hypot(A.x-B.x, A.y-B.y);
+  grp.position.set(mid.x, mid.y, 0);
+  grp.rotation.z = Math.atan2(B.y-A.y, B.x-A.x);
+  const spacing = d / cards.length;
+  for (let i = 0; i < cards.length; i++){
+    const u = (i - (cards.length-1)/2) * spacing;
+    const c = cards[i];
+    const t = performance.now() * 0.001 + i * 0.3;
+    c.position.set(u, Math.sin(t)*0.08, Math.cos(t*0.8 + i)*0.15);
+    c.rotation.y = Math.sin(t*0.7 + i*0.4)*0.5 + Math.PI*0.08*i/cards.length;
+    c.rotation.x = Math.sin(t*0.5 + i)*0.08;
+    c.scale.setScalar(spawn.spawnedScale * (0.95 + 0.1*Math.sin(t+i)));
+  }
+  grp.scale.setScalar(spawn.spawnedScale);
+}
+
+// ===========================================================================
+//  3D SCENE: LIVE CANVAS (webcam on a stretched plane with wave)
+// ===========================================================================
+function buildSceneCard(){
+  clearThree();
+  const geo = new THREE.PlaneGeometry(1, 1, 32, 32);
+  const mat = new THREE.MeshPhysicalMaterial({
+    map: videoTexture, side: THREE.DoubleSide, transparent: true,
+    metalness: 0.3, roughness: 0.35, clearcoat: 1, clearcoatRoughness: 0.1,
+    envMapIntensity: 0.8
+  });
+  const card = new THREE.Mesh(geo, mat);
+  scene.add(card);
+  obj3D.card = card;
+  obj3D.cardBase = geo.attributes.position.array.slice();
+  const edges = new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1));
+  const frame = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 }));
+  card.add(frame);
+  obj3D.cardFrame = frame;
+}
+function updateSceneCard(hp, dt, hue, pinches){
+  if (!obj3D.card) buildSceneCard();
+  const card = obj3D.card;
+  if (!spawn.active){ card.scale.setScalar(spawn.spawnedScale); return; }
+
+  if (applyTwoFistRotation(card, pinches, "card")){
+    card.scale.setScalar(spawn.spawnedScale * 2);
+    showHint("spin · move your fists to rotate");
+    return;
+  }
+
+  const pA = pinches[0] && pinches[0].pinching ? pinches[0] : null;
+  const pB = pinches[1] && pinches[1].pinching ? pinches[1] : null;
+  let A, B;
+  if (pA && pB){
+    A = screenToWorld(pA.x, pA.y, 0);
+    B = screenToWorld(pB.x, pB.y, 0);
+  } else if (pA || pB){
+    const p = pA || pB;
+    A = screenToWorld(p.thumbX, p.thumbY, 0);
+    B = screenToWorld(p.indexX, p.indexY, 0);
+  } else {
+    // keep the last pose; only refresh the wave animation
+    card.scale.setScalar(card.scale.x);
+    return;
+  }
+  const mid = { x:(A.x+B.x)/2, y:(A.y+B.y)/2 };
+  const d = Math.hypot(B.x-A.x, B.y-A.y);
+  card.position.set(mid.x, mid.y, 0);
+  card.rotation.z = Math.atan2(B.y-A.y, B.x-A.x);
+  card.scale.x = clamp(d, 0.3, 40) * spawn.spawnedScale;
+  card.scale.y = clamp(d * 0.65, 0.3, 30) * spawn.spawnedScale;
+  const pos = card.geometry.attributes.position;
+  const base = obj3D.cardBase;
+  const t = performance.now() * 0.001;
+  for (let i = 0; i < pos.count; i++){
+    const bx = base[i*3], by = base[i*3+1];
+    pos.array[i*3]   = bx;
+    pos.array[i*3+1] = by;
+    pos.array[i*3+2] = Math.sin(bx*4 + t*2)*0.03 + Math.cos(by*4 + t)*0.03;
+  }
+  pos.needsUpdate = true;
+  card.geometry.computeVertexNormals();
+  obj3D.cardFrame.material.color.setHSL((hue%360)/360, 1, 0.75);
+}
+
+// ===========================================================================
+//  3D SCENE: BALL (ex-"lens") — a deformable orb with 6 directional handles.
+//    PINCH on a handle   → grab, drag to deform
+//    FIST                → translate the orb
+//    BOTH PINCHES        → scale between pinch points
+// ===========================================================================
+const ball = {
+  handles: [],      // [{rest: Vector3, pos: Vector3}] × 6
+  grab: [null, null],
+  position: new THREE.Vector3(0, 0, 0),
+  scale: 1,
+  translateAnchor: null,
+  scaleAnchor: null,
+  baseVerts: null
+};
+
+function buildSceneLens(){
+  clearThree();
+  ball.handles = [];
+  const rest = [
+    new THREE.Vector3( 1, 0, 0), new THREE.Vector3(-1, 0, 0),
+    new THREE.Vector3( 0, 1, 0), new THREE.Vector3( 0,-1, 0),
+    new THREE.Vector3( 0, 0, 1), new THREE.Vector3( 0, 0,-1)
+  ];
+  for (const r of rest) ball.handles.push({ rest: r.clone(), pos: r.clone() });
+  ball.grab = [null, null];
+  ball.position.set(0, 0, 0);
+  ball.scale = 1;
+  ball.translateAnchor = null;
+  ball.scaleAnchor = null;
+
+  const group = new THREE.Group();
+  scene.add(group);
+  obj3D.ballGroup = group;
+
+  // base icosahedron, we deform its vertices toward handle offsets
+  const geo = new THREE.IcosahedronGeometry(1, 4);
+  ball.baseVerts = geo.attributes.position.array.slice();
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff4a9c, transparent: true, opacity: 0.4,
+    side: THREE.DoubleSide, depthWrite: false
+  });
+  const sphere = new THREE.Mesh(geo, mat);
+  group.add(sphere);
+  obj3D.ballMesh = sphere;
+
+  // wireframe shell
+  const wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
+  const wire = new THREE.LineSegments(new THREE.WireframeGeometry(geo), wireMat);
+  group.add(wire);
+  obj3D.ballWire = wire;
+
+  // 6 handle spheres
+  obj3D.ballHandles = [];
+  for (let i = 0; i < 6; i++){
+    const h = new THREE.Mesh(
+      new THREE.SphereGeometry(0.1, 20, 16),
+      new THREE.MeshBasicMaterial({ color: 0xfff2d0 })
+    );
+    group.add(h);
+    obj3D.ballHandles.push(h);
+  }
+}
+
+function handleWorldPosBall(i){
+  return ball.handles[i].pos.clone().multiplyScalar(ball.scale).add(ball.position);
+}
+
+function updateSceneLens(hp, dt, hue, pinches){
+  if (!ball.handles.length) buildSceneLens();
+
+  if (!spawn.active){
+    obj3D.ballGroup.scale.setScalar(spawn.spawnedScale);
+    return;
+  }
+
+  // two-fist rotation takes priority
+  if (applyTwoFistRotation(obj3D.ballGroup, pinches, "ball")){
+    obj3D.ballGroup.scale.setScalar(ball.scale * spawn.spawnedScale);
+    // ungrabbed handles spring back
+    for (let i = 0; i < 6; i++){ ball.handles[i].pos.lerp(ball.handles[i].rest, 0.04); }
+    // still update mesh so rotation visually works
+    const pos = obj3D.ballMesh.geometry.attributes.position;
+    const base = ball.baseVerts;
+    for (let v = 0; v < pos.count; v++){
+      const bx = base[v*3], by = base[v*3+1], bz = base[v*3+2];
+      let nx = bx, ny = by, nz = bz;
+      for (let h = 0; h < 6; h++){
+        const H = ball.handles[h];
+        const dx = H.rest.x - bx, dy = H.rest.y - by, dz = H.rest.z - bz;
+        const w = Math.exp(-(dx*dx + dy*dy + dz*dz) * 1.5);
+        nx += (H.pos.x - H.rest.x) * w;
+        ny += (H.pos.y - H.rest.y) * w;
+        nz += (H.pos.z - H.rest.z) * w;
+      }
+      pos.array[v*3]=nx; pos.array[v*3+1]=ny; pos.array[v*3+2]=nz;
+    }
+    pos.needsUpdate = true;
+    obj3D.ballMesh.geometry.computeVertexNormals();
+    for (let i = 0; i < 6; i++) obj3D.ballHandles[i].position.copy(ball.handles[i].pos);
+    showHint("spin · move your fists to rotate");
+    return;
+  }
+
+  const bothPinch = pinches[0].pinching && pinches[1].pinching;
+  const onePinch  = pinches[0].pinching ^ pinches[1].pinching;
+  const anyFist   = pinches[0].fist || pinches[1].fist;
+
+  // single-pinch summon: ball sits BETWEEN thumb and index, sized by their spread
+  if (onePinch && !anyFist){
+    const idx = pinches[0].pinching ? 0 : 1;
+    const p = pinches[idx];
+    // midpoint of thumb+index (world)
+    const T = screenToWorld(p.thumbX, p.thumbY, 0);
+    const I = screenToWorld(p.indexX, p.indexY, 0);
+    const midX = (T.x + I.x) / 2;
+    const midY = (T.y + I.y) / 2;
+    // scale = HALF the thumb-index distance (so the sphere just fits between them)
+    const spread = Math.hypot(T.x - I.x, T.y - I.y);
+    const targetScale = clamp(spread * 0.55, 0.1, 15);
+    ball.position.x = lerp(ball.position.x, midX, 0.35);
+    ball.position.y = lerp(ball.position.y, midY, 0.35);
+    ball.scale = lerp(ball.scale, targetScale, 0.3);
+    ball.grab[0] = ball.grab[1] = null;
+    // handles spring back
+    for (let i = 0; i < 6; i++){ ball.handles[i].pos.lerp(ball.handles[i].rest, 0.08); }
+    obj3D.ballGroup.position.copy(ball.position);
+    obj3D.ballGroup.scale.setScalar(ball.scale * spawn.spawnedScale);
+    // redraw mesh at base (undeformed)
+    const pos = obj3D.ballMesh.geometry.attributes.position;
+    const base = ball.baseVerts;
+    for (let v = 0; v < pos.count; v++){
+      pos.array[v*3]=base[v*3]; pos.array[v*3+1]=base[v*3+1]; pos.array[v*3+2]=base[v*3+2];
+    }
+    pos.needsUpdate = true;
+    for (let i = 0; i < 6; i++) obj3D.ballHandles[i].position.copy(ball.handles[i].pos);
+    obj3D.ballMesh.material.color.setHSL((hue%360)/360, 0.9, 0.55);
+    showHint("spread fingers to grow · pinch other hand to stretch · fist to move");
+    return;
+  }
+
+  // if both pinching: either scale (not touching a handle) or two-handle deform
+  // simpler: if both pinching AND no handle grab → scale
+  // check nearest handles for each pinching hand
+  const nearestHandle = [-1, -1];
+  for (let hi = 0; hi < 2; hi++){
+    const p = pinches[hi];
+    if (!p || !p.pinching || p.fist) continue;
+    let best = -1, bestD = 70;
+    for (let i = 0; i < 6; i++){
+      const sp = worldToScreen(handleWorldPosBall(i));
+      const d = Math.hypot(sp.x - p.x, sp.y - p.y);
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    nearestHandle[hi] = best;
+  }
+
+  // SCALE MODE: both pinching + neither on a handle
+  if (bothPinch && nearestHandle[0] === -1 && nearestHandle[1] === -1){
+    ball.grab[0] = ball.grab[1] = null;
+    ball.translateAnchor = null;
+    const pAw = screenToWorld(pinches[0].x, pinches[0].y, 0);
+    const pBw = screenToWorld(pinches[1].x, pinches[1].y, 0);
+    const dCurr = Math.hypot(pAw.x-pBw.x, pAw.y-pBw.y);
+    const midNow = { x:(pAw.x+pBw.x)/2, y:(pAw.y+pBw.y)/2 };
+    if (!ball.scaleAnchor){
+      ball.scaleAnchor = { distStart: dCurr, scaleStart: ball.scale, midStart: midNow, posStart: ball.position.clone() };
+    } else {
+      const sa = ball.scaleAnchor;
+      const ratio = clamp(dCurr / Math.max(0.001, sa.distStart), 0.2, 5);
+      ball.scale = clamp(sa.scaleStart * ratio, 0.3, 4);
+      ball.position.x = sa.posStart.x + (midNow.x - sa.midStart.x);
+      ball.position.y = sa.posStart.y + (midNow.y - sa.midStart.y);
+    }
+    showHint("stretch · move both pinches apart");
+  } else {
+    ball.scaleAnchor = null;
+
+    // FIST → translate
+    if (anyFist){
+      ball.grab[0] = ball.grab[1] = null;
+      const idx = pinches[0].fist ? 0 : 1;
+      const w = screenToWorld(pinches[idx].palmX, pinches[idx].palmY, 0);
+      if (!ball.translateAnchor || ball.translateAnchor.hand !== idx){
+        ball.translateAnchor = { hand: idx, pinchStart: new THREE.Vector3(w.x, w.y, 0), posStart: ball.position.clone() };
+      } else {
+        const a = ball.translateAnchor;
+        ball.position.x = a.posStart.x + (w.x - a.pinchStart.x);
+        ball.position.y = a.posStart.y + (w.y - a.pinchStart.y);
+      }
+      showHint("fist to move");
+    } else {
+      ball.translateAnchor = null;
+
+      // PINCH near handle → grab + deform
+      for (let hi = 0; hi < 2; hi++){
+        const p = pinches[hi];
+        if (!p || !p.pinching){ ball.grab[hi] = null; continue; }
+        if (ball.grab[hi] === null && nearestHandle[hi] >= 0) ball.grab[hi] = nearestHandle[hi];
+        if (ball.grab[hi] !== null){
+          const idx = ball.grab[hi];
+          const w = screenToWorld(p.x, p.y, 0);
+          const local = new THREE.Vector3(w.x - ball.position.x, w.y - ball.position.y, 0).divideScalar(Math.max(0.001, ball.scale));
+          ball.handles[idx].pos.lerp(local, 0.45);
+        }
+      }
+      const anyNear = nearestHandle[0] >= 0 || nearestHandle[1] >= 0;
+      showHint(anyNear ? "pinch to grab the handle" : "pinch a handle · fist to move · two pinches to scale");
+    }
+  }
+
+  // ungrabbed handles spring back
+  for (let i = 0; i < 6; i++){
+    if (ball.grab[0] === i || ball.grab[1] === i) continue;
+    ball.handles[i].pos.lerp(ball.handles[i].rest, 0.02);
+  }
+
+  // apply group transform
+  obj3D.ballGroup.position.copy(ball.position);
+  obj3D.ballGroup.scale.setScalar(ball.scale * spawn.spawnedScale);
+
+  // deform mesh vertices by weighted handle offsets
+  const pos = obj3D.ballMesh.geometry.attributes.position;
+  const base = ball.baseVerts;
+  for (let v = 0; v < pos.count; v++){
+    const bx = base[v*3], by = base[v*3+1], bz = base[v*3+2];
+    let nx = bx, ny = by, nz = bz;
+    for (let h = 0; h < 6; h++){
+      const H = ball.handles[h];
+      const dx = H.rest.x - bx, dy = H.rest.y - by, dz = H.rest.z - bz;
+      const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      // gaussian weight centered on rest handle
+      const w = Math.exp(-d * d * 1.5);
+      nx += (H.pos.x - H.rest.x) * w;
+      ny += (H.pos.y - H.rest.y) * w;
+      nz += (H.pos.z - H.rest.z) * w;
+    }
+    pos.array[v*3]   = nx;
+    pos.array[v*3+1] = ny;
+    pos.array[v*3+2] = nz;
+  }
+  pos.needsUpdate = true;
+  obj3D.ballMesh.geometry.computeVertexNormals();
+  // rebuild wireframe lines each frame so the overlay matches the deformed mesh
+  obj3D.ballGroup.remove(obj3D.ballWire);
+  obj3D.ballWire.geometry.dispose();
+  obj3D.ballWire = new THREE.LineSegments(
+    new THREE.WireframeGeometry(obj3D.ballMesh.geometry),
+    obj3D.ballWire.material
+  );
+  obj3D.ballGroup.add(obj3D.ballWire);
+
+  // handles + hover highlight
+  for (let i = 0; i < 6; i++){
+    const h = obj3D.ballHandles[i];
+    h.position.copy(ball.handles[i].pos);
+    const grabbed = ball.grab[0] === i || ball.grab[1] === i;
+    const near = nearestHandle[0] === i || nearestHandle[1] === i;
+    h.scale.setScalar(grabbed ? 1.6 : (near ? 1.25 : 1.0));
+    h.material.color.setHex(grabbed ? 0xffffff : (near ? 0xfff0a0 : 0xfff2d0));
+  }
+
+  obj3D.ballMesh.material.color.setHSL((hue%360)/360, 0.9, 0.55);
+}
+
+// ===========================================================================
+//  3D SCENE: TAFFY (iridescent twisted cylinder)
+// ===========================================================================
+function buildSceneTaffy(){
+  clearThree();
+  const geo = new THREE.CylinderGeometry(0.4, 0.4, 2, 48, 64, true);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 }, uHue: { value: 300 }, uTwist: { value: 0.0 }
+    },
+    transparent: true, side: THREE.DoubleSide,
+    vertexShader: [
+      "uniform float uTime, uTwist;",
+      "varying vec3 vPos;",
+      "varying vec3 vN;",
+      "void main(){",
+      "  float y = position.y;",
+      "  float ang = y * uTwist + uTime * 1.5;",
+      "  float cx = cos(ang), sx = sin(ang);",
+      "  vec3 p = position;",
+      "  p.x = cx * position.x - sx * position.z;",
+      "  p.z = sx * position.x + cx * position.z;",
+      "  float wob = 1.0 + 0.18 * sin(y*4.0 + uTime*3.0);",
+      "  p.x *= wob; p.z *= wob;",
+      "  vPos = p;",
+      "  vN = normalize(normalMatrix * normal);",
+      "  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);",
+      "}"
+    ].join("\n"),
+    fragmentShader: [
+      "precision highp float;",
+      "uniform float uTime, uHue;",
+      "varying vec3 vPos;",
+      "varying vec3 vN;",
+      "vec3 hsv2rgb(vec3 c){",
+      "  vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);",
+      "  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);",
+      "  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);",
+      "}",
+      "void main(){",
+      "  float a = atan(vPos.z, vPos.x);",
+      "  float v = vPos.y;",
+      "  float band = sin(a*4.0 + v*3.0 + uTime*2.0);",
+      "  float fres = pow(1.0 - abs(vN.z), 2.5);",
+      "  float hue = (uHue + band*80.0 + v*50.0 + fres*120.0) / 360.0;",
+      "  vec3 col = hsv2rgb(vec3(fract(hue), 0.95, 1.0));",
+      "  col += fres * 0.8;",
+      "  gl_FragColor = vec4(col, 0.96);",
+      "}"
+    ].join("\n")
+  });
+  const taffy = new THREE.Mesh(geo, mat);
+  scene.add(taffy);
+  obj3D.taffy = taffy;
+  obj3D.taffyMat = mat;
+  const capGeo = new THREE.SphereGeometry(0.4, 32, 24);
+  obj3D.capA = new THREE.Mesh(capGeo, mat);
+  obj3D.capB = new THREE.Mesh(capGeo, mat);
+  scene.add(obj3D.capA, obj3D.capB);
+}
+function updateSceneTaffy(hp, dt, hue, pinches){
+  if (!obj3D.taffy) buildSceneTaffy();
+  if (!spawn.active){
+    obj3D.taffy.scale.setScalar(spawn.spawnedScale);
+    obj3D.capA.scale.setScalar(spawn.spawnedScale);
+    obj3D.capB.scale.setScalar(spawn.spawnedScale);
+    return;
+  }
+
+  if (applyTwoFistRotation(obj3D.taffy, pinches, "taffy")){
+    const s = spawn.spawnedScale * 1.5;
+    obj3D.taffy.scale.set(0.6*s, 2*s, 0.6*s);
+    obj3D.capA.scale.setScalar(0.5*s); obj3D.capB.scale.setScalar(0.5*s);
+    obj3D.taffyMat.uniforms.uTime.value = performance.now() * 0.001;
+    obj3D.taffyMat.uniforms.uHue.value  = hue;
+    showHint("spin · move your fists to rotate");
+    return;
+  }
+
+  const pA = pinches[0] && pinches[0].pinching ? pinches[0] : null;
+  const pB = pinches[1] && pinches[1].pinching ? pinches[1] : null;
+  let A, B;
+  if (pA && pB){
+    A = screenToWorld(pA.x, pA.y, 0);
+    B = screenToWorld(pB.x, pB.y, 0);
+  } else if (pA || pB){
+    const p = pA || pB;
+    A = screenToWorld(p.thumbX, p.thumbY, 0);
+    B = screenToWorld(p.indexX, p.indexY, 0);
+  } else {
+    // no pinch — keep last pose, just animate the shader
+    obj3D.taffyMat.uniforms.uTime.value = performance.now() * 0.001;
+    obj3D.taffyMat.uniforms.uHue.value  = hue;
+    return;
+  }
+  const mid = { x:(A.x+B.x)/2, y:(A.y+B.y)/2 };
+  const d = Math.hypot(B.x-A.x, B.y-A.y);
+  const angle = Math.atan2(B.y-A.y, B.x-A.x);
+  obj3D.taffy.position.set(mid.x, mid.y, 0);
+  obj3D.taffy.rotation.z = angle - Math.PI/2;
+  const rad = spawn.spawnedScale * (0.7 + 0.3 * Math.min(d, 20) / 4);
+  obj3D.taffy.scale.set(rad, spawn.spawnedScale * clamp(d*0.5, 0.3, 25), rad);
+  obj3D.capA.position.set(A.x, A.y, 0);
+  obj3D.capB.position.set(B.x, B.y, 0);
+  obj3D.capA.scale.setScalar(spawn.spawnedScale * 0.55);
+  obj3D.capB.scale.setScalar(spawn.spawnedScale * 0.55);
+  obj3D.taffyMat.uniforms.uTime.value = performance.now() * 0.001;
+  obj3D.taffyMat.uniforms.uHue.value  = hue;
+  obj3D.taffyMat.uniforms.uTwist.value= 0.6 + d * 0.1;
+}
+
+// ===========================================================================
+//  3D SCENE: AIR DRAW
+//    PINCH on empty space       → start drawing a stroke
+//    RELEASE pinch              → stroke materializes (outline + auto-fill)
+//    PINCH near a stroke        → grab + translate it
+//    PINCH BOTH HANDS on stroke → scale it
+// ===========================================================================
+const drawState = {
+  strokes: [],                   // array of stroke objects (see shape below)
+  activePerHand: [null, null],   // per-hand in-progress NEW stroke index
+  colorIdx: 0
+};
+// each stroke: {
+//   group:    THREE.Group holding fill + tube + wire (local coords centered at 0)
+//   points:   Vector3[] in LOCAL space
+//   color:    hex
+//   finalized:bool
+//   centroidWorld: Vector3 (where the group currently sits)
+//   scale:    number
+//   drawPreview: Line (shown while being drawn)
+//   grabHand: null | 0 | 1 (single-hand translate)
+//   grabTrans:{pinchStart, posStart}
+//   scaleAnchor: {distStart, scaleStart, midStart, posStart}
+// }
+const DRAW_PALETTE = [0x44e0ff, 0xff2d7a, 0x9cff6b, 0xffd166, 0xc689ff];
+
+function buildSceneDraw(){
+  clearThree();
+  drawState.strokes = [];
+  drawState.activePerHand = [null, null];
+  obj3D.drawRoot = new THREE.Group();
+  scene.add(obj3D.drawRoot);
+  // pinch cursors
+  obj3D.cursors = [];
+  for (let i = 0; i < 2; i++){
+    const c = new THREE.Mesh(
+      new THREE.SphereGeometry(0.1, 20, 16),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 })
+    );
+    scene.add(c);
+    obj3D.cursors.push(c);
+  }
+}
+
+function finalizeStroke(idx){
+  const s = drawState.strokes[idx];
+  if (!s || s.points.length < 2) return;
+  // dispose preview
+  if (s.drawPreview){ obj3D.drawRoot.remove(s.drawPreview); s.drawPreview.geometry.dispose(); s.drawPreview.material.dispose(); s.drawPreview = null; }
+
+  // compute centroid in world space
+  const worldPts = s.points;
+  const cx = worldPts.reduce((a,p)=>a+p.x,0) / worldPts.length;
+  const cy = worldPts.reduce((a,p)=>a+p.y,0) / worldPts.length;
+  const cz = worldPts.reduce((a,p)=>a+p.z,0) / worldPts.length;
+  s.centroidWorld = new THREE.Vector3(cx, cy, cz);
+  s.scale = 1;
+
+  // convert points to LOCAL space (relative to centroid)
+  const local = worldPts.map(p => new THREE.Vector3(p.x - cx, p.y - cy, p.z - cz));
+  s.points = local;
+
+  const group = new THREE.Group();
+  group.position.copy(s.centroidWorld);
+
+  // outline tube
+  const curve = new THREE.CatmullRomCurve3(local, true); // closed curve → auto-close
+  const tube = new THREE.TubeGeometry(curve, Math.min(240, local.length*4), 0.04, 8, true);
+  const tubeMesh = new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ color: s.color, transparent: true, opacity: 0.95 }));
+  group.add(tubeMesh);
+
+  // auto-fill: triangle fan from stroke centroid (local 0,0,0) to adjacent points
+  const fillGeo = new THREE.BufferGeometry();
+  const faceCount = local.length;
+  const fillVerts = new Float32Array(faceCount * 3 * 3);
+  for (let i = 0; i < faceCount; i++){
+    const p0 = local[i];
+    const p1 = local[(i+1) % faceCount];
+    // triangle: center, p0, p1
+    fillVerts[i*9+0] = 0;    fillVerts[i*9+1] = 0;    fillVerts[i*9+2] = 0;
+    fillVerts[i*9+3] = p0.x; fillVerts[i*9+4] = p0.y; fillVerts[i*9+5] = p0.z;
+    fillVerts[i*9+6] = p1.x; fillVerts[i*9+7] = p1.y; fillVerts[i*9+8] = p1.z;
+  }
+  fillGeo.setAttribute("position", new THREE.BufferAttribute(fillVerts, 3));
+  fillGeo.computeVertexNormals();
+  const fillMat = new THREE.MeshBasicMaterial({
+    color: s.color, transparent: true, opacity: 0.3,
+    side: THREE.DoubleSide, depthWrite: false
+  });
+  const fillMesh = new THREE.Mesh(fillGeo, fillMat);
+  group.add(fillMesh);
+
+  // soft white wire overlay on the fill triangles for the holo feel
+  const wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
+  const wireGeo = new THREE.BufferGeometry();
+  const wireLines = new Float32Array(faceCount * 2 * 3);
+  for (let i = 0; i < faceCount; i++){
+    wireLines[i*6+0]=0; wireLines[i*6+1]=0; wireLines[i*6+2]=0;
+    wireLines[i*6+3]=local[i].x; wireLines[i*6+4]=local[i].y; wireLines[i*6+5]=local[i].z;
+  }
+  wireGeo.setAttribute("position", new THREE.BufferAttribute(wireLines, 3));
+  const wire = new THREE.LineSegments(wireGeo, wireMat);
+  group.add(wire);
+
+  obj3D.drawRoot.add(group);
+  s.group = group;
+  s.finalized = true;
+  s.grabHand = null;
+  s.grabTrans = null;
+  s.scaleAnchor = null;
+}
+
+// nearest stroke to a SCREEN point, within radius pixels — considers the stroke's bounding sphere
+function strokeNearScreen(sx, sy, radius){
+  let best = -1, bestD = radius;
+  for (let i = 0; i < drawState.strokes.length; i++){
+    const s = drawState.strokes[i];
+    if (!s.finalized) continue;
+    // check bounding radius: max distance from centroid to any point * current scale
+    let maxR = 0;
+    for (const p of s.points) maxR = Math.max(maxR, Math.hypot(p.x, p.y, p.z));
+    maxR *= s.scale;
+    // centroid in screen
+    const cs = worldToScreen(s.centroidWorld);
+    const d = Math.hypot(cs.x - sx, cs.y - sy);
+    // consider "near" if within projected bounding radius + extra tolerance
+    const tol = Math.max(radius, maxR * 60); // rough world→px conversion
+    if (d < tol && d < bestD * 3){ // keep slightly loose
+      if (d < bestD){ bestD = d; best = i; }
+    }
+  }
+  return best;
+}
+
+function updateSceneDraw(pinches, dt, hue){
+  if (!obj3D.drawRoot) buildSceneDraw();
+
+  // cursors
+  for (let i = 0; i < 2; i++){
+    const c = obj3D.cursors[i];
+    const p = pinches[i];
+    if (p && (p.pinching || !p.fist)){
+      const w = screenToWorld(p.x, p.y, 0);
+      c.position.set(w.x, w.y, 0);
+      c.material.opacity = lerp(c.material.opacity, p.pinching ? 0.95 : 0.3, 0.3);
+      c.material.color.setHex(p.pinching ? 0xffffff : 0x888899);
+      c.scale.setScalar(p.pinching ? 0.5 + p.strength*0.6 : 0.9);
+    } else {
+      c.material.opacity = lerp(c.material.opacity, 0, 0.2);
+    }
+  }
+
+  // ---- find existing-stroke interactions first ----
+  // what stroke (if any) is each pinching hand touching?
+  const touching = [-1, -1];
+  for (let hi = 0; hi < 2; hi++){
+    const p = pinches[hi];
+    if (!p || !p.pinching) continue;
+    // only check if this hand is NOT mid-draw of a new stroke
+    if (drawState.activePerHand[hi] !== null) continue;
+    touching[hi] = strokeNearScreen(p.x, p.y, 90);
+  }
+
+  // scale case: both hands pinching the same stroke
+  if (touching[0] >= 0 && touching[0] === touching[1]){
+    const idx = touching[0];
+    const s = drawState.strokes[idx];
+    const pAw = screenToWorld(pinches[0].x, pinches[0].y, 0);
+    const pBw = screenToWorld(pinches[1].x, pinches[1].y, 0);
+    const dCurr = Math.hypot(pAw.x-pBw.x, pAw.y-pBw.y);
+    const midNow = { x:(pAw.x+pBw.x)/2, y:(pAw.y+pBw.y)/2 };
+    if (!s.scaleAnchor){
+      s.scaleAnchor = { distStart: dCurr, scaleStart: s.scale, midStart: midNow, posStart: s.centroidWorld.clone() };
+    } else {
+      const sa = s.scaleAnchor;
+      const ratio = clamp(dCurr / Math.max(0.001, sa.distStart), 0.2, 5);
+      s.scale = clamp(sa.scaleStart * ratio, 0.2, 5);
+      s.centroidWorld.x = sa.posStart.x + (midNow.x - sa.midStart.x);
+      s.centroidWorld.y = sa.posStart.y + (midNow.y - sa.midStart.y);
+    }
+    s.group.position.copy(s.centroidWorld);
+    s.group.scale.setScalar(s.scale);
+    s.grabHand = null; s.grabTrans = null;
+  } else {
+    // clear scale anchors on all strokes if not in scale mode
+    for (const s of drawState.strokes){ if (s.finalized) s.scaleAnchor = null; }
+
+    // single-hand grab/translate per touching hand
+    for (let hi = 0; hi < 2; hi++){
+      const p = pinches[hi];
+      if (!p) continue;
+      if (p.pinching && touching[hi] >= 0){
+        const s = drawState.strokes[touching[hi]];
+        if (s.grabHand === null){
+          const w = screenToWorld(p.x, p.y, 0);
+          s.grabHand = hi;
+          s.grabTrans = { pinchStart: new THREE.Vector3(w.x, w.y, 0), posStart: s.centroidWorld.clone() };
+        }
+        if (s.grabHand === hi){
+          const w = screenToWorld(p.x, p.y, 0);
+          const g = s.grabTrans;
+          s.centroidWorld.x = g.posStart.x + (w.x - g.pinchStart.x);
+          s.centroidWorld.y = g.posStart.y + (w.y - g.pinchStart.y);
+          s.group.position.copy(s.centroidWorld);
+        }
+      }
+    }
+    // release grabs when pinch ends
+    for (const s of drawState.strokes){
+      if (!s.finalized) continue;
+      if (s.grabHand !== null && (!pinches[s.grabHand] || !pinches[s.grabHand].pinching)){
+        s.grabHand = null; s.grabTrans = null;
+      }
+    }
+  }
+
+  // ---- new-stroke drawing per hand ----
+  for (let hi = 0; hi < 2; hi++){
+    const p = pinches[hi];
+    if (!p) continue;
+    const touchingThis = touching[hi] >= 0;
+
+    if (p.pinching){
+      if (drawState.activePerHand[hi] === null){
+        // only start a NEW stroke if not touching an existing one
+        if (!touchingThis){
+          const color = DRAW_PALETTE[drawState.colorIdx++ % DRAW_PALETTE.length];
+          const newIdx = drawState.strokes.length;
+          const w0 = screenToWorld(p.x, p.y, 0);
+          drawState.strokes.push({
+            group: null, points: [new THREE.Vector3(w0.x, w0.y, 0)], color,
+            finalized: false, centroidWorld: new THREE.Vector3(), scale: 1,
+            drawPreview: null, grabHand: null, grabTrans: null, scaleAnchor: null
+          });
+          drawState.activePerHand[hi] = newIdx;
+        }
+      } else {
+        const idx = drawState.activePerHand[hi];
+        const s = drawState.strokes[idx];
+        const w = screenToWorld(p.x, p.y, 0);
+        const wp = new THREE.Vector3(w.x, w.y, 0);
+        const last = s.points[s.points.length-1];
+        if (last.distanceTo(wp) > 0.07){
+          s.points.push(wp);
+          // live preview
+          if (s.drawPreview){ obj3D.drawRoot.remove(s.drawPreview); s.drawPreview.geometry.dispose(); s.drawPreview.material.dispose(); }
+          const geo = new THREE.BufferGeometry().setFromPoints(s.points);
+          s.drawPreview = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: s.color }));
+          obj3D.drawRoot.add(s.drawPreview);
+        }
+      }
+    } else if (drawState.activePerHand[hi] !== null){
+      finalizeStroke(drawState.activePerHand[hi]);
+      drawState.activePerHand[hi] = null;
+    }
+  }
+
+  // two-fist rotation of all strokes
+  if (applyTwoFistRotation(obj3D.drawRoot, pinches, "draw")){
+    showHint("spin · move your fists to rotate the shapes");
+  } else {
+    // gentle idle wobble
+    obj3D.drawRoot.rotation.y = lerp(obj3D.drawRoot.rotation.y, Math.sin(performance.now() * 0.0003) * 0.1, 0.05);
+  }
+
+  // hint
+  const activePinches = (pinches[0].pinching?1:0) + (pinches[1].pinching?1:0);
+  if (activePinches === 0) showHint("pinch to draw · pinch an existing shape to grab");
+  else if (touching[0] >= 0 && touching[0] === touching[1]) showHint("stretch the shape");
+  else if (touching[0] >= 0 || touching[1] >= 0) showHint("move the shape · release to drop");
+  else showHint("drawing · release pinch to materialize");
+}
+
+// ===========================================================================
+//  3D SCENE: SCULPT — wireframe cube with 8 corner handles
+//    PINCH near a handle   → grab that corner (deform)
+//    CLOSED FIST           → translate the whole structure
+//    BOTH HANDS PINCH      → scale the whole structure between hands
+// ===========================================================================
+const sculpt = {
+  verts: [],              // 8 current corner positions (in cube-local space)
+  base:  [],              // 8 rest positions
+  grab:  [null, null],    // per-hand grabbed vertex index (or null)
+  // group transform (applied around sculpt.center)
+  position: new THREE.Vector3(0, 0, 0),
+  scale: 1,
+  // interaction state across frames
+  translateAnchor: null,  // {hand, pinchStart, posStart}
+  scaleAnchor:     null   // {distStart, scaleStart, midStart, posStart}
+};
+const CUBE_EDGES = [
+  [0,1],[1,3],[3,2],[2,0], // bottom
+  [4,5],[5,7],[7,6],[6,4], // top
+  [0,4],[1,5],[2,6],[3,7]  // vertical
+];
+const CUBE_FACES = [
+  // 12 triangles (6 faces), ccw outward
+  [0,1,3],[0,3,2],   // -z
+  [4,6,7],[4,7,5],   // +z
+  [0,2,6],[0,6,4],   // -x
+  [1,5,7],[1,7,3],   // +x
+  [0,4,5],[0,5,1],   // -y
+  [2,3,7],[2,7,6]    // +y
+];
+
+function buildSceneSculpt(){
+  clearThree();
+  sculpt.verts = [];
+  sculpt.base = [];
+  for (let i = 0; i < 8; i++){
+    const x = (i & 1) ? 1 : -1;
+    const y = (i & 4) ? 1 : -1;
+    const z = (i & 2) ? 1 : -1;
+    sculpt.verts.push(new THREE.Vector3(x, y, z));
+    sculpt.base.push(new THREE.Vector3(x, y, z));
+  }
+  sculpt.grab = [null, null];
+  sculpt.position.set(0, 0, 0);
+  sculpt.scale = 1;
+  sculpt.translateAnchor = null;
+  sculpt.scaleAnchor = null;
+
+  const group = new THREE.Group();
+  scene.add(group);
+  obj3D.sculptGroup = group;
+
+  // solid translucent shell
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(CUBE_FACES.length * 3 * 3), 3));
+  geo.setIndex(null);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff6b4a, transparent: true, opacity: 0.45,
+    side: THREE.DoubleSide, depthWrite: false
+  });
+  const shell = new THREE.Mesh(geo, mat);
+  group.add(shell);
+  obj3D.sculptShell = shell;
+
+  // edge lines
+  const eGeo = new THREE.BufferGeometry();
+  eGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(CUBE_EDGES.length * 2 * 3), 3));
+  const eMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 });
+  const edges = new THREE.LineSegments(eGeo, eMat);
+  group.add(edges);
+  obj3D.sculptEdges = edges;
+
+  // corner handles — spheres sized to be clickable
+  obj3D.sculptHandles = [];
+  for (let i = 0; i < 8; i++){
+    const h = new THREE.Mesh(
+      new THREE.SphereGeometry(0.12, 24, 18),
+      new THREE.MeshBasicMaterial({ color: 0xfff2d0 })
+    );
+    group.add(h);
+    obj3D.sculptHandles.push(h);
+  }
+
+  // brace lines center → each corner
+  const bGeo = new THREE.BufferGeometry();
+  bGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(8 * 2 * 3), 3));
+  const bMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 });
+  const brace = new THREE.LineSegments(bGeo, bMat);
+  group.add(brace);
+  obj3D.sculptBrace = brace;
+}
+
+// project a WORLD position to SCREEN pixels (accounting for mirrored canvas layout)
+function worldToScreen(worldVec){
+  const v = worldVec.clone();
+  v.project(camera);
+  // v.x/y are in NDC [-1,1]. Three canvas is NOT css-flipped, so x maps directly.
+  const sx = ( v.x * 0.5 + 0.5) * W;
+  const sy = (-v.y * 0.5 + 0.5) * H;
+  return { x: sx, y: sy };
+}
+
+// handle-world position = sculpt.position + vert * sculpt.scale
+function handleWorldPos(i){
+  const v = sculpt.verts[i].clone().multiplyScalar(sculpt.scale).add(sculpt.position);
+  return v;
+}
+
+function updateSceneSculpt(pinches, dt, hue){
+  if (!sculpt.verts.length) buildSceneSculpt();
+
+  const bothPinch = pinches[0].pinching && pinches[1].pinching;
+  const bothFist  = pinches[0].fist && pinches[1].fist;
+  const anyFist   = pinches[0].fist || pinches[1].fist;
+
+  // ----- TWO FISTS → rotate -----
+  if (bothFist && applyTwoFistRotation(obj3D.sculptGroup, pinches, "sculpt")){
+    sculpt.translateAnchor = null;
+    sculpt.scaleAnchor = null;
+    sculpt.grab[0] = sculpt.grab[1] = null;
+    showHint("spin · move your fists to rotate");
+    // still update geometry buffers so wireframe stays correct
+  } else {
+
+  // ----- MODE 1: BOTH HANDS PINCH → scale between the two pinch points -----
+  if (bothPinch){
+    // release any corner grabs
+    sculpt.grab[0] = sculpt.grab[1] = null;
+    sculpt.translateAnchor = null;
+    const pAw = screenToWorld(pinches[0].x, pinches[0].y, 0);
+    const pBw = screenToWorld(pinches[1].x, pinches[1].y, 0);
+    const dCurr = Math.hypot(pAw.x-pBw.x, pAw.y-pBw.y);
+    const midNow = { x:(pAw.x+pBw.x)/2, y:(pAw.y+pBw.y)/2 };
+    if (!sculpt.scaleAnchor){
+      sculpt.scaleAnchor = { distStart: dCurr, scaleStart: sculpt.scale, midStart: midNow, posStart: sculpt.position.clone() };
+    } else {
+      const sa = sculpt.scaleAnchor;
+      const ratio = clamp(dCurr / Math.max(0.001, sa.distStart), 0.2, 5);
+      sculpt.scale = clamp(sa.scaleStart * ratio, 0.3, 4);
+      // follow midpoint movement
+      sculpt.position.x = sa.posStart.x + (midNow.x - sa.midStart.x);
+      sculpt.position.y = sa.posStart.y + (midNow.y - sa.midStart.y);
+    }
+  } else {
+    sculpt.scaleAnchor = null;
+
+    // ----- MODE 2: FIST (any hand) → translate -----
+    if (anyFist){
+      // release corner grabs
+      sculpt.grab[0] = sculpt.grab[1] = null;
+      // use the first fisted hand as the anchor
+      const idx = pinches[0].fist ? 0 : 1;
+      const pNow = { x: pinches[idx].palmX, y: pinches[idx].palmY };
+      const w = screenToWorld(pNow.x, pNow.y, 0);
+      if (!sculpt.translateAnchor || sculpt.translateAnchor.hand !== idx){
+        sculpt.translateAnchor = { hand: idx, pinchStart: new THREE.Vector3(w.x, w.y, 0), posStart: sculpt.position.clone() };
+      } else {
+        const a = sculpt.translateAnchor;
+        sculpt.position.x = a.posStart.x + (w.x - a.pinchStart.x);
+        sculpt.position.y = a.posStart.y + (w.y - a.pinchStart.y);
+      }
+    } else {
+      sculpt.translateAnchor = null;
+
+      // ----- MODE 3: single-hand PINCH near a corner → grab + deform -----
+      for (let hi = 0; hi < 2; hi++){
+        const p = pinches[hi];
+        if (!p || !p.pinching){ sculpt.grab[hi] = null; continue; }
+
+        // find nearest handle in SCREEN space
+        if (sculpt.grab[hi] === null){
+          let best = -1, bestD = 80; // pixel radius
+          for (let i = 0; i < 8; i++){
+            const sp = worldToScreen(handleWorldPos(i));
+            const d = Math.hypot(sp.x - p.x, sp.y - p.y);
+            if (d < bestD){ bestD = d; best = i; }
+          }
+          if (best >= 0) sculpt.grab[hi] = best;
+        }
+
+        if (sculpt.grab[hi] !== null){
+          // move corner so its world pos tracks the pinch
+          const idx = sculpt.grab[hi];
+          const w = screenToWorld(p.x, p.y, 0);
+          // convert world target → local vert position
+          const local = new THREE.Vector3(w.x - sculpt.position.x, w.y - sculpt.position.y, 0).divideScalar(Math.max(0.001, sculpt.scale));
+          sculpt.verts[idx].lerp(local, 0.45);
+        }
+      }
+    }
+  }
+
+  } // close the "else" branch of two-fists guard
+
+  // apply group transform (rotation set either by two-fist helper or kept idle)
+  obj3D.sculptGroup.position.copy(sculpt.position);
+  obj3D.sculptGroup.scale.setScalar(sculpt.scale);
+
+  // soft return to base for ungrabbed corners
+  for (let i = 0; i < 8; i++){
+    if (sculpt.grab[0] === i || sculpt.grab[1] === i) continue;
+    sculpt.verts[i].lerp(sculpt.base[i], 0.015);
+  }
+
+  // update shell triangles
+  const spos = obj3D.sculptShell.geometry.attributes.position;
+  for (let f = 0; f < CUBE_FACES.length; f++){
+    for (let k = 0; k < 3; k++){
+      const v = sculpt.verts[CUBE_FACES[f][k]];
+      spos.array[(f*3+k)*3]   = v.x;
+      spos.array[(f*3+k)*3+1] = v.y;
+      spos.array[(f*3+k)*3+2] = v.z;
+    }
+  }
+  spos.needsUpdate = true;
+  obj3D.sculptShell.geometry.computeVertexNormals();
+
+  // update edges
+  const epos = obj3D.sculptEdges.geometry.attributes.position;
+  for (let e = 0; e < CUBE_EDGES.length; e++){
+    const a = sculpt.verts[CUBE_EDGES[e][0]], b = sculpt.verts[CUBE_EDGES[e][1]];
+    epos.array[e*6+0]=a.x; epos.array[e*6+1]=a.y; epos.array[e*6+2]=a.z;
+    epos.array[e*6+3]=b.x; epos.array[e*6+4]=b.y; epos.array[e*6+5]=b.z;
+  }
+  epos.needsUpdate = true;
+
+  // braces
+  const bpos = obj3D.sculptBrace.geometry.attributes.position;
+  const cx = sculpt.verts.reduce((s,v)=>s+v.x,0)/8;
+  const cy = sculpt.verts.reduce((s,v)=>s+v.y,0)/8;
+  const cz = sculpt.verts.reduce((s,v)=>s+v.z,0)/8;
+  for (let i = 0; i < 8; i++){
+    bpos.array[i*6+0]=cx; bpos.array[i*6+1]=cy; bpos.array[i*6+2]=cz;
+    bpos.array[i*6+3]=sculpt.verts[i].x; bpos.array[i*6+4]=sculpt.verts[i].y; bpos.array[i*6+5]=sculpt.verts[i].z;
+  }
+  bpos.needsUpdate = true;
+
+  // handles + hover highlight
+  for (let i = 0; i < 8; i++){
+    const h = obj3D.sculptHandles[i];
+    h.position.copy(sculpt.verts[i]);
+    const grabbed = sculpt.grab[0] === i || sculpt.grab[1] === i;
+    // highlight the nearest-to-any-pinch handle
+    let near = false;
+    for (let hi = 0; hi < 2; hi++){
+      if (!pinches[hi] || pinches[hi].fist || bothPinch) break;
+      const sp = worldToScreen(handleWorldPos(i));
+      if (Math.hypot(sp.x - pinches[hi].x, sp.y - pinches[hi].y) < 80) near = true;
+    }
+    h.scale.setScalar(grabbed ? 1.6 : (near ? 1.25 : 1.0));
+    h.material.color.setHex(grabbed ? 0xffffff : (near ? 0xfff0a0 : 0xfff2d0));
+  }
+
+  obj3D.sculptShell.material.color.setHSL((hue%360)/360, 0.75, 0.55);
+
+  // in-screen hint for the current mode
+  if (bothPinch) showHint("stretch · move both pinches apart");
+  else if (anyFist) showHint("fist to move");
+  else {
+    const anyNear = (() => {
+      for (let hi = 0; hi < 2; hi++){
+        if (!pinches[hi] || pinches[hi].fist) continue;
+        for (let i = 0; i < 8; i++){
+          const sp = worldToScreen(handleWorldPos(i));
+          if (Math.hypot(sp.x - pinches[hi].x, sp.y - pinches[hi].y) < 80) return true;
+        }
+      }
+      return false;
+    })();
+    showHint(anyNear ? "pinch to grab the corner" : "pinch a corner · fist to move · two pinches to scale");
+  }
+}
+
+// ===========================================================================
+//  2D sense scenes — redraw fresh each frame with additive glow
+//  (fx canvas has mix-blend-mode: screen, so dark = transparent)
+// ===========================================================================
+function sceneGoo(points, intensity, hue){
+  clearFx();
+  if (points.tips.length === 0 && points.palms.length === 0) return;
+  fx.save();
+  fx.globalCompositeOperation = "lighter";
+  // tips: colored tight blobs
+  for (const t of points.tips){
+    const r = 90 * intensity;
+    const grad = fx.createRadialGradient(t.x, t.y, 0, t.x, t.y, r);
+    grad.addColorStop(0, t.color);
+    grad.addColorStop(0.3, t.color + "99");
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grad;
+    fx.beginPath(); fx.arc(t.x, t.y, r, 0, TAU); fx.fill();
+  }
+  // palms: big soft bodies
+  for (const p of points.palms){
+    const r = 180 * intensity;
+    const grad = fx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+    grad.addColorStop(0, `hsla(${hue},100%,65%,0.95)`);
+    grad.addColorStop(0.4, `hsla(${(hue+40)%360},100%,55%,0.5)`);
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grad;
+    fx.beginPath(); fx.arc(p.x, p.y, r, 0, TAU); fx.fill();
+  }
+  // goo connections
+  const all = [...points.tips.map(t => ({...t, r: 90*intensity})),
+               ...points.palms.map(p => ({...p, r: 180*intensity, color: `hsl(${hue},100%,65%)`}))];
+  fx.lineWidth = 24 * intensity;
+  fx.lineCap = "round";
+  for (let i = 0; i < all.length; i++){
+    for (let j = i+1; j < all.length; j++){
+      const a = all[i], b = all[j];
+      const d = Math.hypot(a.x-b.x, a.y-b.y);
+      const thresh = (a.r + b.r) * 0.6;
+      if (d < thresh){
+        const alpha = 1 - d/thresh;
+        const col = (a.color || "#ffffff");
+        // ensure 6-char hex, append alpha byte
+        const hex = col.length === 7 ? col : "#ffffff";
+        const alphaHex = Math.floor(alpha*200).toString(16).padStart(2,"0");
+        fx.strokeStyle = hex + alphaHex;
+        fx.beginPath();
+        fx.moveTo(a.x, a.y);
+        const mx = (a.x+b.x)/2 + Math.sin(performance.now()*0.004 + i)*8;
+        const my = (a.y+b.y)/2 + Math.cos(performance.now()*0.004 + j)*8;
+        fx.quadraticCurveTo(mx, my, b.x, b.y);
+        fx.stroke();
+      }
+    }
+  }
+  fx.restore();
+}
+
+let gridWarp = [];
+function initGrid(){
+  gridWarp = [];
+  const step = 36;
+  for (let y = 0; y <= H + step; y += step)
+    for (let x = 0; x <= W + step; x += step)
+      gridWarp.push({ ox:x, oy:y, x, y, vx:0, vy:0 });
+}
+function sceneWarp(points, intensity, hue, force){
+  if (gridWarp.length === 0) initGrid();
+  clearFx();
+  const attractors = [...points.tips, ...points.palms];
+  for (const n of gridWarp){
+    for (const a of attractors){
+      const dx = a.x - n.x, dy = a.y - n.y;
+      const d = Math.hypot(dx,dy) + 10;
+      if (d < 220){
+        const f = (force * 40) / d;
+        n.vx += dx/d * f * intensity;
+        n.vy += dy/d * f * intensity;
+      }
+    }
+    n.vx += (n.ox - n.x) * 0.04;
+    n.vy += (n.oy - n.y) * 0.04;
+    n.vx *= 0.78; n.vy *= 0.78;
+    n.x += n.vx; n.y += n.vy;
+  }
+  const step = 36;
+  const cols = Math.floor(W/step) + 2;
+  const rows = Math.floor(H/step) + 2;
+  const idx = (c,r) => r*cols + c;
+  fx.save();
+  fx.strokeStyle = `hsla(${hue}, 100%, 70%, 0.85)`;
+  fx.lineWidth = 1.5;
+  fx.beginPath();
+  for (let r = 0; r < rows; r++){
+    for (let c = 0; c < cols; c++){
+      const i = idx(c,r); const n = gridWarp[i]; if (!n) continue;
+      if (c < cols-1){ const n2 = gridWarp[idx(c+1,r)]; if (n2){ fx.moveTo(n.x,n.y); fx.lineTo(n2.x,n2.y); } }
+      if (r < rows-1){ const n2 = gridWarp[idx(c,r+1)]; if (n2){ fx.moveTo(n.x,n.y); fx.lineTo(n2.x,n2.y); } }
+    }
+  }
+  fx.stroke();
+  fx.globalCompositeOperation = "lighter";
+  for (const n of gridWarp){
+    const d = Math.hypot(n.x-n.ox, n.y-n.oy);
+    if (d > 2){
+      fx.fillStyle = `hsla(${(hue + d*2)%360}, 100%, 70%, ${clamp(d*0.03,0,1)})`;
+      fx.beginPath(); fx.arc(n.x, n.y, 2 + d*0.05, 0, TAU); fx.fill();
+    }
+  }
+  fx.restore();
+}
+
+function scenePaint(points, intensity, hue){
+  // paint accumulates — don't clear
+  fx.save();
+  fx.globalCompositeOperation = "lighter";
+  for (const t of points.tips){
+    const r = 22 * intensity;
+    const grad = fx.createRadialGradient(t.x,t.y,0,t.x,t.y,r);
+    grad.addColorStop(0, t.color);
+    grad.addColorStop(0.5, t.color + "88");
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grad;
+    fx.beginPath(); fx.arc(t.x,t.y,r,0,TAU); fx.fill();
+  }
+  for (const p of points.palms){
+    const r = 48 * intensity;
+    const grad = fx.createRadialGradient(p.x,p.y,0,p.x,p.y,r);
+    grad.addColorStop(0, `hsla(${hue},100%,70%,0.95)`);
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grad;
+    fx.beginPath(); fx.arc(p.x,p.y,r,0,TAU); fx.fill();
+  }
+  fx.restore();
+}
+
+function clearFx(){
+  fx.setTransform(1,0,0,1,0,0);
+  fx.clearRect(0,0,fxc.width,fxc.height);
+  fx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+// ===========================================================================
+//  COLLECT HAND POINTS
+// ===========================================================================
+function collectHandPoints(){
+  const list = latest.multiHandLandmarks || [];
+  const tips = [], palms = [];
+  let openness = 0, hands = 0;
+  for (let i = 0; i < list.length; i++){
+    const lm = list[i];
+    const palm = toScreen({ x:(lm[0].x+lm[9].x+lm[13].x)/3, y:(lm[0].y+lm[9].y+lm[13].y)/3, z:lm[9].z });
+    palms.push(palm);
+    const ext = detectExtended(lm, 1.0);
+    openness += ext.filter(Boolean).length;
+    hands++;
+    for (let j = 0; j < 5; j++){
+      if (ext[j]) tips.push({ ...toScreen(lm[FINGERS[j].tip]), color: FINGERS[j].color });
+    }
+  }
+  return { tips, palms, openness: hands ? openness/(hands*5) : 0 };
+}
+
+// ===========================================================================
+//  BONES OVERLAY — green bones + red joints (ojrgb-style)
+// ===========================================================================
+const CONN = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+function drawBones(){
+  g.clearRect(0,0,W,H);
+  const list = latest.multiHandLandmarks || [];
+  const handed = latest.multiHandedness || [];
+  for (let i = 0; i < list.length; i++){
+    const lm = list[i];
+    g.save();
+    g.lineWidth = 3;
+    g.strokeStyle = "#00ff5a";
+    g.shadowColor = "#00ff5a";
+    g.shadowBlur = 6;
+    g.beginPath();
+    for (const [a,b] of CONN){
+      const pa = lmToPx(lm[a].x, lm[a].y);
+      const pb = lmToPx(lm[b].x, lm[b].y);
+      g.moveTo(pa.x, pa.y);
+      g.lineTo(pb.x, pb.y);
+    }
+    g.stroke();
+    g.shadowBlur = 0;
+    g.fillStyle = "#ff2d4a";
+    g.shadowColor = "#ff2d4a";
+    g.shadowBlur = 4;
+    for (let j = 0; j < 21; j++){
+      const px = lmToPx(lm[j].x, lm[j].y);
+      g.beginPath();
+      g.arc(px.x, px.y, j === 0 ? 6 : 4, 0, TAU);
+      g.fill();
+    }
+    // highlight thumb + index tips when this hand is pinching (visual feedback for summon anchor)
+    const handLabel = (handed[i] && handed[i].label) || (i === 0 ? "Right" : "Left");
+    if (pinchHold[handLabel]){
+      const t = lmToPx(lm[4].x, lm[4].y);
+      const ix = lmToPx(lm[8].x, lm[8].y);
+      g.strokeStyle = "#fff";
+      g.lineWidth = 2.5;
+      g.shadowColor = "#fff";
+      g.shadowBlur = 14;
+      g.beginPath(); g.arc(t.x, t.y, 12, 0, TAU); g.stroke();
+      g.beginPath(); g.arc(ix.x, ix.y, 12, 0, TAU); g.stroke();
+      g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(t.x, t.y); g.lineTo(ix.x, ix.y); g.stroke();
+    }
+    g.restore();
+
+    if (MODE === "music"){
+      const label = handed[i]?.label || (i === 0 ? "Right" : "Left");
+      const wristPx = lmToPx(lm[0].x, lm[0].y);
+      const tagX = wristPx.x;
+      const y = wristPx.y + 40;
+      const isMelody = label === "Right";
+      const tagLabel = isMelody ? "MELODY" : "CHORD";
+      g.font = "bold 10px ui-monospace,monospace";
+      g.textAlign = "center";
+      g.fillStyle = "rgba(0,0,0,.75)";
+      const tw = g.measureText(tagLabel).width + 12;
+      roundRect(g, tagX - tw/2, y - 9, tw, 18, 9);
+      g.fill();
+      g.fillStyle = isMelody ? "#ff2d7a" : "#44e0ff";
+      g.fillText(tagLabel, tagX, y + 3);
+    }
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y,   x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x,   y+h, r);
+  ctx.arcTo(x,   y+h, x,   y,   r);
+  ctx.arcTo(x,   y,   x+w, y,   r);
+  ctx.closePath();
+}
+
+// ===========================================================================
+//  MUSIC MODE STATE
+// ===========================================================================
+let currentMelodyNote = null, currentChord = null, currentChordKey = null;
+
+function playMelody(midi){
+  if (!AUDIO_READY || currentMelodyNote === midi) return;
+  try { mel.triggerAttack(midiToName(midi)); } catch(e){}
+  currentMelodyNote = midi;
+}
+function stopMelody(){
+  if (!AUDIO_READY || currentMelodyNote === null) return;
+  try { mel.triggerRelease(); } catch(e){}
+  currentMelodyNote = null;
+}
+function playChord(c){
+  if (!AUDIO_READY) return;
+  if (currentChordKey === c.symbol) return;
+  if (currentChord){ try { chord.triggerRelease(currentChord.notes); } catch(e){} }
+  try { chord.triggerAttack(c.notes); } catch(e){}
+  currentChord = c; currentChordKey = c.symbol;
+}
+function stopChord(){
+  if (!AUDIO_READY || !currentChord) return;
+  try { chord.triggerRelease(currentChord.notes); } catch(e){}
+  currentChord = null; currentChordKey = null;
+}
+function updateTunerNote(midiOrNull){
+  const n = el("t-note");
+  if (midiOrNull == null){ n.textContent = "—"; n.classList.remove("on"); }
+  else { n.textContent = midiToPc(midiOrNull); n.classList.add("on"); }
+}
+function updateTunerChord(symbol){ el("t-chord").textContent = symbol ? symbol : " "; }
+function updateKeyChip(){
+  el("r-key").textContent = el("key").value + " " + (el("scalemode").value === "maj" ? "maj" : "min");
+}
+
+// ===========================================================================
+//  METRONOME
+// ===========================================================================
+let metroLoop = null, metroBeat = 0;
+function toggleMetronome(on){
+  if (!AUDIO_READY) return;
+  if (on){
+    metroBeat = 0;
+    Tone.Transport.bpm.value = 90;
+    metroLoop = Tone.Transport.scheduleRepeat((t) => {
+      click.triggerAttackRelease(metroBeat % 4 === 0 ? "C5" : "C4", "32n", t);
+      metroBeat++;
+    }, "4n");
+    Tone.Transport.start();
+    el("metro").classList.add("on");
+    el("metro").textContent = "metronome on";
+  } else {
+    if (metroLoop !== null){ Tone.Transport.clear(metroLoop); metroLoop = null; }
+    Tone.Transport.stop();
+    el("metro").classList.remove("on");
+    el("metro").textContent = "metronome";
+  }
+}
+
+// ===========================================================================
+//  LEGEND TEXT
+// ===========================================================================
+function updateLegend(){
+  const legend = el("legend-text");
+  if (MODE === "music"){
+    legend.innerHTML = "<b>right</b> hand = melody · <b>left</b> hand = chord · <kbd>space</kbd> mute · <kbd>r</kbd> rec · <kbd>m</kbd> metronome · <kbd>1/2/3</kbd> switch mode";
+  } else if (MODE === "sense"){
+    legend.innerHTML = "<b>pinch</b> to grab · <b>fist</b> to move · <b>both pinches</b> to scale · <kbd>r</kbd> rec · <kbd>c</kbd> clear · <kbd>1/2/3</kbd> switch mode";
+  } else {
+    legend.innerHTML = "<b>click</b> a node type on the left to add · drag <b>out → in</b> pins to wire · click <b>in</b> pin to disconnect";
+  }
+}
+
+// ===========================================================================
+//  PATCH MODE — node graph (original design)
+//  Nodes have inputs (left-side pins) and outputs (right-side pins).
+//  Drag an output pin onto an input pin to wire them.
+//  Each frame, nodes are evaluated in order of their x position.
+// ===========================================================================
+const PATCH = {
+  stage:    null,
+  wiresSvg: null,
+  nodes:    [],      // { id, type, x, y, params, inputs:{portName:{from:{nodeId,port}|null, def:number}}, outputs:{portName:number}, three:null, tone:null }
+  nextId:   1,
+  dragNode: null,    // { id, dx, dy }
+  pendingWire: null, // { fromNodeId, fromPort, startX, startY }
+  selectedId: null,
+  // three objects per node id, auto-cleaned when node removed
+  threeByNode: new Map(),
+  toneByNode:  new Map(),
+  // trail scene state for TRAIL node
+  trailPts: new Map() // nodeId -> array of {x,y,age}
+};
+
+const PATCH_TYPES = {
+  hand: {
+    cat: "in", label: "HAND",
+    inputs: [], outputs: ["x","y","pinch","fist","extended"],
+    params: [], tag: "hand 1"
+  },
+  osc: {
+    cat: "in", label: "OSC",
+    inputs: [], outputs: ["val"],
+    params: [{name:"freq", label:"hz", type:"range", min:0.1, max:5, step:0.01, def:1},
+             {name:"amp",  label:"amp",type:"range", min:0, max:1, step:0.01, def:1}]
+  },
+  map: {
+    cat: "math", label: "MAP",
+    inputs: ["in"], outputs: ["val"],
+    params: [{name:"inMin",label:"in min", type:"number", def:0},
+             {name:"inMax",label:"in max", type:"number", def:1},
+             {name:"outMin",label:"out min",type:"number", def:0},
+             {name:"outMax",label:"out max",type:"number", def:10}]
+  },
+  lerp: {
+    cat: "math", label: "LERP",
+    inputs: ["a","b","t"], outputs: ["val"],
+    params: []
+  },
+  sphere: {
+    cat: "visual", label: "SPHERE",
+    inputs: ["x","y","scale","hue"], outputs: [],
+    params: []
+  },
+  cube: {
+    cat: "visual", label: "CUBE",
+    inputs: ["x","y","scale","hue"], outputs: [],
+    params: []
+  },
+  trail: {
+    cat: "visual", label: "TRAIL",
+    inputs: ["x","y","hue"], outputs: [],
+    params: []
+  },
+  tone: {
+    cat: "audio", label: "TONE",
+    inputs: ["freq","gain"], outputs: [],
+    params: [{name:"wave", label:"wave", type:"select", options:["sine","triangle","sawtooth","square"], def:"sine"}]
+  }
+};
+
+function initPatch(){
+  PATCH.stage    = el("patch-stage");
+  PATCH.wiresSvg = el("patch-wires");
+
+  // palette: click to add node at a semi-random position
+  document.querySelectorAll("#patch-palette button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const type = btn.dataset.ntype;
+      const rect = PATCH.stage.getBoundingClientRect();
+      createPatchNode(type,
+        rect.width/2 + (Math.random()-0.5)*120,
+        rect.height/2 + (Math.random()-0.5)*120);
+    });
+  });
+
+  el("patch-clear").addEventListener("click", () => {
+    while (PATCH.nodes.length) removePatchNode(PATCH.nodes[0].id);
+  });
+  el("patch-preset-wave").addEventListener("click", loadPresetHandSphere);
+  el("patch-preset-chord").addEventListener("click", loadPresetHandTone);
+
+  // click empty stage → deselect
+  PATCH.stage.addEventListener("mousedown", (e) => {
+    if (e.target === PATCH.stage || e.target.classList.contains("patch-grid")){
+      PATCH.selectedId = null;
+      renderPatchNodes();
+    }
+  });
+
+  // wire-dragging follow
+  PATCH.stage.addEventListener("mousemove", (e) => {
+    if (!PATCH.pendingWire) return;
+    const rect = PATCH.stage.getBoundingClientRect();
+    PATCH.pendingWire.toX = e.clientX - rect.left;
+    PATCH.pendingWire.toY = e.clientY - rect.top;
+    renderPatchWires();
+  });
+
+  // release anywhere on stage ends pending wire
+  PATCH.stage.addEventListener("mouseup", (e) => {
+    if (PATCH.pendingWire){
+      PATCH.pendingWire = null;
+      renderPatchWires();
+    }
+  });
+}
+
+function createPatchNode(type, x, y){
+  const def = PATCH_TYPES[type];
+  if (!def) return;
+  const node = {
+    id: PATCH.nextId++,
+    type, x, y,
+    params: {},
+    inputs: {},
+    outputs: {}
+  };
+  for (const p of def.params) node.params[p.name] = p.def;
+  for (const i of def.inputs) node.inputs[i] = { from: null, def: 0 };
+  for (const o of def.outputs) node.outputs[o] = 0;
+  PATCH.nodes.push(node);
+  renderPatchNodes();
+  return node;
+}
+
+function removePatchNode(id){
+  const idx = PATCH.nodes.findIndex(n => n.id === id);
+  if (idx < 0) return;
+  // disconnect wires going INTO or OUT of this node
+  for (const n of PATCH.nodes){
+    for (const key of Object.keys(n.inputs)){
+      if (n.inputs[key].from && n.inputs[key].from.nodeId === id) n.inputs[key].from = null;
+    }
+  }
+  // cleanup three/tone
+  const t = PATCH.threeByNode.get(id);
+  if (t){ scene.remove(t); if (t.geometry) t.geometry.dispose(); if (t.material) t.material.dispose(); PATCH.threeByNode.delete(id); }
+  const tn = PATCH.toneByNode.get(id);
+  if (tn){ try { tn.osc.stop(); } catch(e){} try { tn.osc.disconnect(); tn.gain.disconnect(); } catch(e){} PATCH.toneByNode.delete(id); }
+  PATCH.trailPts.delete(id);
+  PATCH.nodes.splice(idx, 1);
+  renderPatchNodes();
+}
+
+function renderPatchNodes(){
+  // dump + rebuild dom (small graphs — fine)
+  PATCH.stage.querySelectorAll(".node").forEach(n => n.remove());
+  for (const node of PATCH.nodes){
+    const def = PATCH_TYPES[node.type];
+    const d = document.createElement("div");
+    d.className = "node" + (node.id === PATCH.selectedId ? " selected" : "");
+    d.style.left = node.x + "px";
+    d.style.top  = node.y + "px";
+    d.dataset.id = node.id;
+
+    // head
+    const head = document.createElement("div");
+    head.className = "head " + def.cat;
+    head.innerHTML = `${def.label}<span class="tag">${def.cat}</span>`;
+    d.appendChild(head);
+
+    // close
+    const close = document.createElement("button");
+    close.className = "close";
+    close.textContent = "✕";
+    close.addEventListener("click", (e) => { e.stopPropagation(); removePatchNode(node.id); });
+    head.appendChild(close);
+
+    // body
+    const body = document.createElement("div");
+    body.className = "body";
+    // input pins
+    for (const inName of def.inputs){
+      const row = document.createElement("div");
+      row.className = "pin-row";
+      const pin = document.createElement("div");
+      pin.className = "pin in";
+      pin.dataset.nodeId = node.id;
+      pin.dataset.port = inName;
+      pin.dataset.dir = "in";
+      row.appendChild(pin);
+      const label = document.createElement("span");
+      label.textContent = inName;
+      row.appendChild(label);
+      const val = document.createElement("span");
+      val.className = "val";
+      val.textContent = (typeof node.inputs[inName]._lastVal === "number")
+        ? node.inputs[inName]._lastVal.toFixed(2) : "–";
+      row.appendChild(val);
+      body.appendChild(row);
+    }
+    // params
+    for (const p of def.params){
+      const row = document.createElement("div");
+      row.className = "pin-row param";
+      const label = document.createElement("span");
+      label.textContent = p.label;
+      row.appendChild(label);
+      let inp;
+      if (p.type === "select"){
+        inp = document.createElement("select");
+        for (const o of p.options){
+          const opt = document.createElement("option");
+          opt.value = o; opt.textContent = o;
+          if (node.params[p.name] === o) opt.selected = true;
+          inp.appendChild(opt);
+        }
+        inp.addEventListener("change", () => node.params[p.name] = inp.value);
+      } else {
+        inp = document.createElement("input");
+        inp.type = p.type || "number";
+        if (p.min !== undefined) inp.min = p.min;
+        if (p.max !== undefined) inp.max = p.max;
+        if (p.step !== undefined) inp.step = p.step;
+        inp.value = node.params[p.name];
+        inp.addEventListener("input", () => node.params[p.name] = parseFloat(inp.value));
+      }
+      row.appendChild(inp);
+      body.appendChild(row);
+    }
+    // output pins
+    for (const outName of def.outputs){
+      const row = document.createElement("div");
+      row.className = "pin-row";
+      const label = document.createElement("span");
+      label.textContent = outName;
+      label.style.marginLeft = "auto";
+      row.appendChild(label);
+      const val = document.createElement("span");
+      val.className = "val";
+      val.textContent = node.outputs[outName] !== undefined ? node.outputs[outName].toFixed(2) : "–";
+      row.appendChild(val);
+      const pin = document.createElement("div");
+      pin.className = "pin out";
+      pin.dataset.nodeId = node.id;
+      pin.dataset.port = outName;
+      pin.dataset.dir = "out";
+      row.appendChild(pin);
+      body.appendChild(row);
+    }
+    d.appendChild(body);
+
+    // drag
+    head.addEventListener("mousedown", (e) => {
+      PATCH.selectedId = node.id;
+      PATCH.dragNode = { id: node.id, dx: e.clientX - node.x, dy: e.clientY - node.y };
+      renderPatchNodes();
+      const onMove = (ev) => {
+        node.x = ev.clientX - PATCH.dragNode.dx;
+        node.y = ev.clientY - PATCH.dragNode.dy;
+        d.style.left = node.x + "px";
+        d.style.top  = node.y + "px";
+        renderPatchWires();
+      };
+      const onUp = () => {
+        PATCH.dragNode = null;
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+      };
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+    });
+
+    // pin interactions
+    d.querySelectorAll(".pin").forEach(pin => {
+      pin.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        if (pin.dataset.dir === "out"){
+          const rect = PATCH.stage.getBoundingClientRect();
+          const pr = pin.getBoundingClientRect();
+          PATCH.pendingWire = {
+            fromNodeId: parseInt(pin.dataset.nodeId, 10),
+            fromPort: pin.dataset.port,
+            startX: pr.left + pr.width/2 - rect.left,
+            startY: pr.top + pr.height/2 - rect.top,
+            toX: e.clientX - rect.left,
+            toY: e.clientY - rect.top
+          };
+        } else {
+          // input: disconnect if clicked
+          const n = PATCH.nodes.find(x => x.id === parseInt(pin.dataset.nodeId, 10));
+          if (n && n.inputs[pin.dataset.port]) n.inputs[pin.dataset.port].from = null;
+          renderPatchWires();
+        }
+      });
+      pin.addEventListener("mouseup", (e) => {
+        e.stopPropagation();
+        if (!PATCH.pendingWire || pin.dataset.dir !== "in") return;
+        const toNodeId = parseInt(pin.dataset.nodeId, 10);
+        if (toNodeId === PATCH.pendingWire.fromNodeId) { PATCH.pendingWire = null; renderPatchWires(); return; }
+        const toNode = PATCH.nodes.find(x => x.id === toNodeId);
+        if (toNode && toNode.inputs[pin.dataset.port]){
+          toNode.inputs[pin.dataset.port].from = { nodeId: PATCH.pendingWire.fromNodeId, port: PATCH.pendingWire.fromPort };
+        }
+        PATCH.pendingWire = null;
+        renderPatchNodes();
+      });
+    });
+
+    PATCH.stage.appendChild(d);
+  }
+  renderPatchWires();
+}
+
+function pinCenter(nodeId, port, dir){
+  const el2 = PATCH.stage.querySelector(`.node[data-id='${nodeId}'] .pin.${dir}[data-port='${port}']`);
+  if (!el2) return null;
+  const rect = PATCH.stage.getBoundingClientRect();
+  const pr = el2.getBoundingClientRect();
+  return { x: pr.left + pr.width/2 - rect.left, y: pr.top + pr.height/2 - rect.top };
+}
+
+function renderPatchWires(){
+  const parts = [];
+  for (const n of PATCH.nodes){
+    for (const port of Object.keys(n.inputs)){
+      const w = n.inputs[port].from;
+      if (!w) continue;
+      const a = pinCenter(w.nodeId, w.port, "out");
+      const b = pinCenter(n.id, port, "in");
+      if (!a || !b) continue;
+      const mx = (a.x + b.x) / 2;
+      parts.push(`<path d="M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}"/>`);
+    }
+  }
+  if (PATCH.pendingWire){
+    const a = { x: PATCH.pendingWire.startX, y: PATCH.pendingWire.startY };
+    const b = { x: PATCH.pendingWire.toX,    y: PATCH.pendingWire.toY };
+    const mx = (a.x + b.x) / 2;
+    parts.push(`<path class="pending" d="M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}"/>`);
+  }
+  PATCH.wiresSvg.innerHTML = parts.join("");
+}
+
+// -- EVALUATION ------------------------------------------------------------
+function patchResolveInput(node, port){
+  const inp = node.inputs[port];
+  if (!inp.from) return 0;
+  const from = PATCH.nodes.find(n => n.id === inp.from.nodeId);
+  if (!from) return 0;
+  const v = from.outputs[inp.from.port];
+  return (typeof v === "number") ? v : 0;
+}
+
+function evaluatePatch(dt, pts){
+  // sort by x so inputs come first
+  const ordered = [...PATCH.nodes].sort((a,b) => a.x - b.x);
+
+  const palm = pts.palms[0] || { x: W/2, y: H/2 };
+  const anyPinch = (pts._pinches && pts._pinches.some(p => p.pinching)) ? 1 : 0;
+  const anyFist  = (pts._pinches && pts._pinches.some(p => p.fist)) ? 1 : 0;
+  const extCount = pts.tips.length;
+
+  for (const node of ordered){
+    const def = PATCH_TYPES[node.type];
+    // read inputs
+    const inVals = {};
+    for (const name of def.inputs){
+      const v = patchResolveInput(node, name);
+      inVals[name] = v;
+      node.inputs[name]._lastVal = v;
+    }
+    // compute
+    if (node.type === "hand"){
+      node.outputs.x = (palm.x / W - 0.5) * 2;
+      node.outputs.y = -(palm.y / H - 0.5) * 2;
+      node.outputs.pinch = anyPinch;
+      node.outputs.fist  = anyFist;
+      node.outputs.extended = extCount / 10; // 0..1 roughly
+    } else if (node.type === "osc"){
+      const t = performance.now() * 0.001;
+      node.outputs.val = Math.sin(t * node.params.freq * TAU) * node.params.amp;
+    } else if (node.type === "map"){
+      const t = (inVals.in - node.params.inMin) / Math.max(1e-6, node.params.inMax - node.params.inMin);
+      node.outputs.val = node.params.outMin + clamp(t, 0, 1) * (node.params.outMax - node.params.outMin);
+    } else if (node.type === "lerp"){
+      node.outputs.val = inVals.a + (inVals.b - inVals.a) * clamp(inVals.t, 0, 1);
+    } else if (node.type === "sphere" || node.type === "cube"){
+      let m = PATCH.threeByNode.get(node.id);
+      if (!m){
+        const geo = node.type === "sphere" ? new THREE.IcosahedronGeometry(0.6, 2) : new THREE.BoxGeometry(1, 1, 1);
+        const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent:true, opacity:0.5, wireframe:false });
+        m = new THREE.Mesh(geo, mat);
+        const wire = new THREE.LineSegments(new THREE.WireframeGeometry(geo), new THREE.LineBasicMaterial({ color: 0xffffff, transparent:true, opacity:0.9 }));
+        m.add(wire);
+        scene.add(m);
+        PATCH.threeByNode.set(node.id, m);
+      }
+      m.position.set(inVals.x * 3, inVals.y * 3, 0);
+      const s = clamp(inVals.scale || 1, 0.1, 5);
+      m.scale.setScalar(s);
+      const hueNorm = ((inVals.hue || 0) % 1 + 1) % 1;
+      m.material.color.setHSL(hueNorm, 0.85, 0.55);
+    } else if (node.type === "trail"){
+      const arr = PATCH.trailPts.get(node.id) || [];
+      arr.push({ x: inVals.x * 3, y: inVals.y * 3, hue: inVals.hue, age: 0 });
+      for (const p of arr) p.age += dt;
+      while (arr.length && arr[0].age > 2) arr.shift();
+      PATCH.trailPts.set(node.id, arr);
+      let m = PATCH.threeByNode.get(node.id);
+      if (!m){
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(3 * 600), 3));
+        geo.setAttribute("color",    new THREE.BufferAttribute(new Float32Array(3 * 600), 3));
+        const mat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9 });
+        m = new THREE.Line(geo, mat);
+        scene.add(m);
+        PATCH.threeByNode.set(node.id, m);
+      }
+      const pos = m.geometry.attributes.position;
+      const col = m.geometry.attributes.color;
+      const n = Math.min(arr.length, 600);
+      for (let i = 0; i < n; i++){
+        pos.array[i*3]   = arr[i].x;
+        pos.array[i*3+1] = arr[i].y;
+        pos.array[i*3+2] = 0;
+        const h = ((arr[i].hue || 0) % 1 + 1) % 1;
+        const c = new THREE.Color().setHSL(h, 1, 0.6);
+        col.array[i*3]=c.r; col.array[i*3+1]=c.g; col.array[i*3+2]=c.b;
+      }
+      m.geometry.setDrawRange(0, n);
+      pos.needsUpdate = true; col.needsUpdate = true;
+    } else if (node.type === "tone"){
+      if (!AUDIO_READY) continue;
+      let tn = PATCH.toneByNode.get(node.id);
+      if (!tn){
+        const osc = new Tone.Oscillator(220, node.params.wave).start();
+        const gain = new Tone.Gain(0).toDestination();
+        osc.connect(gain);
+        tn = { osc, gain };
+        PATCH.toneByNode.set(node.id, tn);
+      }
+      tn.osc.type = node.params.wave;
+      const f = clamp(inVals.freq || 220, 30, 4000);
+      tn.osc.frequency.rampTo(f, 0.03);
+      tn.gain.gain.rampTo(clamp(inVals.gain, 0, 1), 0.05);
+    }
+  }
+
+  // update value readouts in dom (cheap: query spans)
+  const nodeDivs = PATCH.stage.querySelectorAll(".node");
+  nodeDivs.forEach(nd => {
+    const id = parseInt(nd.dataset.id, 10);
+    const node = PATCH.nodes.find(n => n.id === id);
+    if (!node) return;
+    const vals = nd.querySelectorAll(".pin-row");
+    const def = PATCH_TYPES[node.type];
+    let r = 0;
+    for (const inName of def.inputs){
+      const v = node.inputs[inName]._lastVal;
+      if (vals[r]) { const s = vals[r].querySelector(".val"); if (s && typeof v === "number") s.textContent = v.toFixed(2); }
+      r++;
+    }
+    r += def.params.length;
+    for (const outName of def.outputs){
+      const v = node.outputs[outName];
+      if (vals[r]) { const s = vals[r].querySelector(".val"); if (s && typeof v === "number") s.textContent = v.toFixed(2); }
+      r++;
+    }
+  });
+}
+
+function clearPatchThree(){
+  // clear scene of patch-owned meshes so they don't bleed into sense mode
+  for (const m of PATCH.threeByNode.values()){
+    scene.remove(m);
+    if (m.geometry) m.geometry.dispose();
+    if (m.material) m.material.dispose();
+  }
+  PATCH.threeByNode.clear();
+  for (const tn of PATCH.toneByNode.values()){
+    try { tn.osc.stop(); tn.osc.disconnect(); tn.gain.disconnect(); } catch(e){}
+  }
+  PATCH.toneByNode.clear();
+}
+
+function loadPresetHandSphere(){
+  // clear then wire HAND → SPHERE
+  while (PATCH.nodes.length) removePatchNode(PATCH.nodes[0].id);
+  const h = createPatchNode("hand", 60, 160);
+  const s = createPatchNode("sphere", 420, 180);
+  s.inputs.x.from = { nodeId: h.id, port: "x" };
+  s.inputs.y.from = { nodeId: h.id, port: "y" };
+  const map = createPatchNode("map", 240, 300);
+  map.params.inMin = 0; map.params.inMax = 1; map.params.outMin = 0.3; map.params.outMax = 2;
+  map.inputs.in.from = { nodeId: h.id, port: "extended" };
+  s.inputs.scale.from = { nodeId: map.id, port: "val" };
+  renderPatchNodes();
+}
+
+function loadPresetHandTone(){
+  while (PATCH.nodes.length) removePatchNode(PATCH.nodes[0].id);
+  const h  = createPatchNode("hand", 60, 160);
+  const map= createPatchNode("map", 260, 160);
+  map.params.inMin = -1; map.params.inMax = 1; map.params.outMin = 100; map.params.outMax = 1200;
+  map.inputs.in.from = { nodeId: h.id, port: "y" };
+  const mapG = createPatchNode("map", 260, 300);
+  mapG.params.inMin = 0; mapG.params.inMax = 1; mapG.params.outMin = 0; mapG.params.outMax = 0.5;
+  mapG.inputs.in.from = { nodeId: h.id, port: "pinch" };
+  const t = createPatchNode("tone", 500, 220);
+  t.inputs.freq.from = { nodeId: map.id, port: "val" };
+  t.inputs.gain.from = { nodeId: mapG.id, port: "val" };
+  renderPatchNodes();
+}
+
+// ===========================================================================
+//  MAIN LOOP
+// ===========================================================================
+let lastT = performance.now();
+function renderFrame(){
+  const now = performance.now();
+  const dt  = Math.min(0.05, (now - lastT) / 1000);
+  lastT = now;
+
+  const list   = latest.multiHandLandmarks || [];
+  const handed = latest.multiHandedness   || [];
+
+  if (MODE === "patch"){
+    clearFx();
+    // bones overlay is still useful here, so collect hand pts and run eval
+    const pts = collectHandPoints();
+    pts._pinches = collectPinches();
+    evaluatePatch(dt, pts);
+    renderer.render(scene, camera);
+    drawBones();
+    requestAnimationFrame(renderFrame);
+    return;
+  }
+
+  if (MODE === "music"){
+    clearFx();
+    const rk = el("key").value, md = el("scalemode").value;
+    const oct = parseInt(el("oct").value, 10);
+    const sens = parseFloat(el("sens").value);
+    if (AUDIO_READY){
+      reverb.wet.rampTo(parseFloat(el("rev").value), 0.1);
+      mel.volume.rampTo(parseFloat(el("volM").value), 0.08);
+      chord.volume.rampTo(parseFloat(el("volC").value), 0.08);
+    }
+    const notes = melodyNotes(rk, md, oct);
+    let melodyHand = null, chordHand = null;
+    for (let i = 0; i < list.length; i++){
+      const label = handed[i]?.label || (i === 0 ? "Right" : "Left");
+      if (label === "Right") melodyHand = list[i]; else chordHand = list[i];
+    }
+    if (melodyHand){
+      const ext = detectExtended(melodyHand, sens);
+      let chosen = -1;
+      for (let i = 4; i >= 0; i--){ if (ext[i]){ chosen = i; break; } }
+      if (chosen >= 0){ playMelody(notes[chosen]); updateTunerNote(notes[chosen]); }
+      else { stopMelody(); updateTunerNote(null); }
+    } else { stopMelody(); updateTunerNote(null); }
+    if (chordHand){
+      const ext = detectExtended(chordHand, sens);
+      const count = ext.filter(Boolean).length;
+      if (count > 0){
+        const c = chordFor(count, rk, md, oct);
+        playChord(c); updateTunerChord(c.symbol);
+      } else { stopChord(); updateTunerChord(""); }
+    } else { stopChord(); updateTunerChord(""); }
+  } else {
+    const intensity = parseFloat(el("s-intensity").value);
+    const force     = parseFloat(el("s-force").value);
+    const hue       = parseFloat(el("s-hue").value);
+    const pts = collectHandPoints();
+    const three = is3DScene(SENSE_SCENE);
+    threeC.style.display = three ? "block" : "none";
+    if (three){
+      clearFx();
+      const pinches = collectPinches();
+      // pad to length 2 so scene code can read pinches[0], pinches[1] safely
+      while (pinches.length < 2) pinches.push({ pinching:false, strength:0, x:0, y:0, z:0, label:"", fist:false, palmX:0, palmY:0, thumbX:0, thumbY:0, indexX:0, indexY:0, spread:0 });
+      if (needsSpawn(SENSE_SCENE)) updateSpawnState(pinches);
+      else showHint("");
+      if (SENSE_SCENE === "sphere")      updateSceneSphere(pts, dt, hue);
+      else if (SENSE_SCENE === "wave")   updateSceneWave(pts, dt, hue, force, pinches);
+      else if (SENSE_SCENE === "blob")   updateSceneBlob(pts, dt, hue);
+      else if (SENSE_SCENE === "galaxy") updateSceneGalaxy(pts, dt, hue, force);
+      else if (SENSE_SCENE === "cards")  updateSceneCards(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "card")   updateSceneCard(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "lens")   updateSceneLens(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "taffy")  updateSceneTaffy(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "draw")   updateSceneDraw(pinches, dt, hue);
+      else if (SENSE_SCENE === "sculpt") updateSceneSculpt(pinches, dt, hue);
+      renderer.render(scene, camera);
+    } else {
+      if (SENSE_SCENE === "goo")        sceneGoo(pts, intensity, hue);
+      else if (SENSE_SCENE === "warp")  sceneWarp(pts, intensity, hue, force);
+      else if (SENSE_SCENE === "paint") scenePaint(pts, intensity, hue);
+    }
+  }
+  drawBones();
+  requestAnimationFrame(renderFrame);
+}
+
+// ===========================================================================
+//  UI WIRING
+// ===========================================================================
+function bindRange(id, out, fmt){
+  const r = el(id), o = el(out);
+  const upd = () => { o.textContent = fmt ? fmt(r.value) : r.value; };
+  r.addEventListener("input", upd);
+  upd();
+}
+
+function wireUI(){
+  // music settings
+  bindRange("oct",  "o-oct");
+  bindRange("rev",  "o-rev",  v => parseFloat(v).toFixed(2));
+  bindRange("sens", "o-sens", v => parseFloat(v).toFixed(2));
+  bindRange("volM", "o-volM");
+  bindRange("volC", "o-volC");
+
+  const rebuildKey = () => { updateKeyChip(); };
+  el("key").addEventListener("change", rebuildKey);
+  el("scalemode").addEventListener("change", rebuildKey);
+  el("sound").addEventListener("change", () => setSound(el("sound").value));
+  updateKeyChip();
+
+  // quick scale buttons
+  document.querySelectorAll("#palette-music button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#palette-music button").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+      const [root, mode] = btn.dataset.scaleShortcut.split("-");
+      el("key").value = root.toUpperCase();
+      el("scalemode").value = mode === "maj" ? "maj" : "min";
+      updateKeyChip();
+    });
+  });
+
+  el("mute").addEventListener("click", () => {
+    musicMuted = !musicMuted;
+    if (AUDIO_READY) master.gain.rampTo(musicMuted ? 0 : 0.95, 0.08);
+    el("mute").textContent = musicMuted ? "unmute" : "mute";
+  });
+  let metroOn = false;
+  el("metro").addEventListener("click", () => { metroOn = !metroOn; toggleMetronome(metroOn); });
+
+  // record (contextual: music audio OR sensory video)
+  let aRec = false, vRec = null, vChunks = [];
+  el("btn-rec").addEventListener("click", async () => {
+    if (MODE === "music"){
+      if (!AUDIO_READY) return;
+      if (!aRec){
+        await recorder.start(); aRec = true;
+        el("btn-rec").classList.add("on");
+      } else {
+        const blob = await recorder.stop(); aRec = false;
+        el("btn-rec").classList.remove("on");
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = `hand-synth-${Date.now()}.webm`; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }
+    } else {
+      if (!vRec){
+        const mixer = document.createElement("canvas");
+        mixer.width = fxc.width; mixer.height = fxc.height;
+        const mg = mixer.getContext("2d");
+        const stream = mixer.captureStream(30);
+        let running = true;
+        const draw = () => {
+          if (!running) return;
+          mg.fillStyle = "#000";
+          mg.fillRect(0,0,mixer.width,mixer.height);
+          mg.save();
+          mg.translate(mixer.width, 0); mg.scale(-1, 1);
+          mg.drawImage(video, 0, 0, mixer.width, mixer.height);
+          mg.restore();
+          mg.globalCompositeOperation = "screen";
+          mg.drawImage(fxc, 0, 0, mixer.width, mixer.height);
+          mg.globalCompositeOperation = "source-over";
+          if (threeC.style.display !== "none") mg.drawImage(threeC, 0, 0, mixer.width, mixer.height);
+          mg.drawImage(bonesC, 0, 0, mixer.width, mixer.height);
+          requestAnimationFrame(draw);
+        };
+        draw();
+        vRec = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+        vChunks = [];
+        vRec.ondataavailable = (e) => { if (e.data.size > 0) vChunks.push(e.data); };
+        vRec.onstop = () => {
+          running = false;
+          const blob = new Blob(vChunks, { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = `sensory-${Date.now()}.webm`; a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          vRec = null;
+        };
+        vRec.start();
+        el("btn-rec").classList.add("on");
+      } else {
+        vRec.stop();
+        el("btn-rec").classList.remove("on");
+      }
+    }
+  });
+
+  // sense settings
+  bindRange("s-intensity", "o-s-int",   v => parseFloat(v).toFixed(2));
+  bindRange("s-force",     "o-s-force", v => parseFloat(v).toFixed(2));
+  bindRange("s-hue",       "o-s-hue");
+  bindRange("s-count",     "o-s-count");
+  bindRange("s-sens",      "o-s-sens",  v => parseFloat(v).toFixed(2));
+
+  el("s-count").addEventListener("change", () => {
+    if (SENSE_SCENE === "galaxy") buildSceneGalaxy(parseInt(el("s-count").value, 10));
+  });
+  el("s-clear").addEventListener("click", () => { clearFx(); clearThree(); });
+  el("s-cam").addEventListener("click", () => {
+    video.style.opacity = (video.style.opacity === "0" ? "1" : "0");
+    el("s-cam").classList.toggle("on", video.style.opacity === "0");
+    el("s-cam").textContent = video.style.opacity === "0" ? "show cam" : "hide cam";
+  });
+
+  // scene palette
+  document.querySelectorAll("#palette-sense button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#palette-sense button").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+      SENSE_SCENE = btn.dataset.scene;
+      clearFx(); clearThree();
+      threeC.style.display = is3DScene(SENSE_SCENE) ? "block" : "none";
+      if (SENSE_SCENE === "sphere") buildSceneSphere();
+      if (SENSE_SCENE === "wave")   buildSceneWave();
+      if (SENSE_SCENE === "blob")   buildSceneBlob();
+      if (SENSE_SCENE === "galaxy") buildSceneGalaxy(parseInt(el("s-count").value, 10));
+      if (SENSE_SCENE === "cards")  buildSceneCards();
+      if (SENSE_SCENE === "card")   buildSceneCard();
+      if (SENSE_SCENE === "lens")   buildSceneLens();
+      if (SENSE_SCENE === "taffy")  buildSceneTaffy();
+      if (SENSE_SCENE === "draw")   buildSceneDraw();
+      if (SENSE_SCENE === "sculpt") buildSceneSculpt();
+      if (SENSE_SCENE === "warp")   initGrid();
+      spawn.active = false; spawn.spawnedScale = 0;
+      el("scene-caption").textContent = describeScene(SENSE_SCENE);
+    });
+  });
+
+  // settings drawer
+  el("btn-settings").addEventListener("click", () => el("drawer").classList.toggle("open"));
+  el("drawer-close").addEventListener("click", () => el("drawer").classList.remove("open"));
+  el("btn-dismiss").addEventListener("click", () => dismissSense());
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "F11" && window.winctl){ e.preventDefault(); window.winctl.fullscreen(); }
+    if (e.key === "1"){ setMode("music"); }
+    if (e.key === "2"){ setMode("sense"); }
+    if (e.key === "3"){ setMode("patch"); }
+    if (e.key === "r" || e.key === "R"){ el("btn-rec").click(); }
+    if (e.key === "c" || e.key === "C"){ clearFx(); clearThree(); }
+    if (MODE === "music"){
+      if (e.code === "Space"){ e.preventDefault(); el("mute").click(); }
+      if (e.key === "m" || e.key === "M"){ el("metro").click(); }
+    }
+    if (e.key === "Escape"){ el("drawer").classList.remove("open"); }
+  });
+
+  updateLegend();
+}
+
+// ===========================================================================
+//  BOOT
+// ===========================================================================
+el("go").addEventListener("click", async () => {
+  const go = el("go");
+  go.disabled = true;
+  go.textContent = "warming up…";
+  try {
+    sizeCanvas();
+    initGrid();
+    await initAudio();
+    setSound(el("sound").value);
+    await initHands();
+    initThree();
+    initPatch();
+    el("start").classList.add("hide");
+    el("hud").classList.remove("hide");
+    wireUI();
+    setMode("music");
+    requestAnimationFrame(renderFrame);
+  } catch (err){
+    go.disabled = false;
+    go.textContent = "retry";
+    alert("couldn't start:\n" + (err && err.message ? err.message : err));
+  }
+});
+
+sizeCanvas();
+</script>
+</body>
+</html>

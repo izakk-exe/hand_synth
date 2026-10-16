@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+install/output/
+
+# vendored libs (downloaded by fetch_vendor.js on first build)
+vendor/
+
+# logs + misc
+*.log
+.DS_Store
+Thumbs.db
+*.tmp
+
+# os / editor
+.vscode/
+.idea/
+*.swp
