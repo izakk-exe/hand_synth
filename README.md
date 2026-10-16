@@ -156,12 +156,14 @@ This matters for use in care centers where participants' privacy must be protect
 
 Palma is open source under the MIT license. Developers can inspect, modify, and rebuild the app.
 
-Requires [Node.js LTS](https://nodejs.org).
+👉 **Full step-by-step guide (in French): [docs/INSTALL-SOURCE.md](docs/INSTALL-SOURCE.md)**
+
+Short version — requires [Node.js LTS](https://nodejs.org):
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/palma.git
-cd palma
-install\RUN_DEV.bat   # dev launch
+git clone https://github.com/izakk-exe/hand_synth.git
+cd hand_synth
+install\RUN_DEV.bat   # dev launch (no packaging)
 install\BUILD.bat     # produces Palma-x.x.x-x64-win.exe + portable
 ```
 
