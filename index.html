@@ -38,18 +38,41 @@
   .hud{position:absolute;inset:0;pointer-events:none;z-index:5}
 
   /* top bar — logo pill + mode toggle, nothing else */
-  .top{position:absolute;left:16px;right:16px;top:16px;display:flex;align-items:center;gap:10px;pointer-events:none}
-  .brand{display:inline-flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--edge);padding:9px 14px;border-radius:999px;backdrop-filter:blur(16px);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;pointer-events:auto}
-  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--hot);box-shadow:0 0 10px var(--hot);animation:p 1.4s infinite}
-  @keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
-  .brand .sig{color:var(--cold);margin-left:4px}
+  .top{position:absolute;left:16px;right:16px;top:16px;display:flex;align-items:center;gap:8px;pointer-events:none;flex-wrap:wrap}
+  /* ------------------------------------------------------------------
+     HUD visual language: monospace "lab-report" — thin 1px outlines,
+     monochrome white-on-black chrome, color reserved for scene content.
+     ------------------------------------------------------------------ */
+  .brand{display:inline-flex;align-items:center;gap:10px;background:transparent;border:1px solid var(--edge);padding:7px 12px;border-radius:2px;backdrop-filter:blur(10px);font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;font-weight:600;pointer-events:auto;color:var(--ink)}
+  .brand .dot{width:6px;height:6px;border-radius:0;background:#fff;animation:p 1.4s infinite}
+  @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
+  .brand .sig{color:var(--dim);margin-left:4px}
 
-  .modebar{display:flex;background:var(--panel);border:1px solid var(--edge);border-radius:999px;padding:4px;backdrop-filter:blur(16px);pointer-events:auto}
-  .modebar button{background:transparent;border:none;color:var(--dim);padding:7px 16px;font:inherit;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-radius:999px;transition:all .15s}
-  .modebar button:hover{color:var(--ink)}
-  .modebar button.on{background:var(--hot);color:#fff}
-  .modebar button.on.sense{background:var(--violet)}
-  .modebar button.on.patch{background:var(--lime);color:#000}
+  .modebar{display:flex;background:transparent;border:1px solid var(--edge);border-radius:2px;padding:0;backdrop-filter:blur(10px);pointer-events:auto;font-family:var(--mono)}
+  .modebar button{background:transparent;border:none;border-right:1px solid var(--edge);color:var(--dim);padding:8px 14px;font:inherit;font-size:10px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;cursor:pointer;border-radius:0;transition:all .12s}
+  .modebar button:last-child{border-right:none}
+  .modebar button:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+  .modebar button.on{background:#fff;color:#000}
+  .modebar button.on.sense{background:#fff;color:#000}
+  .modebar button.on.patch{background:#fff;color:#000}
+
+  /* ---------- hand-guide modal ---------- */
+  .guide-modal{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(5,5,10,.76);backdrop-filter:blur(8px);pointer-events:auto;animation:fadein .18s ease}
+  .guide-modal.hide{display:none}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  .guide-card{background:linear-gradient(160deg,#0e0e18 0%,#120d1a 100%);border:1px solid var(--edge);border-radius:18px;padding:26px 30px;max-width:560px;width:92%;max-height:84vh;overflow-y:auto;box-shadow:0 20px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.04);position:relative}
+  .guide-card h2{margin:0 0 4px;font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--lime);font-weight:800}
+  .guide-card > p{margin:0 0 20px;color:var(--dim);font-size:13px;line-height:1.5}
+  .guide-close{position:absolute;top:14px;right:14px;background:transparent;border:none;color:var(--dim);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px}
+  .guide-close:hover{color:var(--hot);background:rgba(255,45,122,.1)}
+  .guide-list{display:grid;grid-template-columns:1fr;gap:10px}
+  .guide-row{display:grid;grid-template-columns:72px 1fr;gap:14px;padding:14px;border:1px solid var(--edge);border-radius:12px;background:rgba(255,255,255,.02);align-items:start;transition:border-color .15s}
+  .guide-row:hover{border-color:var(--lime)}
+  .guide-row .ic{font-size:26px;line-height:1;text-align:center;padding-top:4px;letter-spacing:1px}
+  .guide-row .name{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink);font-weight:700;margin-bottom:6px}
+  .guide-row .desc{font-size:12px;color:var(--dim);line-height:1.6}
+  .guide-foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--edge);font-size:11px;color:var(--dim);text-align:center;letter-spacing:.08em}
+  .guide-foot kbd{font-family:var(--mono);font-size:10px;background:#1a1a24;border:1px solid var(--edge);border-radius:4px;padding:2px 6px;color:var(--ink);margin:0 2px}
 
   /* ---------- patch mode (node graph) ---------- */
   .patch-stage{position:absolute;inset:0;background:rgba(7,7,11,.82);z-index:4;pointer-events:auto;overflow:hidden}
@@ -94,26 +117,34 @@
   .patch-footer button:hover{color:var(--ink);background:rgba(255,255,255,.05)}
   .patch-footer button.danger:hover{color:var(--hot);background:rgba(255,45,122,.1)}
 
-  .top-right{margin-left:auto;display:flex;gap:8px;align-items:center;pointer-events:auto}
-  .mini-chip{background:var(--panel);border:1px solid var(--edge);border-radius:999px;padding:7px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);backdrop-filter:blur(16px);font-family:var(--mono);font-variant-numeric:tabular-nums}
-  .mini-chip b{color:var(--ink);margin-left:4px}
-  .icon-btn{background:var(--panel);border:1px solid var(--edge);width:36px;height:36px;border-radius:50%;color:var(--dim);cursor:pointer;backdrop-filter:blur(16px);display:grid;place-items:center;transition:all .15s;padding:0}
-  .icon-btn:hover{color:var(--ink);border-color:var(--violet)}
-  .icon-btn.on{color:var(--violet);border-color:var(--violet);box-shadow:0 0 14px rgba(198,137,255,.4)}
-  .icon-btn svg{width:18px;height:18px}
+  .top-right{margin-left:auto;display:flex;gap:6px;align-items:center;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end}
+  .mini-chip{background:transparent;border:1px solid var(--edge);border-radius:2px;padding:6px 10px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);backdrop-filter:blur(10px);font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .mini-chip b{color:var(--ink);margin-left:6px}
+  .icon-btn{background:transparent;border:1px solid var(--edge);width:30px;height:30px;border-radius:2px;color:var(--dim);cursor:pointer;backdrop-filter:blur(10px);display:grid;place-items:center;transition:all .12s;padding:0}
+  .icon-btn:hover{color:var(--ink);border-color:var(--ink)}
+  .icon-btn.on{color:var(--ink);border-color:var(--ink);background:rgba(255,255,255,.08)}
+  .icon-btn svg{width:14px;height:14px}
 
   /* bottom center — single scene palette pill */
-  .bottom{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:10px}
-  .scene-palette{display:flex;gap:4px;background:var(--panel);border:1px solid var(--edge);border-radius:999px;padding:5px;backdrop-filter:blur(16px);box-shadow:0 10px 40px rgba(0,0,0,.4)}
-  .scene-palette button{background:transparent;border:none;color:var(--dim);padding:9px 14px;font:inherit;font-size:11px;letter-spacing:.08em;cursor:pointer;border-radius:999px;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px;font-weight:500}
-  .scene-palette button:hover{color:var(--ink);background:rgba(255,255,255,.05)}
-  .scene-palette button.on{background:var(--violet);color:#000;font-weight:700}
-  .scene-palette .glyph{font-size:14px;line-height:1}
-  .scene-palette .sep{width:1px;background:var(--edge);margin:4px 2px}
-  .scene-caption{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);text-align:center}
+  /* bottom palette — compact wrapping tile grid, pinned to bottom center,
+     max-width capped so it never overflows */
+  .bottom{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:6px;max-width:min(960px, calc(100vw - 48px))}
+  .scene-palette{display:grid;grid-template-columns:repeat(10, 72px);gap:4px;background:transparent;border:1px solid var(--edge);border-radius:2px;padding:4px;backdrop-filter:blur(10px);font-family:var(--mono)}
+  .scene-palette button{background:transparent;border:1px solid transparent;color:var(--dim);padding:6px 2px;font:inherit;font-size:9px;letter-spacing:.14em;cursor:pointer;border-radius:0;transition:all .1s;white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:600;text-transform:uppercase;line-height:1.1;overflow:hidden}
+  .scene-palette button:hover{color:var(--ink);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.15)}
+  .scene-palette button.on{background:#fff;color:#000}
+  .scene-palette .glyph{font-size:16px;line-height:1;font-weight:400}
+  .scene-palette .sep{display:none}
+  /* music palette stays as a horizontal pill (only 5 items, won't overflow) */
+  #palette-music{display:flex;gap:4px}
+  #palette-music button{min-width:62px}
+  .scene-caption{font-size:9px;letter-spacing:.4em;text-transform:uppercase;color:var(--dim);text-align:center;font-family:var(--mono);padding:2px 10px}
+  @media (max-width: 820px){
+    .scene-palette{grid-template-columns:repeat(5, 72px)}
+  }
 
   /* floating hint (spawn gesture) — subtle, centered under top bar */
-  .hint{position:absolute;left:50%;top:72px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--violet);color:var(--violet);padding:8px 16px;border-radius:999px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;backdrop-filter:blur(16px);pointer-events:none;z-index:6;opacity:0;transition:opacity .3s ease}
+  .hint{position:absolute;left:50%;top:62px;transform:translateX(-50%);background:transparent;border:1px solid var(--edge);color:var(--ink);padding:6px 12px;border-radius:2px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;font-weight:600;backdrop-filter:blur(10px);pointer-events:none;z-index:6;opacity:0;transition:opacity .25s ease;font-family:var(--mono)}
   .hint.show{opacity:1}
   .hint .dot{display:inline-block;width:6px;height:6px;background:var(--violet);border-radius:50%;margin-right:8px;animation:p 1.4s infinite}
 
@@ -125,7 +156,7 @@
   .tuner .chord{font-size:clamp(26px, 4vw, 42px);font-weight:700;color:var(--cold);letter-spacing:.08em;margin-top:16px;text-shadow:0 0 24px var(--cold),0 2px 10px rgba(0,0,0,.6);min-height:1.2em}
 
   /* ---------- settings drawer (slides from right) ---------- */
-  .drawer{position:absolute;top:16px;right:16px;width:320px;max-height:calc(100% - 32px);background:var(--panel);border:1px solid var(--edge);border-radius:14px;backdrop-filter:blur(16px);padding:18px;pointer-events:auto;overflow-y:auto;transform:translateX(calc(100% + 40px));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:7;font-family:var(--mono);box-shadow:0 10px 40px rgba(0,0,0,.4)}
+  .drawer{position:absolute;top:60px;right:16px;width:300px;max-height:calc(100% - 92px);background:rgba(5,5,10,.9);border:1px solid var(--edge);border-radius:2px;backdrop-filter:blur(10px);padding:16px;pointer-events:auto;overflow-y:auto;transform:translateX(calc(100% + 40px));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:7;font-family:var(--mono);box-shadow:0 10px 40px rgba(0,0,0,.5)}
   .drawer.open{transform:translateX(0)}
   .drawer h3{margin:16px 0 8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);font-weight:600}
   .drawer h3:first-child{margin-top:0}
@@ -147,7 +178,72 @@
   .drawer kbd{font-family:var(--mono);font-size:9px;background:#1a1a24;border:1px solid var(--edge);border-radius:3px;padding:1px 4px;color:var(--ink)}
 
   /* ---------- start screen ---------- */
+  /* original .status kept for other panels */
   .status{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;background:var(--panel);border:1px solid var(--edge);padding:36px 42px;border-radius:20px;max-width:520px;z-index:10;backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+
+  /* ---------- LAUNCHER (splash screen) ----------
+     Chrome / lab-report aesthetic. Dark grid background, corner brackets,
+     monospace labels, big launch button with arrow. */
+  .launcher{position:absolute;inset:0;z-index:10;background:#050508;display:grid;place-items:center;overflow:hidden;font-family:var(--mono);color:var(--ink)}
+  .launcher-grid{position:absolute;inset:0;background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size: 20px 20px, 20px 20px, 120px 120px, 120px 120px;
+    pointer-events:none;mask-image:radial-gradient(ellipse at center, #000 40%, transparent 85%);
+    -webkit-mask-image:radial-gradient(ellipse at center, #000 40%, transparent 85%)}
+  .launcher-vignette{position:absolute;inset:0;pointer-events:none;background:
+    radial-gradient(ellipse at 20% 10%, rgba(68,224,255,.08), transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(198,137,255,.08), transparent 55%)}
+  .launcher-card{position:relative;background:rgba(10,10,16,.92);border:1px solid rgba(255,255,255,.1);padding:28px 36px;max-width:720px;width:92%;box-shadow:0 20px 80px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.04)}
+  .launcher-card .bracket{position:absolute;width:16px;height:16px;border:1px solid #fff;pointer-events:none}
+  .launcher-card .bracket.tl{top:-1px;left:-1px;border-right:none;border-bottom:none}
+  .launcher-card .bracket.tr{top:-1px;right:-1px;border-left:none;border-bottom:none}
+  .launcher-card .bracket.bl{bottom:-1px;left:-1px;border-right:none;border-top:none}
+  .launcher-card .bracket.br{bottom:-1px;right:-1px;border-left:none;border-top:none}
+
+  .launcher-topbar{display:flex;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:22px}
+  .l-code{font-size:9px;letter-spacing:.22em;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:600}
+  .l-code b{color:#fff}
+
+  .launcher-hero{text-align:center;padding:18px 0 24px;position:relative}
+  .l-eyebrow{font-size:9px;letter-spacing:.4em;color:var(--dim);margin-bottom:14px}
+  .l-title{font-family:var(--sans);font-size:clamp(60px, 10vw, 110px);font-weight:800;line-height:.9;letter-spacing:-.03em;margin:0;color:#fff;position:relative;display:inline-block}
+  .l-title::after{content:"_";color:#fff;animation:blink 1s steps(2) infinite;margin-left:2px}
+  @keyframes blink{50%{opacity:0}}
+  .l-sub{font-size:10px;letter-spacing:.3em;color:var(--dim);margin-top:16px;text-transform:uppercase}
+
+  .launcher-info{display:grid;grid-template-columns:repeat(3, 1fr);gap:20px;padding:16px 0 20px;border-top:1px dashed rgba(255,255,255,.08);border-bottom:1px dashed rgba(255,255,255,.08)}
+  .l-col{display:flex;flex-direction:column;gap:6px}
+  .l-colhead{font-size:9px;letter-spacing:.3em;color:#fff;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+  .l-row{display:grid;grid-template-columns:34px 1fr;gap:8px;font-size:10px;align-items:baseline;line-height:1.4}
+  .l-k{color:var(--dim);font-weight:700;letter-spacing:.15em}
+  .l-v{color:rgba(255,255,255,.85)}
+
+  .launcher-launch{display:flex;justify-content:center;padding:22px 0 16px}
+  .l-launch{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:14px 20px;background:transparent;border:1px solid #fff;color:#fff;cursor:pointer;font:inherit;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;width:420px;transition:all .15s;position:relative}
+  .l-launch::before,.l-launch::after{content:"";position:absolute;width:8px;height:8px;background:#fff}
+  .l-launch::before{left:-5px;top:50%;transform:translateY(-50%)}
+  .l-launch::after{right:-5px;top:50%;transform:translateY(-50%)}
+  .l-launch:hover{background:#fff;color:#000}
+  .l-launch:hover::before,.l-launch:hover::after{background:#000}
+  .l-launch:disabled{opacity:.5;cursor:wait}
+  .l-launch-code{font-size:9px;letter-spacing:.3em;opacity:.75}
+  .l-launch-main{text-align:center}
+  .l-launch-arrow{font-size:14px}
+
+  .launcher-footer{display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+  .l-dots{display:flex;gap:4px}
+  .l-dots span{width:5px;height:5px;background:rgba(255,255,255,.3);display:inline-block;animation:pulse 1.4s infinite}
+  .l-dots span:nth-child(2){animation-delay:.2s}
+  .l-dots span:nth-child(3){animation-delay:.4s}
+  @keyframes pulse{0%,100%{background:rgba(255,255,255,.2)}50%{background:#fff}}
+
+  @media (max-width: 720px){
+    .launcher-info{grid-template-columns:1fr}
+    .l-launch{width:100%}
+  }
   .status h1{margin:0 0 8px;font-size:28px;letter-spacing:-.02em;font-weight:800}
   .status .tagline{color:var(--dim);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 24px;font-weight:500}
   .status p{margin:0 0 10px;color:var(--dim);font-size:13px;line-height:1.6}
@@ -193,32 +289,60 @@
   <canvas id="three"></canvas>
   <canvas id="bones"></canvas>
 
-  <div id="start" class="status">
-    <h1>Palma</h1>
-    <p class="tagline">make music · shape light · with your hands</p>
-    <p>a two-mode playground driven by your webcam. switch between <b style="color:var(--hot)">MUSIC</b> and <b style="color:var(--violet)">SENSORY</b> at any time.</p>
-    <div class="split">
-      <div class="side music">
-        <h4>music</h4>
-        <ul>
-          <li>right hand → melody</li>
-          <li>left hand → chord</li>
-          <li>pentatonic lock</li>
-          <li>tuner for singing</li>
-        </ul>
+  <div id="start" class="launcher">
+    <div class="launcher-grid"></div>
+    <div class="launcher-vignette"></div>
+    <div class="launcher-card">
+      <!-- corner brackets -->
+      <span class="bracket tl"></span><span class="bracket tr"></span>
+      <span class="bracket bl"></span><span class="bracket br"></span>
+      <!-- status bar -->
+      <div class="launcher-topbar">
+        <div class="l-code">PALMA/v1.0.0 · BUILD-1Z4K</div>
+        <div class="l-code">UNIT · HAND-SYNTH · READY</div>
       </div>
-      <div class="side sense">
-        <h4>sensory</h4>
-        <ul>
-          <li>join your hands then spread them</li>
-          <li>cards, lens, taffy, goo</li>
-          <li>PBR 3D rendering</li>
-          <li>record the result</li>
-        </ul>
+      <!-- hero -->
+      <div class="launcher-hero">
+        <div class="l-eyebrow">[ GESTURE INTERFACE · AESTH-26-AI ]</div>
+        <h1 class="l-title">PALMA</h1>
+        <div class="l-sub">MAKE MUSIC · SHAPE LIGHT · WITH YOUR HANDS ONLY</div>
+      </div>
+      <!-- info columns -->
+      <div class="launcher-info">
+        <div class="l-col">
+          <div class="l-colhead">01 · MODES</div>
+          <div class="l-row"><span class="l-k">MUS</span><span class="l-v">Right hand melody · left chord</span></div>
+          <div class="l-row"><span class="l-k">SNS</span><span class="l-v">18 chrome / glass 3D scenes</span></div>
+          <div class="l-row"><span class="l-k">PTC</span><span class="l-v">Node-graph patch mode</span></div>
+        </div>
+        <div class="l-col">
+          <div class="l-colhead">02 · CORE</div>
+          <div class="l-row"><span class="l-k">CAM</span><span class="l-v">Webcam · MediaPipe Hands</span></div>
+          <div class="l-row"><span class="l-k">RND</span><span class="l-v">Three.js · PBR · Chrome env</span></div>
+          <div class="l-row"><span class="l-k">LOC</span><span class="l-v">Fully offline · No account</span></div>
+        </div>
+        <div class="l-col">
+          <div class="l-colhead">03 · GESTURES</div>
+          <div class="l-row"><span class="l-k">PCH</span><span class="l-v">Thumb + index to summon</span></div>
+          <div class="l-row"><span class="l-k">FST</span><span class="l-v">Closed fist to translate</span></div>
+          <div class="l-row"><span class="l-k">×2</span><span class="l-v">Two fists to spin 360°</span></div>
+        </div>
+      </div>
+      <!-- launch -->
+      <div class="launcher-launch">
+        <button class="l-launch" id="go">
+          <span class="l-launch-code">◉ EXEC</span>
+          <span class="l-launch-main">LAUNCH / BOOT CAMERA</span>
+          <span class="l-launch-arrow">⟶</span>
+        </button>
+      </div>
+      <!-- footer -->
+      <div class="launcher-footer">
+        <div class="l-code">LAT · LIVE-INPUT</div>
+        <div class="l-dots"><span></span><span></span><span></span></div>
+        <div class="l-code">BUILT BY <b>1Z4K</b> · MIT</div>
       </div>
     </div>
-    <button class="primary" id="go">start</button>
-    <p style="margin-top:16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase">Built by <span class="sig">1Z4K</span></p>
   </div>
 
   <div class="hud hide" id="hud">
@@ -233,6 +357,9 @@
       <div class="top-right">
         <div class="mini-chip" id="chip-key">KEY<b id="r-key">G maj</b></div>
         <div class="mini-chip">FPS<b id="r-fps">0</b></div>
+        <button class="icon-btn" id="btn-guide" title="hand gesture guide" style="color:var(--lime)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V7a2 2 0 1 1 4 0v4"/><path d="M9 11V5a2 2 0 1 1 4 0v6"/><path d="M13 11V3a2 2 0 1 1 4 0v8"/><path d="M17 11V7a2 2 0 1 1 4 0v10a7 7 0 0 1-7 7h-2a7 7 0 0 1-7-7v-5a2 2 0 1 1 4 0v2"/></svg>
+        </button>
         <button class="icon-btn" id="btn-dismiss" title="dismiss summoned object" style="color:var(--hot)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -267,23 +394,40 @@
       </div>
       <!-- sense palette -->
       <div class="scene-palette hide" id="palette-sense">
-        <button class="on" data-scene="draw"><span class="glyph">✎</span>air draw</button>
-        <button data-scene="sculpt"><span class="glyph">⬢</span>sculpt</button>
-        <span class="sep"></span>
-        <button data-scene="cards"><span class="glyph">▦</span>cards</button>
-        <button data-scene="card"><span class="glyph">▢</span>canvas</button>
+        <button class="on" data-scene="sculpt"><span class="glyph">⬢</span>cube</button>
+        <button data-scene="cards"><span class="glyph">▦</span>windows</button>
+        <button data-scene="card"><span class="glyph">∿</span>soundwave</button>
         <button data-scene="lens"><span class="glyph">◉</span>ball</button>
         <button data-scene="taffy"><span class="glyph">∥</span>taffy</button>
-        <span class="sep"></span>
         <button data-scene="sphere"><span class="glyph">◯</span>sphere</button>
         <button data-scene="blob"><span class="glyph">◍</span>blob</button>
-        <button data-scene="wave"><span class="glyph">∿</span>wave</button>
+        <button data-scene="wave"><span class="glyph">▲</span>wave</button>
         <button data-scene="galaxy"><span class="glyph">✦</span>galaxy</button>
-        <span class="sep"></span>
-        <button data-scene="goo"><span class="glyph">●</span>goo</button>
-        <button data-scene="warp"><span class="glyph">#</span>warp</button>
+        <button data-scene="plot3d"><span class="glyph">⌨</span>plot3d</button>
+        <button data-scene="prism"><span class="glyph">◇</span>prism</button>
+        <button data-scene="voxelbox"><span class="glyph">⌗</span>voxelbox</button>
+        <button data-scene="pointcloud"><span class="glyph">⁂</span>points</button>
+        <button data-scene="tunnel"><span class="glyph">◎</span>tunnel</button>
+        <button data-scene="ribbon"><span class="glyph">∞</span>ribbon</button>
+        <button data-scene="lattice"><span class="glyph">⟡</span>lattice</button>
+        <button data-scene="tornado"><span class="glyph">⟳</span>tornado</button>
+        <button data-scene="bloom"><span class="glyph">✺</span>bloom</button>
+        <button data-scene="chrome"><span class="glyph">◐</span>chrome</button>
+        <button data-scene="glass"><span class="glyph">⬚</span>glass</button>
+        <button data-scene="mercury"><span class="glyph">▱</span>mercury</button>
       </div>
       <div class="scene-caption" id="scene-caption">RIGHT HAND = MELODY · LEFT HAND = CHORD</div>
+    </div>
+
+    <!-- hand-guide modal -->
+    <div id="guide-modal" class="guide-modal hide">
+      <div class="guide-card">
+        <button class="guide-close" id="guide-close">✕</button>
+        <h2 id="guide-title">Hand Guide</h2>
+        <p id="guide-subtitle">Hand gestures for the current scene.</p>
+        <div class="guide-list" id="guide-list"></div>
+        <div class="guide-foot">press <kbd>?</kbd> or <kbd>H</kbd> to toggle · click outside to close</div>
+      </div>
     </div>
 
     <!-- patch stage (node graph) -->
@@ -706,21 +850,52 @@ function updateSpawnState(pinches){
   spawn.hadPinch = anyPinch;
 }
 
+// ---- hand-guide modal (module-scope so setMode can close it) ----
+function renderGuide(){
+  const g = SCENE_GUIDE[SENSE_SCENE];
+  if (!g){
+    el("guide-title").textContent = "Hand Guide";
+    el("guide-subtitle").textContent = "Switch to a Sensory scene to see gestures.";
+    el("guide-list").innerHTML = "";
+    return;
+  }
+  el("guide-title").textContent = g.title;
+  el("guide-subtitle").textContent = g.subtitle;
+  el("guide-list").innerHTML = g.gestures.map(x =>
+    `<div class="guide-row"><div class="ic">${x.icon}</div><div><div class="name">${x.name}</div><div class="desc">${x.desc}</div></div></div>`
+  ).join("");
+}
+function openGuide(){ renderGuide(); el("guide-modal").classList.remove("hide"); }
+function closeGuide(){ el("guide-modal").classList.add("hide"); }
+
 // explicit dismiss — called by the ✕ button in the HUD
 function dismissSense(){
   spawn.active = false;
   spawn.spawnedScale = 0;
+  // reset per-scene smoothing anchors
+  windowsPose.initialized = false;
+  for (const k of Object.keys(rotAnchors)) rotAnchors[k] = null;
   // rebuild the current scene to reset its internal state
   if (SENSE_SCENE === "cards")  buildSceneCards();
   if (SENSE_SCENE === "card")   buildSceneCard();
   if (SENSE_SCENE === "lens")   buildSceneLens();
   if (SENSE_SCENE === "taffy")  buildSceneTaffy();
   if (SENSE_SCENE === "sculpt") buildSceneSculpt();
-  if (SENSE_SCENE === "draw")   buildSceneDraw();
   if (SENSE_SCENE === "sphere") buildSceneSphere();
   if (SENSE_SCENE === "blob")   buildSceneBlob();
   if (SENSE_SCENE === "wave")   buildSceneWave();
   if (SENSE_SCENE === "galaxy") buildSceneGalaxy(parseInt(el("s-count").value, 10));
+  if (SENSE_SCENE === "plot3d")   buildScenePlot3d();
+  if (SENSE_SCENE === "prism")    buildScenePrism();
+  if (SENSE_SCENE === "voxelbox") buildSceneVoxelbox();
+  if (SENSE_SCENE === "tunnel")   buildSceneTunnel();
+  if (SENSE_SCENE === "ribbon")   buildSceneRibbon();
+  if (SENSE_SCENE === "lattice")  buildSceneLattice();
+  if (SENSE_SCENE === "tornado")  buildSceneTornado();
+  if (SENSE_SCENE === "bloom")    buildSceneBloom();
+  if (SENSE_SCENE === "chrome")   buildSceneChrome();
+  if (SENSE_SCENE === "glass")    buildSceneGlass();
+  if (SENSE_SCENE === "mercury")  buildSceneMercury();
   clearFx();
 }
 
@@ -769,7 +944,8 @@ function showHint(text){
 //  MODE SWITCHING
 // ===========================================================================
 let MODE = "music";
-let SENSE_SCENE = "draw";
+let SENSE_SCENE = "sculpt";
+let SHOW_AR_LABELS = true;   // AR debug-style tip boxes + IDs — toggle with L
 let musicMuted = false;
 
 function setMode(m){
@@ -782,6 +958,8 @@ function setMode(m){
   el("palette-music").classList.toggle("hide", m !== "music");
   el("palette-sense").classList.toggle("hide", m !== "sense");
   el("btn-dismiss").style.display = (m === "sense") ? "grid" : "none";
+  el("btn-guide").style.display   = (m === "sense") ? "grid" : "none";
+  if (m !== "sense") closeGuide();
   el("drawer-music").classList.toggle("hide", m !== "music");
   el("drawer-sense").classList.toggle("hide", m !== "sense");
   el("tuner").classList.toggle("hide",   m !== "music");
@@ -812,30 +990,305 @@ el("mode-music").addEventListener("click", () => setMode("music"));
 el("mode-sense").addEventListener("click", () => setMode("sense"));
 el("mode-patch").addEventListener("click", () => setMode("patch"));
 
-const SCENES_3D   = ["sphere","wave","blob","galaxy","cards","card","lens","taffy","draw","sculpt"];
-const SCENES_SPAWN= ["cards","card","lens","taffy"];
-const SCENES_PINCH= ["draw","sculpt","cards","card","lens","taffy"];
+const SCENES_3D   = ["sphere","wave","blob","galaxy","cards","card","lens","taffy","sculpt","plot3d","prism","voxelbox","tunnel","ribbon","lattice","tornado","bloom","chrome","glass","mercury"];
+const SCENES_SPAWN= ["cards","card","lens","taffy","sculpt","galaxy","wave","plot3d","prism","voxelbox","pointcloud","tunnel","ribbon","lattice","tornado","bloom","chrome","glass","mercury"];
+const SCENES_PINCH= ["sculpt","cards","card","lens","taffy","plot3d","prism","voxelbox","pointcloud","tunnel","ribbon","lattice","tornado","bloom","chrome","glass","mercury"];
 function is3DScene(s){ return SCENES_3D.includes(s); }
 function needsSpawn(s){ return SCENES_SPAWN.includes(s); }
 function usesPinch(s){ return SCENES_PINCH.includes(s); }
 
+const SCENE_NUMS = { sculpt:"01", cards:"02", card:"03", lens:"04", taffy:"05",
+  sphere:"06", blob:"07", wave:"08", galaxy:"09", plot3d:"10", prism:"11", voxelbox:"12",
+  pointcloud:"13", tunnel:"14", ribbon:"15", lattice:"16", tornado:"17", bloom:"18",
+  chrome:"19", glass:"20", mercury:"21" };
 function describeScene(s){
+  const num = SCENE_NUMS[s] || "00";
   const names = {
-    draw:"AIR DRAW · PINCH TO DRAW · RELEASE TO MATERIALIZE",
-    sculpt:"SCULPT · PINCH CORNER HANDLES TO DEFORM",
-    cards:"CARD STACK · PINCH BOTH HANDS TO SUMMON",
-    card:"LIVE CANVAS · PINCH BOTH HANDS TO STRETCH",
-    lens:"DEFORM BALL · PINCH BOTH HANDS TO SUMMON · PINCH HANDLES TO SCULPT",
-    taffy:"TAFFY · PINCH BOTH HANDS TO SHAPE",
+    sculpt:"CUBE · 2 PINCHES SUMMON · 2 FISTS SPIN · OPEN HANDS LEVITATE · 1 FIST DEFORM",
+    cards:"WINDOWS · PINCH TO SUMMON · SPREAD TO GROW · 2 HANDS TO STRETCH",
+    card:"SOUNDWAVE · PINCH TO SUMMON · PINCH + RELEASE TO THROW PARTICLES",
+    lens:"BALL · PINCH TO SUMMON · HANDLES TO DEFORM",
+    taffy:"TAFFY · PINCH TO SUMMON · SHAPE WITH HANDS",
     sphere:"ORB · HANDS DRIVE POSITION AND SPIN",
     blob:"DEFORM BLOB · FINGERTIPS PULL VERTICES",
     wave:"WAVE · PALMS BECOME ENDPOINTS",
     galaxy:"GALAXY · FINGERS PULL · PALMS PUSH",
-    goo:"METABALLS · FINGERTIPS GLOW · PALMS BLEND",
-    warp:"WARP GRID · HANDS WARP THE MESH"
+    plot3d:"PLOT3D · 3D WAVE SURFACE BETWEEN HANDS",
+    prism:"PRISM · CHROMATIC WINDOW · PINCH TO SUMMON",
+    voxelbox:"VOXELBOX · 16³ POINT GRID IN A WIREFRAME CUBE",
+    pointcloud:"POINTS · ORBITAL PARTICLES + BRIGHT INTER-HAND THREADS",
+    tunnel:"TUNNEL · INFINITE RING TUNNEL · PINCH TO ENTER",
+    ribbon:"RIBBON · CHROMATIC 3D RIBBON UNDULATES BETWEEN HANDS",
+    lattice:"LATTICE · ICOSAHEDRAL NODE GRAPH, HANDS SCALE IT",
+    tornado:"TORNADO · ROTATING COLUMN OF CUBES, HANDS CONTROL SIZE",
+    bloom:"BLOOM · CRYSTAL SHARDS BURST OUT, HAND SPREAD = EXPANSION",
+    chrome:"CHROME · LIQUID METAL BLOB · MIRROR-FINISH PBR",
+    glass:"GLASS · TINTED CUBE WITH ANIMATED LIQUID INSIDE",
+    mercury:"MERCURY · CHROME POOL WITH WAVE DISPLACEMENT"
   };
-  return names[s] || s.toUpperCase();
+  const base = names[s] || s.toUpperCase();
+  return `SCN·${num} · ${base}`;
 }
+
+// gesture guide per scene (shown in the hand-guide modal)
+const SCENE_GUIDE = {
+  sculpt: {
+    title: "CUBE",
+    subtitle: "A futuristic cube you summon, spin, levitate, and deform.",
+    gestures: [
+      { icon:"🤏🤏", name:"Both hands pinch",  desc:"Summon the cube between your two pinch points. Spread your hands to resize." },
+      { icon:"✊✊",  name:"Both fists",         desc:"Spin the cube in 360° (yaw, pitch, roll follow your hand motion)." },
+      { icon:"🖐🖐",  name:"Both open hands",   desc:"The cube levitates between your two palms, bobbing gently." },
+      { icon:"✊🖐",  name:"One fist only",     desc:"Deform the cube — the corner nearest your fist bulges toward it." }
+    ]
+  },
+  cards: {
+    title: "WINDOWS",
+    subtitle: "A floating stack of UI windows between your hands.",
+    gestures: [
+      { icon:"🤏",   name:"One pinch",          desc:"Windows appear between your thumb and index. Spread fingers to grow." },
+      { icon:"🤏🤏", name:"Both hands pinch",   desc:"Windows stretch between your two pinch points." },
+      { icon:"✊✊",  name:"Both fists",         desc:"Rotate the whole stack 360°." },
+      { icon:"✕",   name:"Dismiss button",      desc:"Red × top-right clears the stack." }
+    ]
+  },
+  card: {
+    title: "SOUNDWAVE",
+    subtitle: "A particle wave you can throw between your two hands.",
+    gestures: [
+      { icon:"🤏",   name:"One pinch",          desc:"Summon the wave at that hand. Particles cluster around the pinch." },
+      { icon:"🤏→🖐",name:"Pinch then open",    desc:"Throw the particles — they fly toward the other hand." },
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Wave stretches between the two pinch points." },
+      { icon:"✊✊",  name:"Both fists",         desc:"Spin the wave on itself." }
+    ]
+  },
+  lens: {
+    title: "BALL",
+    subtitle: "A deformable wireframe orb with 6 handles.",
+    gestures: [
+      { icon:"🤏",   name:"One pinch",          desc:"Ball appears between your thumb and index." },
+      { icon:"🤏→●", name:"Pinch a handle",     desc:"Grab a corner handle to deform the ball." },
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Stretch the ball between your hands." },
+      { icon:"✊✊",  name:"Both fists",         desc:"Spin the ball 360°." },
+      { icon:"✊",   name:"One fist",           desc:"Translate the ball." }
+    ]
+  },
+  taffy: {
+    title: "TAFFY",
+    subtitle: "An iridescent twisted column between your hands.",
+    gestures: [
+      { icon:"🤏",   name:"One pinch",          desc:"Taffy appears between your thumb and index." },
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Stretch the taffy between the two hands." },
+      { icon:"✊✊",  name:"Both fists",         desc:"Spin the whole column." }
+    ]
+  },
+  sphere: {
+    title: "ORB",
+    subtitle: "A translucent neon sphere with wireframe shell.",
+    gestures: [
+      { icon:"🖐",   name:"One hand",           desc:"Sphere follows your palm position." },
+      { icon:"🖐🖐", name:"Two hands",          desc:"Sphere sits between them; distance controls size." }
+    ]
+  },
+  blob: {
+    title: "DEFORM BLOB",
+    subtitle: "A soft jelly whose vertices get pulled by each fingertip.",
+    gestures: [
+      { icon:"👆",   name:"Extend fingers",     desc:"Each raised fingertip pulls on the nearest vertices." }
+    ]
+  },
+  wave: {
+    title: "WAVE",
+    subtitle: "A shimmering bridge between your two palms.",
+    gestures: [
+      { icon:"🖐🖐", name:"Two palms",          desc:"Wave stretches between them. Amplitude grows with distance." }
+    ]
+  },
+  galaxy: {
+    title: "GALAXY",
+    subtitle: "A 3D particle cloud reacting to your fingers and palms.",
+    gestures: [
+      { icon:"👆",   name:"Fingertips",         desc:"Particles are attracted to each extended fingertip." },
+      { icon:"🖐",   name:"Palms",              desc:"Palms push particles away." }
+    ]
+  },
+  goo: {
+    title: "METABALLS",
+    subtitle: "Fingertips become glowing colored blobs that gel together.",
+    gestures: [
+      { icon:"👆",   name:"Fingertips",         desc:"Each raised finger is a colored blob — closer blobs merge into goo." },
+      { icon:"🖐",   name:"Palms",              desc:"Palms are big slow attractors in the chosen hue." }
+    ]
+  },
+  warp: {
+    title: "WARP GRID",
+    subtitle: "A mesh of lines that bends toward your hands.",
+    gestures: [
+      { icon:"✋",   name:"Any hand point",     desc:"Grid nodes are pulled toward your fingertips and palms, then spring back." }
+    ]
+  },
+  detect: {
+    title: "DETECT",
+    subtitle: "AR debug overlay — bounding boxes, IDs, arrow threads swarming around your hands.",
+    gestures: [
+      { icon:"👆",   name:"Fingertips",         desc:"Each extended fingertip spawns a cluster of detection labels around it." },
+      { icon:"🖐🖐", name:"Both palms",         desc:"Faint white threads connect every detected anchor into a graph." },
+      { icon:"L",   name:"Press L",            desc:"Toggle the fingertip ID overlay on the hand skeleton." }
+    ]
+  },
+  stream: {
+    title: "STREAM",
+    subtitle: "Fiber-optic data flow — bright threads carrying particles from one hand to the other.",
+    gestures: [
+      { icon:"🖐🖐", name:"Two palms",          desc:"Threads activate between your two palms. Head particles flow continuously." },
+      { icon:"🖐",   name:"One palm",           desc:"Threads reach from your palm toward the screen center." },
+      { icon:"✋↔✋", name:"Move your hands",    desc:"The curvature and length of each thread follows your palm positions in real time." }
+    ]
+  },
+  reticle: {
+    title: "RETICLE",
+    subtitle: "Sacred-geometry mandala on each palm with triangular runes + sparks.",
+    gestures: [
+      { icon:"🖐",   name:"Any palm visible",  desc:"Concentric rings and 6 triangle runes orbit around each palm." },
+      { icon:"🤏",   name:"Pinch",             desc:"Pinch to spawn sparks falling from the mandala center." }
+    ]
+  },
+  plot3d: {
+    title: "PLOT3D",
+    subtitle: "A 3D heightmap surface inside a wireframe cube, floating between your hands.",
+    gestures: [
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Cube appears between the two pinch points, scale follows distance." },
+      { icon:"🤏",   name:"One pinch",          desc:"Cube appears between thumb and index of that hand." }
+    ]
+  },
+  prism: {
+    title: "PRISM",
+    subtitle: "A chromatic trapezoidal window — your webcam feed with RGB channel offset.",
+    gestures: [
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Window stretches between the two pinch points, RGB offset pulses." },
+      { icon:"🤏",   name:"One pinch",          desc:"Window appears between thumb and index of that hand." }
+    ]
+  },
+  pointcloud: {
+    title: "POINTCLOUD",
+    subtitle: "Each joint of your hand becomes an orbital particle node with an ID label.",
+    gestures: [
+      { icon:"🖐",   name:"Any hand",           desc:"3 orbital particles rotate around each of the 21 landmarks." },
+      { icon:"👆",   name:"Fingertips",         desc:"Thin arcs pulse between every pair of fingertips." }
+    ]
+  },
+  sparks: {
+    title: "SPARKS",
+    subtitle: "Particle sparks emitted from each palm with physics and gravity.",
+    gestures: [
+      { icon:"🖐",   name:"Any palm",           desc:"Continuous light spark emission from each palm." },
+      { icon:"🤏",   name:"Pinch",              desc:"Massive burst — 25 sparks per frame while pinched." }
+    ]
+  },
+  voxelbox: {
+    title: "VOXELBOX",
+    subtitle: "A volumetric wireframe cube filled with a 16³ grid of flickering color points.",
+    gestures: [
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Box appears between the two pinch points; scale follows distance." },
+      { icon:"🤏",   name:"One pinch",          desc:"Box appears between thumb and index of that hand." }
+    ]
+  },
+  fluid: {
+    title: "FLUID",
+    subtitle: "A swirling particle fluid pulled toward each visible palm with motion trails.",
+    gestures: [
+      { icon:"🖐",   name:"Palms",              desc:"220 metaball particles stream toward the nearest palm." },
+      { icon:"✋↔✋","name":"Move your hands",   desc:"Fluid reshapes continuously as palms move." }
+    ]
+  },
+  pixelburst: {
+    title: "PIXEL",
+    subtitle: "Chromatic RGB pixel squares spraying from each palm.",
+    gestures: [
+      { icon:"🖐",   name:"Any palm",           desc:"Continuous pixel emission in red / green / blue channels." },
+      { icon:"🤏",   name:"Pinch",              desc:"6× burst while pinched." }
+    ]
+  },
+  flame: {
+    title: "FLAME",
+    subtitle: "A flickering flame column rising from each palm, with Perlin-like noise displacement.",
+    gestures: [
+      { icon:"🖐",   name:"Any palm",           desc:"Flame rises continuously, color grades yellow→red toward tip." }
+    ]
+  },
+  constellation: {
+    title: "ORBIT",
+    subtitle: "3 concentric orbital rings per palm, with sparse cross-hand connections.",
+    gestures: [
+      { icon:"🖐",   name:"Any palm",           desc:"Rings and orbiting nodes surround each palm." },
+      { icon:"🖐🖐", name:"Two palms",          desc:"Sparse lines connect orbital nodes between the two hands." }
+    ]
+  },
+  tunnel: {
+    title: "TUNNEL",
+    subtitle: "An infinite tunnel of chromatic rings receding into depth, flowing toward you.",
+    gestures: [
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Tunnel appears between the pinch points; distance controls radius." },
+      { icon:"🤏",   name:"One pinch",          desc:"Tunnel appears between thumb and index of that hand." }
+    ]
+  },
+  ribbon: {
+    title: "RIBBON",
+    subtitle: "A chromatic 3D ribbon that undulates in a sine wave between your hands.",
+    gestures: [
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Ribbon stretches between the two pinch points." },
+      { icon:"🤏",   name:"One pinch",          desc:"Ribbon flows between thumb and index of that hand." }
+    ]
+  },
+  lattice: {
+    title: "LATTICE",
+    subtitle: "Icosahedral node graph with pulsing vertices and chromatic connecting edges.",
+    gestures: [
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Lattice scales up to span between the two pinch points." },
+      { icon:"🤏",   name:"One pinch",          desc:"Lattice sits between thumb and index of that hand." }
+    ]
+  },
+  tornado: {
+    title: "TORNADO",
+    subtitle: "A vertical column of cubes spinning in a tornado profile with chromatic trails.",
+    gestures: [
+      { icon:"🤏🤏", name:"Both pinches",       desc:"Tornado appears between the pinches; pinch distance = width." },
+      { icon:"🤏",   name:"One pinch",          desc:"Tornado forms between thumb and index of one hand." }
+    ]
+  },
+  bloom: {
+    title: "BLOOM",
+    subtitle: "A crystal core with 24 shards that burst outward as you spread your fingers.",
+    gestures: [
+      { icon:"🤏",   name:"Pinch",              desc:"Crystal bloom summons at that location." },
+      { icon:"👐",   name:"Spread fingers",     desc:"Spread thumb and index wider to make the shards burst farther out." }
+    ]
+  },
+  chrome: {
+    title: "CHROME",
+    subtitle: "A mirror-finish liquid-metal blob that deforms toward your fingertips.",
+    gestures: [
+      { icon:"🤏",   name:"Pinch to summon",    desc:"Blob appears between your pinch points with a chrome mirror finish." },
+      { icon:"👆",   name:"Fingertips",         desc:"Each raised fingertip pulls on the blob's vertices like a magnet." }
+    ]
+  },
+  glass: {
+    title: "GLASS",
+    subtitle: "A transparent tinted glass cube with animated colored liquid flowing inside.",
+    gestures: [
+      { icon:"🤏",   name:"Pinch to summon",    desc:"Glass cube appears between the pinch points, refracting the webcam behind it." },
+      { icon:"🖐",   name:"Move hands",         desc:"Cube rotates and the inner liquid sloshes as you move." }
+    ]
+  },
+  mercury: {
+    title: "MERCURY",
+    subtitle: "A reflective mercury pool rippling with multi-wave noise.",
+    gestures: [
+      { icon:"🤏",   name:"Pinch to summon",    desc:"Mercury pool materializes between the pinches." },
+      { icon:"🖐",   name:"Hand motion",        desc:"Surface deforms with multi-wave displacement, reflecting the env." }
+    ]
+  }
+};
 
 // ===========================================================================
 //  THREE.JS SETUP + PBR ENV MAP
@@ -883,25 +1336,37 @@ function buildEnvMap(){
   const pmrem = new THREE.PMREMGenerator(renderer);
   pmrem.compileEquirectangularShader();
 
-  // paint a 512x256 equirect gradient with colored hotspots
-  const size = 512;
+  // Studio-style equirect map: dark sky top, bright floor glow,
+  // 4 colored softbox hotspots, so chrome has rich reflections.
+  const W = 1024, H = 512;
   const c = document.createElement("canvas");
-  c.width = size; c.height = size/2;
+  c.width = W; c.height = H;
   const ctx = c.getContext("2d");
-  // sky gradient
-  const sky = ctx.createLinearGradient(0, 0, 0, c.height);
-  sky.addColorStop(0, "#1a0a30");
-  sky.addColorStop(0.5, "#2a1a4a");
-  sky.addColorStop(1, "#301020");
+
+  // vertical gradient: dark top → bright middle (horizon) → gray floor
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0,    "#060614");
+  sky.addColorStop(0.4,  "#1a1a2a");
+  sky.addColorStop(0.5,  "#4a4a5a");
+  sky.addColorStop(0.52, "#20202a");
+  sky.addColorStop(1,    "#0a0a12");
   ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, c.width, c.height);
-  // hot spots
+  ctx.fillRect(0, 0, W, H);
+
+  // bright "horizon" strip for sharp mirror reflections
+  const horizon = ctx.createLinearGradient(0, H*0.45, 0, H*0.55);
+  horizon.addColorStop(0, "transparent");
+  horizon.addColorStop(0.5, "rgba(255,255,255,.35)");
+  horizon.addColorStop(1, "transparent");
+  ctx.fillStyle = horizon;
+  ctx.fillRect(0, H*0.45, W, H*0.1);
+
+  // 4 colored softboxes (big smooth hotspots)
   const spots = [
-    { x: 60, y: 50, r: 90, col: "rgba(255, 60, 150, 0.85)" },
-    { x: 280, y: 70, r: 100, col: "rgba(60, 200, 255, 0.75)" },
-    { x: 420, y: 40, r: 80, col: "rgba(255, 210, 120, 0.6)" },
-    { x: 180, y: 180, r: 90, col: "rgba(180, 100, 255, 0.5)" },
-    { x: 380, y: 200, r: 90, col: "rgba(100, 255, 180, 0.4)" }
+    { x: 180,  y: 120, r: 180, col: "rgba(80, 200, 255, 0.65)" },  // cyan
+    { x: 540,  y: 80,  r: 160, col: "rgba(255, 255, 255, 0.75)" }, // white top
+    { x: 850,  y: 150, r: 190, col: "rgba(255, 100, 190, 0.6)" },  // pink
+    { x: 420,  y: 380, r: 220, col: "rgba(130, 100, 255, 0.5)" },  // purple floor
   ];
   ctx.globalCompositeOperation = "lighter";
   for (const s of spots){
@@ -911,6 +1376,15 @@ function buildEnvMap(){
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, TAU); ctx.fill();
   }
+
+  // vertical dark bars for interesting mirror lines across chrome
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = "rgba(0,0,0,0.4)";
+  for (let i = 0; i < 6; i++){
+    const x = (i / 6) * W + Math.random() * 20;
+    ctx.fillRect(x, 0, 2, H);
+  }
+
   const tex = new THREE.CanvasTexture(c);
   tex.mapping = THREE.EquirectangularReflectionMapping;
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -920,61 +1394,187 @@ function buildEnvMap(){
   return envTex;
 }
 
+// Generate N generic "application window" textures (title bar + 3 control dots + abstract content).
+// Each window gets a different procedural content area so the stack reads as a varied set of apps.
 function makeCardTextures(n){
   const tex = [];
   for (let i = 0; i < n; i++){
     const c = document.createElement("canvas");
-    c.width = 256; c.height = 384;
+    c.width = 320; c.height = 220; // landscape — looks like a window
     const ctx = c.getContext("2d");
     const hue = (i * 360 / n + Math.random()*20) % 360;
-    const grad = ctx.createLinearGradient(0,0,0,c.height);
-    grad.addColorStop(0, `hsl(${hue}, 85%, 60%)`);
-    grad.addColorStop(1, `hsl(${(hue+60)%360}, 80%, 35%)`);
-    ctx.fillStyle = grad;
+
+    // outer frame (dark window background)
+    ctx.fillStyle = "#1a1a24";
     ctx.fillRect(0,0,c.width,c.height);
-    const kind = i % 5;
-    ctx.globalCompositeOperation = "lighter";
+    ctx.strokeStyle = "rgba(255,255,255,.14)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1,1,c.width-2,c.height-2);
+
+    // title bar
+    const tbH = 26;
+    const tbGrad = ctx.createLinearGradient(0,0,0,tbH);
+    tbGrad.addColorStop(0, `hsl(${hue}, 55%, 22%)`);
+    tbGrad.addColorStop(1, `hsl(${(hue+30)%360}, 50%, 15%)`);
+    ctx.fillStyle = tbGrad;
+    ctx.fillRect(0, 0, c.width, tbH);
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.beginPath(); ctx.moveTo(0, tbH); ctx.lineTo(c.width, tbH); ctx.stroke();
+
+    // 3 control dots (generic traffic-light arrangement — universal UI pattern)
+    const dots = ["#ff5f5a", "#ffbd2e", "#28c940"];
+    for (let d = 0; d < 3; d++){
+      ctx.fillStyle = dots[d];
+      ctx.beginPath();
+      ctx.arc(14 + d*18, tbH/2, 5.5, 0, TAU);
+      ctx.fill();
+    }
+
+    // window title text (abstract — just a short label)
+    ctx.fillStyle = "rgba(255,255,255,.65)";
+    ctx.font = "600 11px -apple-system,Segoe UI,sans-serif";
+    ctx.textAlign = "left";
+    const labels = ["ANALYZE","EDITOR","CONSOLE","CHART","MIXER","GRAPH","NOTES","SCOPE","MAP","SYSTEM","FEED","MONITOR"];
+    const label = labels[i % labels.length];
+    ctx.fillText(label, 80, tbH/2 + 4);
+
+    // ------- content area: pick a style per card -------
+    const area = { x: 0, y: tbH, w: c.width, h: c.height - tbH };
+    const kind = i % 6;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(area.x, area.y, area.w, area.h);
+    ctx.clip();
+
     if (kind === 0){
-      for (let k = 0; k < 40; k++){
-        ctx.fillStyle = `hsla(${(hue+180)%360}, 100%, 70%, 0.4)`;
-        ctx.beginPath();
-        ctx.arc(Math.random()*c.width, Math.random()*c.height, 8+Math.random()*30, 0, TAU);
+      // code-like lines
+      const padY = 10;
+      const codeColors = [`hsl(${hue},80%,70%)`, "#8be9fd", "#50fa7b", "#f1fa8c", "#ff79c6"];
+      for (let y = 0; y < 10; y++){
+        const lineY = area.y + padY + y * 15;
+        const indent = (y % 3) * 10;
+        let x = area.x + 16 + indent;
+        const chunks = 2 + Math.floor(Math.random()*4);
+        for (let k = 0; k < chunks; k++){
+          const w = 20 + Math.random()*70;
+          ctx.fillStyle = codeColors[Math.floor(Math.random()*codeColors.length)];
+          ctx.globalAlpha = 0.75;
+          roundRectPath(ctx, x, lineY, w, 7, 2); ctx.fill();
+          x += w + 6;
+          if (x > area.w - 20) break;
+        }
+      }
+      ctx.globalAlpha = 1;
+    } else if (kind === 1){
+      // bar chart
+      const barCount = 10;
+      const barW = (area.w - 40) / barCount - 4;
+      for (let b = 0; b < barCount; b++){
+        const barH = 20 + Math.random() * (area.h - 50);
+        ctx.fillStyle = `hsla(${(hue + b*20)%360}, 85%, 60%, 0.85)`;
+        roundRectPath(ctx, area.x + 20 + b*(barW+4), area.y + area.h - 10 - barH, barW, barH, 3);
         ctx.fill();
       }
-    } else if (kind === 1){
-      ctx.fillStyle = `hsla(${(hue+90)%360}, 100%, 80%, 0.5)`;
-      for (let y = 0; y < c.height; y += 24) ctx.fillRect(0, y, c.width, 8);
+      // baseline
+      ctx.strokeStyle = "rgba(255,255,255,.2)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(area.x + 14, area.y + area.h - 10);
+      ctx.lineTo(area.x + area.w - 14, area.y + area.h - 10);
+      ctx.stroke();
     } else if (kind === 2){
-      ctx.fillStyle = `hsla(${(hue+200)%360}, 100%, 70%, 0.6)`;
-      for (let x = 0; x < c.width; x += 16)
-        for (let y = 0; y < c.height; y += 16)
-          if ((x+y) % 32 === 0) ctx.fillRect(x, y, 8, 8);
-    } else if (kind === 3){
-      ctx.strokeStyle = `hsla(${(hue+120)%360}, 100%, 85%, 0.5)`;
+      // waveform
+      ctx.strokeStyle = `hsl(${hue}, 90%, 65%)`;
       ctx.lineWidth = 2;
-      for (let k = 0; k < 20; k++){
+      ctx.beginPath();
+      for (let x = 0; x < area.w; x++){
+        const yy = area.y + area.h/2 +
+                   Math.sin(x * 0.06) * 20 * Math.sin(x * 0.01) +
+                   Math.sin(x * 0.3) * 6;
+        if (x === 0) ctx.moveTo(area.x + x, yy); else ctx.lineTo(area.x + x, yy);
+      }
+      ctx.stroke();
+      // mirror below for scope look
+      ctx.strokeStyle = `hsla(${(hue+180)%360}, 90%, 65%, 0.4)`;
+      ctx.beginPath();
+      for (let x = 0; x < area.w; x++){
+        const yy = area.y + area.h/2 -
+                   (Math.sin(x * 0.08) * 14);
+        if (x === 0) ctx.moveTo(area.x + x, yy); else ctx.lineTo(area.x + x, yy);
+      }
+      ctx.stroke();
+    } else if (kind === 3){
+      // sidebar + content layout
+      // sidebar
+      ctx.fillStyle = `hsla(${hue},40%,20%,0.6)`;
+      ctx.fillRect(area.x, area.y, 70, area.h);
+      // sidebar items
+      for (let s = 0; s < 6; s++){
+        ctx.fillStyle = s === 1 ? `hsl(${hue}, 80%, 55%)` : "rgba(255,255,255,.4)";
+        roundRectPath(ctx, area.x + 10, area.y + 14 + s*18, 50, 10, 3); ctx.fill();
+      }
+      // content lines
+      for (let r = 0; r < 7; r++){
+        ctx.fillStyle = `rgba(255,255,255,${0.15 + Math.random()*0.3})`;
+        roundRectPath(ctx, area.x + 86, area.y + 16 + r*20, 60 + Math.random()*140, 8, 2); ctx.fill();
+      }
+    } else if (kind === 4){
+      // scatter / dashboard
+      for (let k = 0; k < 80; k++){
+        const r = 1 + Math.random()*4;
+        ctx.fillStyle = `hsla(${(hue + Math.random()*120)%360}, 90%, 65%, ${0.4 + Math.random()*0.5})`;
         ctx.beginPath();
-        ctx.arc(c.width/2, c.height/2, 10 + k*8, 0, TAU); ctx.stroke();
+        ctx.arc(area.x + 20 + Math.random()*(area.w-40), area.y + 20 + Math.random()*(area.h-40), r, 0, TAU);
+        ctx.fill();
       }
+      // trend line
+      ctx.strokeStyle = `hsl(${(hue+90)%360}, 100%, 70%)`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let x = 0; x < area.w; x++){
+        const yy = area.y + area.h - 20 - Math.sin(x*0.05) * 30 - x*0.1;
+        if (x === 0) ctx.moveTo(area.x + x, yy); else ctx.lineTo(area.x + x, yy);
+      }
+      ctx.stroke();
     } else {
-      const img = ctx.getImageData(0,0,c.width,c.height);
-      for (let p = 0; p < img.data.length; p += 4){
-        const v = Math.random() * 60 - 30;
-        img.data[p]   = clamp(img.data[p]   + v, 0, 255);
-        img.data[p+1] = clamp(img.data[p+1] + v, 0, 255);
-        img.data[p+2] = clamp(img.data[p+2] + v, 0, 255);
+      // tile grid
+      const cols = 4, rows = 3, pad = 10;
+      const tw = (area.w - pad*(cols+1)) / cols;
+      const th = (area.h - pad*(rows+1)) / rows;
+      for (let r = 0; r < rows; r++){
+        for (let col = 0; col < cols; col++){
+          const tHue = (hue + (r*cols+col) * 25) % 360;
+          const grd = ctx.createLinearGradient(0, area.y + pad + r*(th+pad), 0, area.y + pad + r*(th+pad) + th);
+          grd.addColorStop(0, `hsla(${tHue}, 85%, 60%, 0.9)`);
+          grd.addColorStop(1, `hsla(${(tHue+30)%360}, 70%, 35%, 0.9)`);
+          ctx.fillStyle = grd;
+          roundRectPath(ctx, area.x + pad + col*(tw+pad), area.y + pad + r*(th+pad), tw, th, 4);
+          ctx.fill();
+        }
       }
-      ctx.putImageData(img, 0, 0);
     }
-    ctx.globalCompositeOperation = "source-over";
-    ctx.strokeStyle = "rgba(255,255,255,.85)";
-    ctx.lineWidth = 6;
-    ctx.strokeRect(3, 3, c.width-6, c.height-6);
+    ctx.restore();
+
+    // subtle inner border for premium feel
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(area.x+1, area.y+1, area.w-2, area.h-2);
+
     const t = new THREE.CanvasTexture(c);
     t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
     tex.push(t);
   }
   return tex;
+}
+function roundRectPath(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y,   x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x,   y+h, r);
+  ctx.arcTo(x,   y+h, x,   y,   r);
+  ctx.arcTo(x,   y,   x+w, y,   r);
+  ctx.closePath();
 }
 
 function clearThree(){
@@ -1055,6 +1655,15 @@ function updateSceneSphere(hp, dt, hue){
   sphere.rotation.x = obj3D.rot.x;
   sphere.rotation.y = obj3D.rot.y;
 
+  // --- smooth idle breathing ---
+  const _st = performance.now() * 0.001;
+  const breath = 1 + Math.sin(_st * 1.3) * 0.04;
+  sphere.scale.setScalar(obj3D.scale * breath);
+  sphere.rotation.z = Math.sin(_st * 0.4) * 0.1;
+  // wire overlay opacity breath (if exists)
+  if (obj3D.sphereWire){
+    obj3D.sphereWire.material.opacity = 0.75 + 0.2 * Math.sin(_st * 1.5);
+  }
   sphere.material.color.setHSL(((hue+120)%360)/360, 1.0, 0.6);
 }
 
@@ -1098,9 +1707,16 @@ function updateSceneBlob(hp, dt, hue){
   }
   pos.needsUpdate = true;
   blob.geometry.computeVertexNormals();
-  blob.rotation.y += dt * 0.08;
+  // smooth idle animations
+  const _bt = performance.now() * 0.001;
+  blob.rotation.y += dt * 0.12;
+  blob.rotation.x = Math.sin(_bt * 0.5) * 0.15;
+  blob.rotation.z = Math.sin(_bt * 0.3) * 0.1;
+  const breath = 1 + Math.sin(_bt * 1.1) * 0.05;
+  blob.scale.setScalar(breath);
   blob.material.color.setHSL((hue%360)/360, 0.75, 0.65);
-  blob.material.emissive.setHSL(((hue+180)%360)/360, 0.9, 0.15);
+  blob.material.emissive.setHSL(((hue+180)%360)/360, 0.9, 0.15 + 0.08 * Math.sin(_bt * 2));
+  blob.material.emissiveIntensity = 0.3 + 0.15 * Math.sin(_bt * 1.5);
 }
 
 // ===========================================================================
@@ -1128,14 +1744,37 @@ function buildSceneWave(){
   obj3D.orbB = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 24), orbMat2);
   scene.add(obj3D.orbA, obj3D.orbB);
 }
-function updateSceneWave(hp, dt, hue, force){
+function updateSceneWave(hp, dt, hue, force, pinches){
   if (!obj3D.wave) buildSceneWave();
+  // gate on pinch-summon
+  if (!spawn.active){
+    obj3D.wave.visible = false;
+    if (obj3D.waveGlow) obj3D.waveGlow.visible = false;
+    if (obj3D.orbA) obj3D.orbA.visible = false;
+    if (obj3D.orbB) obj3D.orbB.visible = false;
+    return;
+  }
+  obj3D.wave.visible = true;
+  obj3D.waveGlow.visible = true;
   const SEG = obj3D.waveSeg;
   const pos = obj3D.wave.geometry.attributes.position;
   const gpos= obj3D.waveGlow.geometry.attributes.position;
   const t = performance.now() * 0.001;
   let A, B;
-  if (hp.palms.length >= 2){
+  // priority: both-pinch pinch points → one-pinch thumb+index → palms
+  const pA = pinches && pinches[0] && pinches[0].pinching && pinches[0].label ? pinches[0] : null;
+  const pB = pinches && pinches[1] && pinches[1].pinching && pinches[1].label ? pinches[1] : null;
+  if (pA && pB){
+    A = screenToWorld(pA.x, pA.y, 0);
+    B = screenToWorld(pB.x, pB.y, 0);
+    obj3D.orbA.visible = obj3D.orbB.visible = true;
+  } else if (pA || pB){
+    // ONE-HAND SUMMON: use thumb and index of the pinching hand as the two endpoints
+    const p = pA || pB;
+    A = screenToWorld(p.thumbX, p.thumbY, 0);
+    B = screenToWorld(p.indexX, p.indexY, 0);
+    obj3D.orbA.visible = obj3D.orbB.visible = true;
+  } else if (hp.palms.length >= 2){
     A = screenToWorld(hp.palms[0].x, hp.palms[0].y, 0);
     B = screenToWorld(hp.palms[1].x, hp.palms[1].y, 0);
     obj3D.orbA.visible = obj3D.orbB.visible = true;
@@ -1163,8 +1802,14 @@ function updateSceneWave(hp, dt, hue, force){
     gpos.array[i*3]=x; gpos.array[i*3+1]=yW; gpos.array[i*3+2]=zW;
   }
   pos.needsUpdate = true; gpos.needsUpdate = true;
-  obj3D.wave.material.color.setHSL(((hue)%360)/360, 1, 0.6);
-  obj3D.waveGlow.material.color.setHSL(((hue+60)%360)/360, 1, 0.65);
+  // smooth idle animations — orbs breathe + wave colors drift
+  const _wt = performance.now() * 0.001;
+  const bob = Math.sin(_wt * 1.4) * 0.1;
+  if (obj3D.orbA.visible){ obj3D.orbA.position.y += bob; obj3D.orbA.scale.setScalar(1 + Math.sin(_wt * 2) * 0.1); }
+  if (obj3D.orbB.visible){ obj3D.orbB.position.y -= bob; obj3D.orbB.scale.setScalar(1 + Math.cos(_wt * 2) * 0.1); }
+  obj3D.wave.material.color.setHSL(((hue + _wt * 10) % 360)/360, 1, 0.6 + 0.1 * Math.sin(_wt * 2));
+  obj3D.waveGlow.material.color.setHSL(((hue+60 + _wt*10)%360)/360, 1, 0.65);
+  obj3D.waveGlow.material.opacity = 0.75 + 0.2 * Math.sin(_wt * 2.5);
 }
 
 // ===========================================================================
@@ -1201,6 +1846,12 @@ function buildSceneGalaxy(count){
 function updateSceneGalaxy(hp, dt, hue, force){
   const count = parseInt(el("s-count").value, 10);
   if (!obj3D.galaxy || obj3D.galaxy.geometry.attributes.position.count !== count) buildSceneGalaxy(count);
+  if (!spawn.active){
+    obj3D.galaxy.visible = false;
+    return;
+  }
+  obj3D.galaxy.visible = true;
+  obj3D.galaxy.scale.setScalar(lerp(obj3D.galaxy.scale.x || 0, spawn.spawnedScale, 0.15) || spawn.spawnedScale);
   const pos = obj3D.galaxy.geometry.attributes.position;
   const vel = obj3D.galaxyVel;
   const tips  = hp.tips.map(t => screenToWorld(t.x, t.y, 0));
@@ -1231,7 +1882,16 @@ function updateSceneGalaxy(hp, dt, hue, force){
     pos.array[i*3+2] += vel[i*3+2];
   }
   pos.needsUpdate = true;
-  obj3D.galaxy.rotation.y += dt * 0.1;
+  // smooth idle animations
+  const _gt = performance.now() * 0.001;
+  obj3D.galaxy.rotation.y += dt * 0.15;
+  obj3D.galaxy.rotation.x = Math.sin(_gt * 0.3) * 0.2;
+  obj3D.galaxy.rotation.z = Math.cos(_gt * 0.25) * 0.15;
+  const breath = 1 + Math.sin(_gt * 0.8) * 0.08;
+  obj3D.galaxy.scale.setScalar(spawn.spawnedScale * breath);
+  // size + opacity oscillation for extra life
+  obj3D.galaxy.material.size = 0.07 + 0.025 * Math.sin(_gt * 1.6);
+  obj3D.galaxy.material.opacity = 0.85 + 0.1 * Math.sin(_gt * 1.3);
 }
 
 // ===========================================================================
@@ -1242,7 +1902,8 @@ function buildSceneCards(){
   const CARDS = 14;
   const group = new THREE.Group();
   const cards = [];
-  const geo = new THREE.PlaneGeometry(1.4, 2.1);
+  const geo = new THREE.PlaneGeometry(2.0, 1.4);
+  const edgesGeo = new THREE.EdgesGeometry(geo);
   for (let i = 0; i < CARDS; i++){
     const mat = new THREE.MeshPhysicalMaterial({
       map: cardTextures[i % cardTextures.length],
@@ -1251,13 +1912,46 @@ function buildSceneCards(){
       side: THREE.DoubleSide, transparent: true, envMapIntensity: 0.9
     });
     const m = new THREE.Mesh(geo, mat);
+    // glowing bright frame around each window
+    const frame = new THREE.LineSegments(edgesGeo, new THREE.LineBasicMaterial({
+      color: 0x44e0ff, transparent: true, opacity: 0.9,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    m.add(frame);
+    m.userData.frame = frame;
+    // thin horizontal scanline bar at the top of the window
+    const scanGeo = new THREE.PlaneGeometry(2.0, 0.04);
+    const scanMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff, transparent: true, opacity: 0.45,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const scan = new THREE.Mesh(scanGeo, scanMat);
+    scan.position.z = 0.01;
+    m.add(scan);
+    m.userData.scan = scan;
     group.add(m);
     cards.push(m);
   }
+  // large halo ring behind the fan — adds a futuristic rim
+  const halo = new THREE.Mesh(
+    new THREE.RingGeometry(2.1, 2.24, 80),
+    new THREE.MeshBasicMaterial({ color: 0xff4a9c, side: THREE.DoubleSide, transparent:true, opacity: 0.35,
+      blending: THREE.AdditiveBlending, depthWrite: false })
+  );
+  halo.position.z = -0.4;
+  group.add(halo);
+  obj3D.cardHalo = halo;
+
   scene.add(group);
   obj3D.cardGroup = group;
   obj3D.cards = cards;
 }
+// smooth pose state for the windows scene so 1-hand ↔ 2-hand transitions ease
+const windowsPose = {
+  midX: 0, midY: 0, rotZ: 0, span: 2,
+  initialized: false
+};
+
 function updateSceneCards(hp, dt, hue, pinches){
   if (!obj3D.cardGroup) buildSceneCards();
   const grp = obj3D.cardGroup;
@@ -1268,113 +1962,335 @@ function updateSceneCards(hp, dt, hue, pinches){
   if (applyTwoFistRotation(grp, pinches, "cards")){
     grp.scale.setScalar(spawn.spawnedScale);
     for (let i = 0; i < cards.length; i++){ cards[i].scale.setScalar(spawn.spawnedScale); }
-    showHint("spin · move your fists to rotate");
+    showHint("spin · move your fists to rotate the windows");
     return;
   }
 
   const pA = pinches[0] && pinches[0].pinching ? pinches[0] : null;
   const pB = pinches[1] && pinches[1].pinching ? pinches[1] : null;
-  let A, B;
+
+  // compute the TARGET A/B from current state
+  let tA = null, tB = null;
   if (pA && pB){
-    A = screenToWorld(pA.x, pA.y, 0);
-    B = screenToWorld(pB.x, pB.y, 0);
+    tA = screenToWorld(pA.x, pA.y, 0);
+    tB = screenToWorld(pB.x, pB.y, 0);
   } else if (pA || pB){
     const p = pA || pB;
-    A = screenToWorld(p.thumbX, p.thumbY, 0);
-    B = screenToWorld(p.indexX, p.indexY, 0);
-  } else {
-    // no pinch — keep the last pose, just animate the inner wobble
-    grp.scale.setScalar(spawn.spawnedScale);
-    const t2 = performance.now() * 0.001;
-    for (let i = 0; i < cards.length; i++){
-      const c = cards[i];
-      const t = t2 + i * 0.3;
-      c.rotation.y = Math.sin(t*0.7 + i*0.4)*0.5 + Math.PI*0.08*i/cards.length;
-      c.rotation.x = Math.sin(t*0.5 + i)*0.08;
-    }
-    return;
+    tA = screenToWorld(p.thumbX, p.thumbY, 0);
+    tB = screenToWorld(p.indexX, p.indexY, 0);
   }
-  const mid = { x:(A.x+B.x)/2, y:(A.y+B.y)/2 };
-  const d = Math.hypot(A.x-B.x, A.y-B.y);
-  grp.position.set(mid.x, mid.y, 0);
-  grp.rotation.z = Math.atan2(B.y-A.y, B.x-A.x);
-  const spacing = d / cards.length;
+
+  // if there is a target, lerp our stored pose toward it (smooth transition)
+  if (tA && tB){
+    const mid  = { x: (tA.x + tB.x)/2, y: (tA.y + tB.y)/2 };
+    const span = Math.hypot(tB.x - tA.x, tB.y - tA.y);
+    const rot  = Math.atan2(tB.y - tA.y, tB.x - tA.x);
+    if (!windowsPose.initialized){
+      windowsPose.midX = mid.x; windowsPose.midY = mid.y;
+      windowsPose.span = span;  windowsPose.rotZ = rot;
+      windowsPose.initialized = true;
+    } else {
+      const k = 0.22; // smoothness
+      windowsPose.midX = lerp(windowsPose.midX, mid.x, k);
+      windowsPose.midY = lerp(windowsPose.midY, mid.y, k);
+      windowsPose.span = lerp(windowsPose.span, span,  k);
+      // wrap rotation delta to shortest path so we don't spin the long way
+      let dRot = rot - windowsPose.rotZ;
+      while (dRot >  Math.PI) dRot -= 2*Math.PI;
+      while (dRot < -Math.PI) dRot += 2*Math.PI;
+      windowsPose.rotZ += dRot * k;
+    }
+  }
+  // else: keep stored pose (don't vanish, just let it idle)
+
+  grp.position.set(windowsPose.midX, windowsPose.midY, 0);
+  grp.rotation.z = windowsPose.rotZ;
+
+  const spacing = Math.max(0.0, windowsPose.span / cards.length);
   for (let i = 0; i < cards.length; i++){
     const u = (i - (cards.length-1)/2) * spacing;
     const c = cards[i];
     const t = performance.now() * 0.001 + i * 0.3;
-    c.position.set(u, Math.sin(t)*0.08, Math.cos(t*0.8 + i)*0.15);
-    c.rotation.y = Math.sin(t*0.7 + i*0.4)*0.5 + Math.PI*0.08*i/cards.length;
-    c.rotation.x = Math.sin(t*0.5 + i)*0.08;
+    // slight float + rotation animation so stacks feel alive
+    c.position.set(u, Math.sin(t)*0.06, Math.cos(t*0.8 + i)*0.12);
+    c.rotation.y = Math.sin(t*0.7 + i*0.4)*0.4 + Math.PI*0.06*i/cards.length;
+    c.rotation.x = Math.sin(t*0.5 + i)*0.06;
     c.scale.setScalar(spawn.spawnedScale * (0.95 + 0.1*Math.sin(t+i)));
+    // frame glow pulse — chromatic shift per card
+    if (c.userData.frame){
+      c.userData.frame.material.color.setHSL(((hue + i*20 + t*30)%360)/360, 1, 0.65);
+      c.userData.frame.material.opacity = 0.6 + 0.3 * Math.sin(t * 2 + i);
+    }
+    // scanline drifts top-to-bottom
+    if (c.userData.scan){
+      const sTime = (t * 0.5 + i * 0.1) % 1;
+      c.userData.scan.position.y = (0.5 - sTime) * 1.3;
+      c.userData.scan.material.opacity = 0.6 * Math.sin(sTime * Math.PI);
+    }
   }
   grp.scale.setScalar(spawn.spawnedScale);
+  // halo ring behind the fan rotates slowly + fades
+  if (obj3D.cardHalo){
+    const tt = performance.now() * 0.001;
+    obj3D.cardHalo.rotation.z += dt * 0.2;
+    obj3D.cardHalo.material.color.setHSL(((hue + 60)%360)/360, 1, 0.5);
+    obj3D.cardHalo.material.opacity = 0.25 + 0.15 * Math.sin(tt * 1.5);
+  }
+
+  if (pA && pB) showHint("stretch windows between your hands");
+  else if (pA || pB) showHint("spread your fingers to grow the stack");
 }
 
 // ===========================================================================
-//  3D SCENE: LIVE CANVAS (webcam on a stretched plane with wave)
+//  3D SCENE: SOUNDWAVE
+//    A field of glowing particles that forms a wave between your two hands.
+//    PINCH one hand       → particles cluster to that pinch point
+//    PINCH both hands     → particles stretch into a wave between them
+//    PINCH then release   → particles get thrown toward the OTHER hand
+//    BOTH FISTS           → spin the whole cloud
 // ===========================================================================
+const soundwave = {
+  N: 480,
+  positions:  null,
+  velocities: null,
+  phases:     null,
+  group:      null,
+  points:     null,
+  axisLine:   null,
+  axisGlow:   null,
+  prevPinch:  [false, false],
+  reveal:     0
+};
+
 function buildSceneCard(){
   clearThree();
-  const geo = new THREE.PlaneGeometry(1, 1, 32, 32);
-  const mat = new THREE.MeshPhysicalMaterial({
-    map: videoTexture, side: THREE.DoubleSide, transparent: true,
-    metalness: 0.3, roughness: 0.35, clearcoat: 1, clearcoatRoughness: 0.1,
-    envMapIntensity: 0.8
+  const N = soundwave.N;
+  soundwave.positions  = new Float32Array(N * 3);
+  soundwave.velocities = new Float32Array(N * 3);
+  soundwave.phases     = new Float32Array(N);
+  const colors         = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++){
+    const r = Math.random() * 0.5;
+    const a = Math.random() * TAU;
+    soundwave.positions[i*3]   = Math.cos(a) * r;
+    soundwave.positions[i*3+1] = Math.sin(a) * r;
+    soundwave.positions[i*3+2] = (Math.random() - 0.5) * 0.3;
+    soundwave.phases[i] = Math.random() * TAU;
+    const c = new THREE.Color().setHSL(0.55 + Math.random() * 0.15, 0.9, 0.7);
+    colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(soundwave.positions, 3));
+  geo.setAttribute("color",    new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.16,
+    vertexColors: true,
+    transparent: true,
+    opacity: 1.0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
   });
-  const card = new THREE.Mesh(geo, mat);
-  scene.add(card);
-  obj3D.card = card;
-  obj3D.cardBase = geo.attributes.position.array.slice();
-  const edges = new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1));
-  const frame = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 }));
-  card.add(frame);
-  obj3D.cardFrame = frame;
-}
-function updateSceneCard(hp, dt, hue, pinches){
-  if (!obj3D.card) buildSceneCard();
-  const card = obj3D.card;
-  if (!spawn.active){ card.scale.setScalar(spawn.spawnedScale); return; }
+  const grp = new THREE.Group();
+  const pts = new THREE.Points(geo, mat);
+  grp.add(pts);
 
-  if (applyTwoFistRotation(card, pinches, "card")){
-    card.scale.setScalar(spawn.spawnedScale * 2);
-    showHint("spin · move your fists to rotate");
+  // central bright axis line (bright white, animated)
+  const SEG = 80;
+  const axisGeo = new THREE.BufferGeometry();
+  axisGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((SEG+1) * 3), 3));
+  const axisMat = new THREE.LineBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false
+  });
+  const axis = new THREE.Line(axisGeo, axisMat);
+  grp.add(axis);
+  soundwave.axisLine = axis;
+
+  // halo glow line (thick behind the axis for a bloomed look)
+  const haloGeo = new THREE.BufferGeometry();
+  haloGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((SEG+1) * 3), 3));
+  const haloMat = new THREE.LineBasicMaterial({
+    color: 0x44e0ff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, linewidth: 4
+  });
+  const halo = new THREE.Line(haloGeo, haloMat);
+  grp.add(halo);
+  soundwave.axisGlow = halo;
+
+  scene.add(grp);
+  soundwave.group = grp;
+  soundwave.points = pts;
+  soundwave.prevPinch = [false, false];
+  soundwave.reveal = 0;
+}
+
+function updateSceneCard(hp, dt, hue, pinches){
+  if (!soundwave.points) buildSceneCard();
+  const grp = soundwave.group;
+  const N = soundwave.N;
+  const pos = soundwave.positions;
+  const vel = soundwave.velocities;
+  const colAttr = soundwave.points.geometry.attributes.color;
+
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+
+  // ---- MODE: two fists → spin the whole cloud ----
+  if (applyTwoFistRotation(grp, pinches, "card")){
+    grp.scale.setScalar(spawn.spawnedScale * 2);
+    showHint("spin · move your fists to rotate the wave");
+    // still refresh colors
+    for (let i = 0; i < N; i++){
+      const c = new THREE.Color().setHSL(((hue + i * 2) % 360) / 360, 0.9, 0.65);
+      colAttr.array[i*3] = c.r; colAttr.array[i*3+1] = c.g; colAttr.array[i*3+2] = c.b;
+    }
+    colAttr.needsUpdate = true;
     return;
   }
 
   const pA = pinches[0] && pinches[0].pinching ? pinches[0] : null;
   const pB = pinches[1] && pinches[1].pinching ? pinches[1] : null;
-  let A, B;
+  const curPinch = [!!pA, !!pB];
+
+  // ---- throw mechanic: detect pinch RELEASE edges ----
+  for (let hi = 0; hi < 2; hi++){
+    if (soundwave.prevPinch[hi] && !curPinch[hi]){
+      // this hand just opened — if the OTHER hand is still visible, throw particles toward it
+      const other = pinches[1 - hi];
+      if (other){
+        const tx = (other.pinching ? other.x : other.palmX);
+        const ty = (other.pinching ? other.y : other.palmY);
+        const tgt = screenToWorld(tx, ty, 0);
+        const releasedW = screenToWorld(
+          pinches[hi].thumbX || pinches[hi].palmX,
+          pinches[hi].thumbY || pinches[hi].palmY,
+          0
+        );
+        // apply velocity burst only to particles currently near the released hand
+        for (let i = 0; i < N; i++){
+          const px = pos[i*3], py = pos[i*3+1];
+          const d2 = (px - releasedW.x)*(px - releasedW.x) + (py - releasedW.y)*(py - releasedW.y);
+          if (d2 < 4){
+            const dx = tgt.x - px, dy = tgt.y - py;
+            const d  = Math.hypot(dx, dy) + 0.001;
+            const kick = 3.0 + Math.random() * 2.0;
+            vel[i*3]   += (dx / d) * kick;
+            vel[i*3+1] += (dy / d) * kick;
+            vel[i*3+2] += (Math.random() - 0.5) * 1.2;
+          }
+        }
+      }
+    }
+  }
+  soundwave.prevPinch = curPinch;
+
+  // ---- compute target line (A, B) ----
+  let A, B, hasLine = false;
   if (pA && pB){
     A = screenToWorld(pA.x, pA.y, 0);
     B = screenToWorld(pB.x, pB.y, 0);
+    hasLine = true;
   } else if (pA || pB){
     const p = pA || pB;
     A = screenToWorld(p.thumbX, p.thumbY, 0);
     B = screenToWorld(p.indexX, p.indexY, 0);
-  } else {
-    // keep the last pose; only refresh the wave animation
-    card.scale.setScalar(card.scale.x);
-    return;
+    hasLine = true;
   }
-  const mid = { x:(A.x+B.x)/2, y:(A.y+B.y)/2 };
-  const d = Math.hypot(B.x-A.x, B.y-A.y);
-  card.position.set(mid.x, mid.y, 0);
-  card.rotation.z = Math.atan2(B.y-A.y, B.x-A.x);
-  card.scale.x = clamp(d, 0.3, 40) * spawn.spawnedScale;
-  card.scale.y = clamp(d * 0.65, 0.3, 30) * spawn.spawnedScale;
-  const pos = card.geometry.attributes.position;
-  const base = obj3D.cardBase;
+
   const t = performance.now() * 0.001;
-  for (let i = 0; i < pos.count; i++){
-    const bx = base[i*3], by = base[i*3+1];
-    pos.array[i*3]   = bx;
-    pos.array[i*3+1] = by;
-    pos.array[i*3+2] = Math.sin(bx*4 + t*2)*0.03 + Math.cos(by*4 + t)*0.03;
+
+  // ---- integrate particles toward their target ----
+  for (let i = 0; i < N; i++){
+    let tgtX, tgtY, tgtZ;
+    if (hasLine){
+      const u = (i / (N - 1));
+      // base position along the hand-to-hand line
+      const bx = lerp(A.x, B.x, u);
+      const by = lerp(A.y, B.y, u);
+      // perpendicular axis (2D) for sine displacement
+      const dx = B.x - A.x, dy = B.y - A.y;
+      const len = Math.hypot(dx, dy) || 1e-6;
+      const px = -dy / len, py = dx / len;
+      const amp = 0.15 + Math.min(len, 6) * 0.07;
+      const freq = 2.5 + Math.min(len, 6) * 0.4;
+      const wave = Math.sin(u * freq + t * 4 + soundwave.phases[i]) * amp;
+      tgtX = bx + px * wave;
+      tgtY = by + py * wave;
+      tgtZ = Math.cos(u * freq + t * 3 + soundwave.phases[i]) * amp * 0.6;
+    } else {
+      // no pinch — drift back toward a stable circle at origin
+      const a0 = (i / N) * TAU + t * 0.3;
+      tgtX = Math.cos(a0) * 0.6;
+      tgtY = Math.sin(a0) * 0.6;
+      tgtZ = Math.sin(t + soundwave.phases[i]) * 0.1;
+    }
+    // integrate: velocity gets damped + nudged toward target
+    const ex = tgtX - pos[i*3];
+    const ey = tgtY - pos[i*3+1];
+    const ez = tgtZ - pos[i*3+2];
+    const stiffness = 6; // how quickly particles rush to target
+    const damping   = 0.86;
+    vel[i*3]   = vel[i*3]   * damping + ex * stiffness * dt;
+    vel[i*3+1] = vel[i*3+1] * damping + ey * stiffness * dt;
+    vel[i*3+2] = vel[i*3+2] * damping + ez * stiffness * dt;
+    pos[i*3]   += vel[i*3];
+    pos[i*3+1] += vel[i*3+1];
+    pos[i*3+2] += vel[i*3+2];
   }
-  pos.needsUpdate = true;
-  card.geometry.computeVertexNormals();
-  obj3D.cardFrame.material.color.setHSL((hue%360)/360, 1, 0.75);
+
+  // color drift
+  for (let i = 0; i < N; i++){
+    const speed = Math.hypot(vel[i*3], vel[i*3+1]);
+    const c = new THREE.Color().setHSL(((hue + i*0.6 + speed*20) % 360) / 360, 0.95, 0.6);
+    colAttr.array[i*3] = c.r; colAttr.array[i*3+1] = c.g; colAttr.array[i*3+2] = c.b;
+  }
+
+  // ---- update central axis line (bright wave between endpoints) ----
+  if (soundwave.axisLine){
+    const SEG = soundwave.axisLine.geometry.attributes.position.count - 1;
+    const apos = soundwave.axisLine.geometry.attributes.position;
+    const gpos = soundwave.axisGlow.geometry.attributes.position;
+    if (hasLine){
+      const dx = B.x - A.x, dy = B.y - A.y;
+      const len = Math.hypot(dx, dy) || 1e-6;
+      const nx = -dy / len, ny = dx / len;
+      const amp = 0.15 + Math.min(len, 6) * 0.07;
+      const freq = 2.5 + Math.min(len, 6) * 0.4;
+      for (let s = 0; s <= SEG; s++){
+        const u = s / SEG;
+        const bx = lerp(A.x, B.x, u);
+        const by = lerp(A.y, B.y, u);
+        const wave = Math.sin(u * freq + t * 4) * amp * Math.sin(u * Math.PI);
+        const wz   = Math.cos(u * freq + t * 3) * amp * Math.sin(u * Math.PI) * 0.6;
+        const px = bx + nx * wave;
+        const py = by + ny * wave;
+        apos.array[s*3]=px; apos.array[s*3+1]=py; apos.array[s*3+2]=wz;
+        gpos.array[s*3]=px; gpos.array[s*3+1]=py; gpos.array[s*3+2]=wz;
+      }
+      apos.needsUpdate = true;
+      gpos.needsUpdate = true;
+      soundwave.axisLine.visible = true;
+      soundwave.axisGlow.visible = true;
+      soundwave.axisGlow.material.color.setHSL(((hue + 180) % 360)/360, 1, 0.6);
+    } else {
+      soundwave.axisLine.visible = false;
+      soundwave.axisGlow.visible = false;
+    }
+  }
+
+  // reveal fade so entry is smooth
+  soundwave.reveal = lerp(soundwave.reveal, 1, 0.07);
+
+  soundwave.points.geometry.attributes.position.needsUpdate = true;
+  colAttr.needsUpdate = true;
+  soundwave.points.material.size = (0.15 + 0.05 * Math.sin(t * 2)) * soundwave.reveal;
+  soundwave.points.material.opacity = soundwave.reveal;
+  soundwave.axisLine.material.opacity = 0.95 * soundwave.reveal;
+  soundwave.axisGlow.material.opacity = 0.55 * soundwave.reveal;
+
+  grp.scale.setScalar(spawn.spawnedScale);
+
+  // hint
+  if (pA && pB)       showHint("sound wave between your hands");
+  else if (pA || pB)  showHint("hold or release · release to throw particles toward the other hand");
+  else                showHint("pinch to summon · pinch and release to throw");
 }
 
 // ===========================================================================
@@ -1412,12 +2328,15 @@ function buildSceneLens(){
   scene.add(group);
   obj3D.ballGroup = group;
 
-  // base icosahedron, we deform its vertices toward handle offsets
+  // base icosahedron, we deform its vertices toward handle offsets.
+  // Tinted glass: see-through with chromatic rim refraction.
   const geo = new THREE.IcosahedronGeometry(1, 4);
   ball.baseVerts = geo.attributes.position.array.slice();
-  const mat = new THREE.MeshBasicMaterial({
-    color: 0xff4a9c, transparent: true, opacity: 0.4,
-    side: THREE.DoubleSide, depthWrite: false
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0x5080ff, metalness: 0.1, roughness: 0.08,
+    transmission: 0.85, thickness: 1.4, ior: 1.5,
+    envMapIntensity: 1.8, clearcoat: 1.0, clearcoatRoughness: 0.05,
+    side: THREE.DoubleSide, transparent: true, opacity: 0.95
   });
   const sphere = new THREE.Mesh(geo, mat);
   group.add(sphere);
@@ -1629,17 +2548,26 @@ function updateSceneLens(hp, dt, hue, pinches){
   );
   obj3D.ballGroup.add(obj3D.ballWire);
 
-  // handles + hover highlight
+  // handles + hover highlight + smooth idle pulse
+  const _bt2 = performance.now() * 0.001;
   for (let i = 0; i < 6; i++){
     const h = obj3D.ballHandles[i];
     h.position.copy(ball.handles[i].pos);
     const grabbed = ball.grab[0] === i || ball.grab[1] === i;
     const near = nearestHandle[0] === i || nearestHandle[1] === i;
-    h.scale.setScalar(grabbed ? 1.6 : (near ? 1.25 : 1.0));
+    const pulse = 1 + 0.12 * Math.sin(_bt2 * 2.5 + i * 1.047); // staggered per-handle breath
+    const baseScale = grabbed ? 1.6 : (near ? 1.25 : 1.0);
+    h.scale.setScalar(baseScale * pulse);
     h.material.color.setHex(grabbed ? 0xffffff : (near ? 0xfff0a0 : 0xfff2d0));
   }
 
+  // sphere surface color + opacity breath
   obj3D.ballMesh.material.color.setHSL((hue%360)/360, 0.9, 0.55);
+  obj3D.ballMesh.material.opacity = 0.35 + 0.1 * Math.sin(_bt2 * 1.4);
+  // wire opacity + hue drift
+  if (obj3D.ballWire && obj3D.ballWire.material){
+    obj3D.ballWire.material.opacity = 0.8 + 0.15 * Math.sin(_bt2 * 2);
+  }
 }
 
 // ===========================================================================
@@ -1753,278 +2681,6 @@ function updateSceneTaffy(hp, dt, hue, pinches){
   obj3D.taffyMat.uniforms.uTwist.value= 0.6 + d * 0.1;
 }
 
-// ===========================================================================
-//  3D SCENE: AIR DRAW
-//    PINCH on empty space       → start drawing a stroke
-//    RELEASE pinch              → stroke materializes (outline + auto-fill)
-//    PINCH near a stroke        → grab + translate it
-//    PINCH BOTH HANDS on stroke → scale it
-// ===========================================================================
-const drawState = {
-  strokes: [],                   // array of stroke objects (see shape below)
-  activePerHand: [null, null],   // per-hand in-progress NEW stroke index
-  colorIdx: 0
-};
-// each stroke: {
-//   group:    THREE.Group holding fill + tube + wire (local coords centered at 0)
-//   points:   Vector3[] in LOCAL space
-//   color:    hex
-//   finalized:bool
-//   centroidWorld: Vector3 (where the group currently sits)
-//   scale:    number
-//   drawPreview: Line (shown while being drawn)
-//   grabHand: null | 0 | 1 (single-hand translate)
-//   grabTrans:{pinchStart, posStart}
-//   scaleAnchor: {distStart, scaleStart, midStart, posStart}
-// }
-const DRAW_PALETTE = [0x44e0ff, 0xff2d7a, 0x9cff6b, 0xffd166, 0xc689ff];
-
-function buildSceneDraw(){
-  clearThree();
-  drawState.strokes = [];
-  drawState.activePerHand = [null, null];
-  obj3D.drawRoot = new THREE.Group();
-  scene.add(obj3D.drawRoot);
-  // pinch cursors
-  obj3D.cursors = [];
-  for (let i = 0; i < 2; i++){
-    const c = new THREE.Mesh(
-      new THREE.SphereGeometry(0.1, 20, 16),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 })
-    );
-    scene.add(c);
-    obj3D.cursors.push(c);
-  }
-}
-
-function finalizeStroke(idx){
-  const s = drawState.strokes[idx];
-  if (!s || s.points.length < 2) return;
-  // dispose preview
-  if (s.drawPreview){ obj3D.drawRoot.remove(s.drawPreview); s.drawPreview.geometry.dispose(); s.drawPreview.material.dispose(); s.drawPreview = null; }
-
-  // compute centroid in world space
-  const worldPts = s.points;
-  const cx = worldPts.reduce((a,p)=>a+p.x,0) / worldPts.length;
-  const cy = worldPts.reduce((a,p)=>a+p.y,0) / worldPts.length;
-  const cz = worldPts.reduce((a,p)=>a+p.z,0) / worldPts.length;
-  s.centroidWorld = new THREE.Vector3(cx, cy, cz);
-  s.scale = 1;
-
-  // convert points to LOCAL space (relative to centroid)
-  const local = worldPts.map(p => new THREE.Vector3(p.x - cx, p.y - cy, p.z - cz));
-  s.points = local;
-
-  const group = new THREE.Group();
-  group.position.copy(s.centroidWorld);
-
-  // outline tube
-  const curve = new THREE.CatmullRomCurve3(local, true); // closed curve → auto-close
-  const tube = new THREE.TubeGeometry(curve, Math.min(240, local.length*4), 0.04, 8, true);
-  const tubeMesh = new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ color: s.color, transparent: true, opacity: 0.95 }));
-  group.add(tubeMesh);
-
-  // auto-fill: triangle fan from stroke centroid (local 0,0,0) to adjacent points
-  const fillGeo = new THREE.BufferGeometry();
-  const faceCount = local.length;
-  const fillVerts = new Float32Array(faceCount * 3 * 3);
-  for (let i = 0; i < faceCount; i++){
-    const p0 = local[i];
-    const p1 = local[(i+1) % faceCount];
-    // triangle: center, p0, p1
-    fillVerts[i*9+0] = 0;    fillVerts[i*9+1] = 0;    fillVerts[i*9+2] = 0;
-    fillVerts[i*9+3] = p0.x; fillVerts[i*9+4] = p0.y; fillVerts[i*9+5] = p0.z;
-    fillVerts[i*9+6] = p1.x; fillVerts[i*9+7] = p1.y; fillVerts[i*9+8] = p1.z;
-  }
-  fillGeo.setAttribute("position", new THREE.BufferAttribute(fillVerts, 3));
-  fillGeo.computeVertexNormals();
-  const fillMat = new THREE.MeshBasicMaterial({
-    color: s.color, transparent: true, opacity: 0.3,
-    side: THREE.DoubleSide, depthWrite: false
-  });
-  const fillMesh = new THREE.Mesh(fillGeo, fillMat);
-  group.add(fillMesh);
-
-  // soft white wire overlay on the fill triangles for the holo feel
-  const wireMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
-  const wireGeo = new THREE.BufferGeometry();
-  const wireLines = new Float32Array(faceCount * 2 * 3);
-  for (let i = 0; i < faceCount; i++){
-    wireLines[i*6+0]=0; wireLines[i*6+1]=0; wireLines[i*6+2]=0;
-    wireLines[i*6+3]=local[i].x; wireLines[i*6+4]=local[i].y; wireLines[i*6+5]=local[i].z;
-  }
-  wireGeo.setAttribute("position", new THREE.BufferAttribute(wireLines, 3));
-  const wire = new THREE.LineSegments(wireGeo, wireMat);
-  group.add(wire);
-
-  obj3D.drawRoot.add(group);
-  s.group = group;
-  s.finalized = true;
-  s.grabHand = null;
-  s.grabTrans = null;
-  s.scaleAnchor = null;
-}
-
-// nearest stroke to a SCREEN point, within radius pixels — considers the stroke's bounding sphere
-function strokeNearScreen(sx, sy, radius){
-  let best = -1, bestD = radius;
-  for (let i = 0; i < drawState.strokes.length; i++){
-    const s = drawState.strokes[i];
-    if (!s.finalized) continue;
-    // check bounding radius: max distance from centroid to any point * current scale
-    let maxR = 0;
-    for (const p of s.points) maxR = Math.max(maxR, Math.hypot(p.x, p.y, p.z));
-    maxR *= s.scale;
-    // centroid in screen
-    const cs = worldToScreen(s.centroidWorld);
-    const d = Math.hypot(cs.x - sx, cs.y - sy);
-    // consider "near" if within projected bounding radius + extra tolerance
-    const tol = Math.max(radius, maxR * 60); // rough world→px conversion
-    if (d < tol && d < bestD * 3){ // keep slightly loose
-      if (d < bestD){ bestD = d; best = i; }
-    }
-  }
-  return best;
-}
-
-function updateSceneDraw(pinches, dt, hue){
-  if (!obj3D.drawRoot) buildSceneDraw();
-
-  // cursors
-  for (let i = 0; i < 2; i++){
-    const c = obj3D.cursors[i];
-    const p = pinches[i];
-    if (p && (p.pinching || !p.fist)){
-      const w = screenToWorld(p.x, p.y, 0);
-      c.position.set(w.x, w.y, 0);
-      c.material.opacity = lerp(c.material.opacity, p.pinching ? 0.95 : 0.3, 0.3);
-      c.material.color.setHex(p.pinching ? 0xffffff : 0x888899);
-      c.scale.setScalar(p.pinching ? 0.5 + p.strength*0.6 : 0.9);
-    } else {
-      c.material.opacity = lerp(c.material.opacity, 0, 0.2);
-    }
-  }
-
-  // ---- find existing-stroke interactions first ----
-  // what stroke (if any) is each pinching hand touching?
-  const touching = [-1, -1];
-  for (let hi = 0; hi < 2; hi++){
-    const p = pinches[hi];
-    if (!p || !p.pinching) continue;
-    // only check if this hand is NOT mid-draw of a new stroke
-    if (drawState.activePerHand[hi] !== null) continue;
-    touching[hi] = strokeNearScreen(p.x, p.y, 90);
-  }
-
-  // scale case: both hands pinching the same stroke
-  if (touching[0] >= 0 && touching[0] === touching[1]){
-    const idx = touching[0];
-    const s = drawState.strokes[idx];
-    const pAw = screenToWorld(pinches[0].x, pinches[0].y, 0);
-    const pBw = screenToWorld(pinches[1].x, pinches[1].y, 0);
-    const dCurr = Math.hypot(pAw.x-pBw.x, pAw.y-pBw.y);
-    const midNow = { x:(pAw.x+pBw.x)/2, y:(pAw.y+pBw.y)/2 };
-    if (!s.scaleAnchor){
-      s.scaleAnchor = { distStart: dCurr, scaleStart: s.scale, midStart: midNow, posStart: s.centroidWorld.clone() };
-    } else {
-      const sa = s.scaleAnchor;
-      const ratio = clamp(dCurr / Math.max(0.001, sa.distStart), 0.2, 5);
-      s.scale = clamp(sa.scaleStart * ratio, 0.2, 5);
-      s.centroidWorld.x = sa.posStart.x + (midNow.x - sa.midStart.x);
-      s.centroidWorld.y = sa.posStart.y + (midNow.y - sa.midStart.y);
-    }
-    s.group.position.copy(s.centroidWorld);
-    s.group.scale.setScalar(s.scale);
-    s.grabHand = null; s.grabTrans = null;
-  } else {
-    // clear scale anchors on all strokes if not in scale mode
-    for (const s of drawState.strokes){ if (s.finalized) s.scaleAnchor = null; }
-
-    // single-hand grab/translate per touching hand
-    for (let hi = 0; hi < 2; hi++){
-      const p = pinches[hi];
-      if (!p) continue;
-      if (p.pinching && touching[hi] >= 0){
-        const s = drawState.strokes[touching[hi]];
-        if (s.grabHand === null){
-          const w = screenToWorld(p.x, p.y, 0);
-          s.grabHand = hi;
-          s.grabTrans = { pinchStart: new THREE.Vector3(w.x, w.y, 0), posStart: s.centroidWorld.clone() };
-        }
-        if (s.grabHand === hi){
-          const w = screenToWorld(p.x, p.y, 0);
-          const g = s.grabTrans;
-          s.centroidWorld.x = g.posStart.x + (w.x - g.pinchStart.x);
-          s.centroidWorld.y = g.posStart.y + (w.y - g.pinchStart.y);
-          s.group.position.copy(s.centroidWorld);
-        }
-      }
-    }
-    // release grabs when pinch ends
-    for (const s of drawState.strokes){
-      if (!s.finalized) continue;
-      if (s.grabHand !== null && (!pinches[s.grabHand] || !pinches[s.grabHand].pinching)){
-        s.grabHand = null; s.grabTrans = null;
-      }
-    }
-  }
-
-  // ---- new-stroke drawing per hand ----
-  for (let hi = 0; hi < 2; hi++){
-    const p = pinches[hi];
-    if (!p) continue;
-    const touchingThis = touching[hi] >= 0;
-
-    if (p.pinching){
-      if (drawState.activePerHand[hi] === null){
-        // only start a NEW stroke if not touching an existing one
-        if (!touchingThis){
-          const color = DRAW_PALETTE[drawState.colorIdx++ % DRAW_PALETTE.length];
-          const newIdx = drawState.strokes.length;
-          const w0 = screenToWorld(p.x, p.y, 0);
-          drawState.strokes.push({
-            group: null, points: [new THREE.Vector3(w0.x, w0.y, 0)], color,
-            finalized: false, centroidWorld: new THREE.Vector3(), scale: 1,
-            drawPreview: null, grabHand: null, grabTrans: null, scaleAnchor: null
-          });
-          drawState.activePerHand[hi] = newIdx;
-        }
-      } else {
-        const idx = drawState.activePerHand[hi];
-        const s = drawState.strokes[idx];
-        const w = screenToWorld(p.x, p.y, 0);
-        const wp = new THREE.Vector3(w.x, w.y, 0);
-        const last = s.points[s.points.length-1];
-        if (last.distanceTo(wp) > 0.07){
-          s.points.push(wp);
-          // live preview
-          if (s.drawPreview){ obj3D.drawRoot.remove(s.drawPreview); s.drawPreview.geometry.dispose(); s.drawPreview.material.dispose(); }
-          const geo = new THREE.BufferGeometry().setFromPoints(s.points);
-          s.drawPreview = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: s.color }));
-          obj3D.drawRoot.add(s.drawPreview);
-        }
-      }
-    } else if (drawState.activePerHand[hi] !== null){
-      finalizeStroke(drawState.activePerHand[hi]);
-      drawState.activePerHand[hi] = null;
-    }
-  }
-
-  // two-fist rotation of all strokes
-  if (applyTwoFistRotation(obj3D.drawRoot, pinches, "draw")){
-    showHint("spin · move your fists to rotate the shapes");
-  } else {
-    // gentle idle wobble
-    obj3D.drawRoot.rotation.y = lerp(obj3D.drawRoot.rotation.y, Math.sin(performance.now() * 0.0003) * 0.1, 0.05);
-  }
-
-  // hint
-  const activePinches = (pinches[0].pinching?1:0) + (pinches[1].pinching?1:0);
-  if (activePinches === 0) showHint("pinch to draw · pinch an existing shape to grab");
-  else if (touching[0] >= 0 && touching[0] === touching[1]) showHint("stretch the shape");
-  else if (touching[0] >= 0 || touching[1] >= 0) showHint("move the shape · release to drop");
-  else showHint("drawing · release pinch to materialize");
-}
 
 // ===========================================================================
 //  3D SCENE: SCULPT — wireframe cube with 8 corner handles
@@ -2079,13 +2735,14 @@ function buildSceneSculpt(){
   scene.add(group);
   obj3D.sculptGroup = group;
 
-  // solid translucent shell
+  // chrome / mirror shell — reflects the env map
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(CUBE_FACES.length * 3 * 3), 3));
   geo.setIndex(null);
-  const mat = new THREE.MeshBasicMaterial({
-    color: 0xff6b4a, transparent: true, opacity: 0.45,
-    side: THREE.DoubleSide, depthWrite: false
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, metalness: 1.0, roughness: 0.08,
+    envMapIntensity: 2.2, clearcoat: 1.0, clearcoatRoughness: 0.05,
+    side: THREE.DoubleSide, transparent: true, opacity: 0.95, depthWrite: false
   });
   const shell = new THREE.Mesh(geo, mat);
   group.add(shell);
@@ -2117,6 +2774,39 @@ function buildSceneSculpt(){
   const brace = new THREE.LineSegments(bGeo, bMat);
   group.add(brace);
   obj3D.sculptBrace = brace;
+
+  // ---- futuristic additions ----
+  // 1. inner nested wire cube at 0.55× scale, rotated 45° — gives a sense of containment
+  const inner = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(1.1, 1.1, 1.1)),
+    new THREE.LineBasicMaterial({ color: 0x44e0ff, transparent: true, opacity: 0.75 })
+  );
+  inner.scale.setScalar(0.55);
+  group.add(inner);
+  obj3D.sculptInner = inner;
+
+  // 2. corner glow pips — translucent rings around each handle
+  obj3D.sculptPips = [];
+  for (let i = 0; i < 8; i++){
+    const pipGeo = new THREE.RingGeometry(0.14, 0.19, 24);
+    const pipMat = new THREE.MeshBasicMaterial({
+      color: 0xffcf80, side: THREE.DoubleSide, transparent: true, opacity: 0.55,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const pip = new THREE.Mesh(pipGeo, pipMat);
+    group.add(pip);
+    obj3D.sculptPips.push(pip);
+  }
+
+  // 3. slim rotating ring around the whole cube (equator)
+  const ringGeo = new THREE.RingGeometry(1.4, 1.44, 60);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.4,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  group.add(ring);
+  obj3D.sculptRing = ring;
 }
 
 // project a WORLD position to SCREEN pixels (accounting for mirrored canvas layout)
@@ -2138,88 +2828,100 @@ function handleWorldPos(i){
 function updateSceneSculpt(pinches, dt, hue){
   if (!sculpt.verts.length) buildSceneSculpt();
 
-  const bothPinch = pinches[0].pinching && pinches[1].pinching;
-  const bothFist  = pinches[0].fist && pinches[1].fist;
-  const anyFist   = pinches[0].fist || pinches[1].fist;
+  // visible only when the user has summoned (spawn.active persists until dismiss)
+  if (!spawn.active){
+    obj3D.sculptGroup.scale.setScalar(spawn.spawnedScale);
+    return;
+  }
 
-  // ----- TWO FISTS → rotate -----
+  // only treat a "hand" as present when its pinch record came from a real detection
+  // (padded placeholders are left empty: palmX=0 and label="")
+  const realHand = (p) => p && p.label !== "";
+  const bothPinch = realHand(pinches[0]) && realHand(pinches[1]) && pinches[0].pinching && pinches[1].pinching;
+  const bothFist  = realHand(pinches[0]) && realHand(pinches[1]) && pinches[0].fist && pinches[1].fist;
+  const anyFist   = (realHand(pinches[0]) && pinches[0].fist) || (realHand(pinches[1]) && pinches[1].fist);
+  const isOpen    = (p) => realHand(p) && !p.pinching && !p.fist;
+  const bothOpen  = isOpen(pinches[0]) && isOpen(pinches[1]);
+
+  // -------- MODE A: BOTH FISTS → spin 360° --------
   if (bothFist && applyTwoFistRotation(obj3D.sculptGroup, pinches, "sculpt")){
     sculpt.translateAnchor = null;
     sculpt.scaleAnchor = null;
     sculpt.grab[0] = sculpt.grab[1] = null;
-    showHint("spin · move your fists to rotate");
-    // still update geometry buffers so wireframe stays correct
-  } else {
-
-  // ----- MODE 1: BOTH HANDS PINCH → scale between the two pinch points -----
-  if (bothPinch){
-    // release any corner grabs
+    sculpt.levitating = false;
+    showHint("spin · move your fists to rotate the cube");
+  }
+  // -------- MODE B: BOTH PINCHES → summon between the two pinches --------
+  else if (bothPinch){
     sculpt.grab[0] = sculpt.grab[1] = null;
     sculpt.translateAnchor = null;
+    sculpt.levitating = false;
     const pAw = screenToWorld(pinches[0].x, pinches[0].y, 0);
     const pBw = screenToWorld(pinches[1].x, pinches[1].y, 0);
-    const dCurr = Math.hypot(pAw.x-pBw.x, pAw.y-pBw.y);
     const midNow = { x:(pAw.x+pBw.x)/2, y:(pAw.y+pBw.y)/2 };
-    if (!sculpt.scaleAnchor){
-      sculpt.scaleAnchor = { distStart: dCurr, scaleStart: sculpt.scale, midStart: midNow, posStart: sculpt.position.clone() };
-    } else {
-      const sa = sculpt.scaleAnchor;
-      const ratio = clamp(dCurr / Math.max(0.001, sa.distStart), 0.2, 5);
-      sculpt.scale = clamp(sa.scaleStart * ratio, 0.3, 4);
-      // follow midpoint movement
-      sculpt.position.x = sa.posStart.x + (midNow.x - sa.midStart.x);
-      sculpt.position.y = sa.posStart.y + (midNow.y - sa.midStart.y);
-    }
-  } else {
-    sculpt.scaleAnchor = null;
-
-    // ----- MODE 2: FIST (any hand) → translate -----
-    if (anyFist){
-      // release corner grabs
-      sculpt.grab[0] = sculpt.grab[1] = null;
-      // use the first fisted hand as the anchor
-      const idx = pinches[0].fist ? 0 : 1;
-      const pNow = { x: pinches[idx].palmX, y: pinches[idx].palmY };
-      const w = screenToWorld(pNow.x, pNow.y, 0);
-      if (!sculpt.translateAnchor || sculpt.translateAnchor.hand !== idx){
-        sculpt.translateAnchor = { hand: idx, pinchStart: new THREE.Vector3(w.x, w.y, 0), posStart: sculpt.position.clone() };
-      } else {
-        const a = sculpt.translateAnchor;
-        sculpt.position.x = a.posStart.x + (w.x - a.pinchStart.x);
-        sculpt.position.y = a.posStart.y + (w.y - a.pinchStart.y);
-      }
-    } else {
-      sculpt.translateAnchor = null;
-
-      // ----- MODE 3: single-hand PINCH near a corner → grab + deform -----
-      for (let hi = 0; hi < 2; hi++){
-        const p = pinches[hi];
-        if (!p || !p.pinching){ sculpt.grab[hi] = null; continue; }
-
-        // find nearest handle in SCREEN space
-        if (sculpt.grab[hi] === null){
-          let best = -1, bestD = 80; // pixel radius
-          for (let i = 0; i < 8; i++){
-            const sp = worldToScreen(handleWorldPos(i));
-            const d = Math.hypot(sp.x - p.x, sp.y - p.y);
-            if (d < bestD){ bestD = d; best = i; }
-          }
-          if (best >= 0) sculpt.grab[hi] = best;
-        }
-
-        if (sculpt.grab[hi] !== null){
-          // move corner so its world pos tracks the pinch
-          const idx = sculpt.grab[hi];
-          const w = screenToWorld(p.x, p.y, 0);
-          // convert world target → local vert position
-          const local = new THREE.Vector3(w.x - sculpt.position.x, w.y - sculpt.position.y, 0).divideScalar(Math.max(0.001, sculpt.scale));
-          sculpt.verts[idx].lerp(local, 0.45);
-        }
-      }
-    }
+    const dCurr = Math.hypot(pAw.x-pBw.x, pAw.y-pBw.y);
+    // Scale is directly derived from the current pinch distance so it tracks continuously
+    const targetScale = clamp(dCurr * 0.5, 0.3, 6);
+    sculpt.position.x = lerp(sculpt.position.x, midNow.x, 0.35);
+    sculpt.position.y = lerp(sculpt.position.y, midNow.y, 0.35);
+    sculpt.scale      = lerp(sculpt.scale, targetScale, 0.25);
+    showHint("summoned · spread your hands to grow");
   }
-
-  } // close the "else" branch of two-fists guard
+  // -------- MODE C: ONE FIST + the other NOT a fist → deform --------
+  else if (anyFist){
+    sculpt.scaleAnchor = null;
+    sculpt.levitating = false;
+    const fistIdx = pinches[0].fist ? 0 : 1;
+    const fp = pinches[fistIdx];
+    const w = screenToWorld(fp.palmX, fp.palmY, 0);
+    const target = new THREE.Vector3(w.x, w.y, 0);
+    // find corner nearest fist in SCREEN space
+    let best = -1, bestD = Infinity;
+    for (let i = 0; i < 8; i++){
+      const sp = worldToScreen(handleWorldPos(i));
+      const d  = Math.hypot(sp.x - fp.palmX, sp.y - fp.palmY);
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    if (best >= 0){
+      sculpt.grab[0] = best;
+      // pull nearest corner toward the fist's world position
+      const local = new THREE.Vector3(target.x - sculpt.position.x, target.y - sculpt.position.y, 0)
+        .divideScalar(Math.max(0.001, sculpt.scale));
+      sculpt.verts[best].lerp(local, 0.3);
+    }
+    showHint("deforming · move your fist to pull a corner");
+  }
+  // -------- MODE D: TWO OPEN HANDS → levitate --------
+  else if (bothOpen){
+    sculpt.scaleAnchor = null;
+    sculpt.grab[0] = sculpt.grab[1] = null;
+    sculpt.levitating = true;
+    const w0 = screenToWorld(pinches[0].palmX, pinches[0].palmY, 0);
+    const w1 = screenToWorld(pinches[1].palmX, pinches[1].palmY, 0);
+    const mid = { x: (w0.x + w1.x)/2, y: (w0.y + w1.y)/2 + 1.0 }; // hover slightly above
+    const t = performance.now() * 0.001;
+    const bob = Math.sin(t * 1.8) * 0.08;
+    sculpt.position.x = lerp(sculpt.position.x, mid.x, 0.08);
+    sculpt.position.y = lerp(sculpt.position.y, mid.y + bob, 0.1);
+    // gentle idle spin while levitating
+    obj3D.sculptGroup.rotation.y += dt * 0.5;
+    obj3D.sculptGroup.rotation.x = Math.sin(t * 0.6) * 0.15;
+    showHint("levitating · close a fist to deform · pinch to grab");
+  }
+  // -------- MODE E (fallback): one open hand → hover above that palm --------
+  else if (isOpen(pinches[0]) || isOpen(pinches[1])){
+    sculpt.scaleAnchor = null;
+    sculpt.grab[0] = sculpt.grab[1] = null;
+    sculpt.levitating = true;
+    const idx = isOpen(pinches[0]) ? 0 : 1;
+    const w = screenToWorld(pinches[idx].palmX, pinches[idx].palmY, 0);
+    const t = performance.now() * 0.001;
+    const bob = Math.sin(t * 1.8) * 0.05;
+    sculpt.position.x = lerp(sculpt.position.x, w.x, 0.1);
+    sculpt.position.y = lerp(sculpt.position.y, w.y + 1.2 + bob, 0.1);
+    obj3D.sculptGroup.rotation.y += dt * 0.4;
+    showHint("hovering above your palm · raise other hand to center it");
+  }
 
   // apply group transform (rotation set either by two-fist helper or kept idle)
   obj3D.sculptGroup.position.copy(sculpt.position);
@@ -2282,6 +2984,34 @@ function updateSceneSculpt(pinches, dt, hue){
 
   obj3D.sculptShell.material.color.setHSL((hue%360)/360, 0.75, 0.55);
 
+  // --- futuristic animated additions ---
+  const _t = performance.now() * 0.001;
+  if (obj3D.sculptInner){
+    obj3D.sculptInner.rotation.x += dt * 0.6;
+    obj3D.sculptInner.rotation.y -= dt * 0.4;
+    obj3D.sculptInner.material.color.setHSL(((hue+180)%360)/360, 1.0, 0.6);
+    obj3D.sculptInner.material.opacity = 0.5 + 0.3 * Math.sin(_t * 2);
+  }
+  if (obj3D.sculptRing){
+    obj3D.sculptRing.rotation.z += dt * 0.3;
+    obj3D.sculptRing.rotation.x = Math.sin(_t * 0.5) * 0.3 + Math.PI/2;
+  }
+  if (obj3D.sculptPips){
+    for (let i = 0; i < 8; i++){
+      const pip = obj3D.sculptPips[i];
+      pip.position.copy(sculpt.verts[i]);
+      pip.lookAt(camera.position);
+      const grabbed = sculpt.grab[0] === i || sculpt.grab[1] === i;
+      const pulse = 1 + 0.15 * Math.sin(_t * 4 + i);
+      pip.scale.setScalar(grabbed ? pulse * 1.6 : pulse);
+      pip.material.color.setHSL(((hue + i*30)%360)/360, 1, 0.65);
+    }
+  }
+  // chromatic edge pulse — shifts bone color across the hue wheel
+  const edgeHue = (_t * 20 + hue) % 360;
+  obj3D.sculptEdges.material.color.setHSL(edgeHue/360, 0.3, 0.95);
+  obj3D.sculptEdges.material.opacity = 0.85 + 0.15 * Math.sin(_t * 3);
+
   // in-screen hint for the current mode
   if (bothPinch) showHint("stretch · move both pinches apart");
   else if (anyFist) showHint("fist to move");
@@ -2304,57 +3034,133 @@ function updateSceneSculpt(pinches, dt, hue){
 //  2D sense scenes — redraw fresh each frame with additive glow
 //  (fx canvas has mix-blend-mode: screen, so dark = transparent)
 // ===========================================================================
-function sceneGoo(points, intensity, hue){
-  clearFx();
-  if (points.tips.length === 0 && points.palms.length === 0) return;
-  fx.save();
-  fx.globalCompositeOperation = "lighter";
-  // tips: colored tight blobs
-  for (const t of points.tips){
-    const r = 90 * intensity;
-    const grad = fx.createRadialGradient(t.x, t.y, 0, t.x, t.y, r);
-    grad.addColorStop(0, t.color);
-    grad.addColorStop(0.3, t.color + "99");
-    grad.addColorStop(1, "rgba(0,0,0,0)");
-    fx.fillStyle = grad;
-    fx.beginPath(); fx.arc(t.x, t.y, r, 0, TAU); fx.fill();
+// Interactive metaball swarm: particles with physics, pulled by fingertips,
+// pushed by palms, burst on pinch, with reveal fade.
+const gooSwarm = {
+  N: 420,
+  px: null, py: null, vx: null, vy: null, col: null, size: null,
+  reveal: 0,
+  prevPinch: [false, false],
+  initialized: false
+};
+function initGoo(){
+  const N = gooSwarm.N;
+  gooSwarm.px = new Float32Array(N);
+  gooSwarm.py = new Float32Array(N);
+  gooSwarm.vx = new Float32Array(N);
+  gooSwarm.vy = new Float32Array(N);
+  gooSwarm.col = new Float32Array(N);
+  gooSwarm.size = new Float32Array(N);
+  for (let i = 0; i < N; i++){
+    gooSwarm.px[i] = Math.random() * W;
+    gooSwarm.py[i] = Math.random() * H;
+    gooSwarm.vx[i] = (Math.random()-0.5) * 0.4;
+    gooSwarm.vy[i] = (Math.random()-0.5) * 0.4;
+    gooSwarm.col[i] = Math.random();
+    gooSwarm.size[i] = 0.6 + Math.random() * 0.9;
   }
-  // palms: big soft bodies
-  for (const p of points.palms){
-    const r = 180 * intensity;
-    const grad = fx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-    grad.addColorStop(0, `hsla(${hue},100%,65%,0.95)`);
-    grad.addColorStop(0.4, `hsla(${(hue+40)%360},100%,55%,0.5)`);
-    grad.addColorStop(1, "rgba(0,0,0,0)");
-    fx.fillStyle = grad;
-    fx.beginPath(); fx.arc(p.x, p.y, r, 0, TAU); fx.fill();
-  }
-  // goo connections
-  const all = [...points.tips.map(t => ({...t, r: 90*intensity})),
-               ...points.palms.map(p => ({...p, r: 180*intensity, color: `hsl(${hue},100%,65%)`}))];
-  fx.lineWidth = 24 * intensity;
-  fx.lineCap = "round";
-  for (let i = 0; i < all.length; i++){
-    for (let j = i+1; j < all.length; j++){
-      const a = all[i], b = all[j];
-      const d = Math.hypot(a.x-b.x, a.y-b.y);
-      const thresh = (a.r + b.r) * 0.6;
-      if (d < thresh){
-        const alpha = 1 - d/thresh;
-        const col = (a.color || "#ffffff");
-        // ensure 6-char hex, append alpha byte
-        const hex = col.length === 7 ? col : "#ffffff";
-        const alphaHex = Math.floor(alpha*200).toString(16).padStart(2,"0");
-        fx.strokeStyle = hex + alphaHex;
-        fx.beginPath();
-        fx.moveTo(a.x, a.y);
-        const mx = (a.x+b.x)/2 + Math.sin(performance.now()*0.004 + i)*8;
-        const my = (a.y+b.y)/2 + Math.cos(performance.now()*0.004 + j)*8;
-        fx.quadraticCurveTo(mx, my, b.x, b.y);
-        fx.stroke();
+  gooSwarm.initialized = true;
+  gooSwarm.prevPinch = [false, false];
+}
+function sceneGoo(points, intensity, hue, pinches){
+  if (!gooSwarm.initialized) initGoo();
+  const N = gooSwarm.N;
+  const t = performance.now() * 0.001;
+
+  // reveal animation (fades in when hands present)
+  const haveHands = points.tips.length > 0 || points.palms.length > 0;
+  gooSwarm.reveal = lerp(gooSwarm.reveal, haveHands ? 1 : 0.25, 0.05);
+
+  // pinch burst — detect edge, apply radial impulse
+  if (pinches){
+    for (let hi = 0; hi < 2; hi++){
+      const p = pinches[hi];
+      if (!p || !p.label) continue;
+      if (p.pinching && !gooSwarm.prevPinch[hi]){
+        for (let i = 0; i < N; i++){
+          const dx = gooSwarm.px[i] - p.x;
+          const dy = gooSwarm.py[i] - p.y;
+          const d2 = dx*dx + dy*dy + 1;
+          if (d2 < 90000){
+            const F = 12 / Math.sqrt(d2);
+            gooSwarm.vx[i] += dx * F;
+            gooSwarm.vy[i] += dy * F;
+          }
+        }
       }
+      gooSwarm.prevPinch[hi] = p.pinching;
     }
   }
+
+  // physics step
+  for (let i = 0; i < N; i++){
+    let fx_ = 0, fy_ = 0;
+    // fingertips strongly attract
+    for (const tip of points.tips){
+      const dx = tip.x - gooSwarm.px[i];
+      const dy = tip.y - gooSwarm.py[i];
+      const d  = Math.hypot(dx, dy) + 20;
+      const F  = 180 * intensity / d;
+      fx_ += dx / d * F;
+      fy_ += dy / d * F;
+    }
+    // palms push away gently
+    for (const pm of points.palms){
+      const dx = gooSwarm.px[i] - pm.x;
+      const dy = gooSwarm.py[i] - pm.y;
+      const d  = Math.hypot(dx, dy) + 40;
+      if (d < 260){
+        const F = 60 * intensity / d;
+        fx_ += dx / d * F;
+        fy_ += dy / d * F;
+      }
+    }
+    // ambient swirl so goo is always alive
+    fx_ += Math.sin(t + i * 0.04) * 0.3;
+    fy_ += Math.cos(t * 1.3 + i * 0.05) * 0.3;
+
+    gooSwarm.vx[i] = gooSwarm.vx[i] * 0.90 + fx_ * 0.016;
+    gooSwarm.vy[i] = gooSwarm.vy[i] * 0.90 + fy_ * 0.016;
+    gooSwarm.px[i] += gooSwarm.vx[i];
+    gooSwarm.py[i] += gooSwarm.vy[i];
+    // wrap around edges
+    if (gooSwarm.px[i] < -40) gooSwarm.px[i] = W + 40;
+    if (gooSwarm.px[i] > W + 40) gooSwarm.px[i] = -40;
+    if (gooSwarm.py[i] < -40) gooSwarm.py[i] = H + 40;
+    if (gooSwarm.py[i] > H + 40) gooSwarm.py[i] = -40;
+  }
+
+  // ---- render ----
+  clearFx();
+  fx.save();
+  fx.globalCompositeOperation = "lighter";
+  fx.globalAlpha = gooSwarm.reveal;
+
+  // metaball blobs
+  for (let i = 0; i < N; i++){
+    const px = gooSwarm.px[i], py = gooSwarm.py[i];
+    const sp = Math.hypot(gooSwarm.vx[i], gooSwarm.vy[i]);
+    const r = (10 + sp * 1.4) * gooSwarm.size[i] * intensity;
+    const h = (hue + gooSwarm.col[i] * 120) % 360;
+    const grd = fx.createRadialGradient(px, py, 0, px, py, r);
+    grd.addColorStop(0, `hsla(${h}, 100%, 70%, 0.95)`);
+    grd.addColorStop(0.4, `hsla(${h}, 100%, 60%, 0.45)`);
+    grd.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grd;
+    fx.beginPath(); fx.arc(px, py, r, 0, TAU); fx.fill();
+  }
+
+  // bright fingertip markers so user sees where they're pulling
+  for (const tip of points.tips){
+    const grd = fx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 55 * intensity);
+    grd.addColorStop(0, "#ffffff");
+    grd.addColorStop(0.3, tip.color);
+    grd.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grd;
+    fx.beginPath(); fx.arc(tip.x, tip.y, 55 * intensity, 0, TAU); fx.fill();
+  }
+
+  fx.globalAlpha = 1;
   fx.restore();
 }
 
@@ -2367,6 +3173,7 @@ function initGrid(){
       gridWarp.push({ ox:x, oy:y, x, y, vx:0, vy:0 });
 }
 function sceneWarp(points, intensity, hue, force){
+  if (!spawn.active){ clearFx(); return; }
   if (gridWarp.length === 0) initGrid();
   clearFx();
   const attractors = [...points.tips, ...points.palms];
@@ -2436,6 +3243,1486 @@ function scenePaint(points, intensity, hue){
   fx.restore();
 }
 
+// ---------------------------------------------------------------------------
+//  SCENE: DETECT  (AR debug overlay — bounding boxes + IDs + arrow threads)
+// ---------------------------------------------------------------------------
+const detectBoxes = { items: [], lastSpawn: 0, reveal: 0 };
+
+// animated bright thread between two world-space screen points
+function drawBrightThread(fx, A, B, color, phase, thickness){
+  const steps = 36;
+  const dx = B.x - A.x, dy = B.y - A.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len, ny = dx / len;
+  const amp = Math.min(28, len * 0.08);
+
+  // outer glow pass
+  fx.save();
+  fx.globalCompositeOperation = "lighter";
+  fx.lineWidth = thickness * 4;
+  fx.strokeStyle = color + "33";
+  fx.beginPath();
+  for (let s = 0; s <= steps; s++){
+    const u = s / steps;
+    const env = Math.sin(u * Math.PI);
+    const w = Math.sin(u * 8 + phase) * amp * env;
+    const px = A.x + dx * u + nx * w;
+    const py = A.y + dy * u + ny * w;
+    if (s === 0) fx.moveTo(px, py); else fx.lineTo(px, py);
+  }
+  fx.stroke();
+
+  // bright inner core
+  fx.lineWidth = thickness;
+  fx.strokeStyle = "#ffffff";
+  fx.beginPath();
+  for (let s = 0; s <= steps; s++){
+    const u = s / steps;
+    const env = Math.sin(u * Math.PI);
+    const w = Math.sin(u * 8 + phase) * amp * env;
+    const px = A.x + dx * u + nx * w;
+    const py = A.y + dy * u + ny * w;
+    if (s === 0) fx.moveTo(px, py); else fx.lineTo(px, py);
+  }
+  fx.stroke();
+
+  // flowing head particle
+  const uh = ((phase * 0.08) % 1 + 1) % 1;
+  const envH = Math.sin(uh * Math.PI);
+  const wh = Math.sin(uh * 8 + phase) * amp * envH;
+  const hx = A.x + dx * uh + nx * wh;
+  const hy = A.y + dy * uh + ny * wh;
+  const grd = fx.createRadialGradient(hx, hy, 0, hx, hy, 10);
+  grd.addColorStop(0, "#ffffff");
+  grd.addColorStop(0.4, color);
+  grd.addColorStop(1, "rgba(0,0,0,0)");
+  fx.fillStyle = grd;
+  fx.beginPath();
+  fx.arc(hx, hy, 10, 0, TAU);
+  fx.fill();
+  fx.restore();
+}
+
+function sceneDetect(points, pinches, hue){
+  clearFx();
+  const now = performance.now();
+  const anchors = [...points.tips, ...points.palms];
+  // smooth reveal fade
+  detectBoxes.reveal = lerp(detectBoxes.reveal, anchors.length > 0 ? 1 : 0, 0.12);
+  if (anchors.length === 0 && detectBoxes.reveal < 0.02){ detectBoxes.items.length = 0; return; }
+
+  if (now - detectBoxes.lastSpawn > 80){
+    detectBoxes.lastSpawn = now;
+    const target = Math.min(14, anchors.length * 3);
+    while (detectBoxes.items.length < target){
+      detectBoxes.items.push({
+        anchorIdx: Math.floor(Math.random() * Math.max(1, anchors.length)),
+        offX: (Math.random()-0.5) * 220,
+        offY: (Math.random()-0.5) * 220,
+        id: 500000 + Math.floor(Math.random()*500000),
+        tag: ["loop","frame","box","ident","obj","cls","prim","anc"][Math.floor(Math.random()*8)],
+        conf: (0.5 + Math.random()*0.49),
+        w: 60 + Math.random()*70,
+        h: 36 + Math.random()*20,
+        color: Math.random() < 0.5 ? "#9cff6b" : (Math.random() < 0.5 ? "#44e0ff" : "#ffb46b"),
+        born: now,
+        life: 2500 + Math.random()*4000
+      });
+    }
+    detectBoxes.items = detectBoxes.items.filter(b => now - b.born < b.life);
+  }
+
+  fx.save();
+  fx.globalAlpha = detectBoxes.reveal;
+  fx.font = "600 10px ui-monospace,monospace";
+
+  // ---- BIG bright threads between the two palms (if present) ----
+  if (points.palms.length >= 2){
+    drawBrightThread(fx, points.palms[0], points.palms[1], "#44e0ff", now * 0.004, 2.4);
+    drawBrightThread(fx, points.palms[0], points.palms[1], "#ff4a9c", now * 0.004 + 1.5, 1.8);
+  }
+
+  // ---- per-hand finger graph: thread between every pair of extended fingertips ----
+  const list = latest.multiHandLandmarks || [];
+  const FINGER_COLORS = ["#ffd166","#44e0ff","#ff2d7a","#9cff6b","#c689ff"];
+  const FINGER_TIP_IDX = [4, 8, 12, 16, 20];
+  for (let hi = 0; hi < list.length; hi++){
+    const lm = list[hi];
+    const ext = detectExtended(lm, 1.0);
+    const tips = [];
+    for (let f = 0; f < 5; f++){
+      if (ext[f]){
+        const p = lmToPx(lm[FINGER_TIP_IDX[f]].x, lm[FINGER_TIP_IDX[f]].y);
+        tips.push({ x: p.x, y: p.y, color: FINGER_COLORS[f], idx: f });
+      }
+    }
+    // all pairs of extended fingertips
+    for (let i = 0; i < tips.length; i++){
+      for (let j = i+1; j < tips.length; j++){
+        const A = tips[i], B = tips[j];
+        const d = Math.hypot(A.x - B.x, A.y - B.y);
+        if (d < 25) continue;
+        const strength = clamp((d - 20) / 140, 0, 1);
+        fx.save();
+        fx.globalAlpha = detectBoxes.reveal * strength;
+        const phase = now * 0.006 + hi * 2 + (A.idx * 5 + B.idx) * 0.4;
+        drawBrightThread(fx, A, B, A.color, phase, 1.6);
+        fx.restore();
+      }
+    }
+    // small data label floating above the hand palm with pair count
+    if (tips.length >= 2){
+      const palm = lmToPx((lm[0].x + lm[9].x)/2, (lm[0].y + lm[9].y)/2);
+      const text = `edges=${(tips.length*(tips.length-1))/2} · n=${tips.length}`;
+      fx.save();
+      fx.globalAlpha = detectBoxes.reveal;
+      fx.font = "600 9px ui-monospace,monospace";
+      const tw = fx.measureText(text).width + 12;
+      fx.fillStyle = "rgba(10,10,16,0.78)";
+      roundRect(fx, palm.x - tw/2, palm.y - 60, tw, 14, 3);
+      fx.fill();
+      fx.fillStyle = "#9cff6b";
+      fx.textAlign = "center";
+      fx.fillText(text, palm.x, palm.y - 49);
+      fx.restore();
+    }
+  }
+
+  // ---- threads from each anchor to each detection box ----
+  for (const b of detectBoxes.items){
+    const a = anchors[b.anchorIdx % anchors.length];
+    if (!a) continue;
+    const bx = a.x + b.offX;
+    const by = a.y + b.offY;
+    const age = (now - b.born) / b.life;
+    const alpha = Math.sin(age * Math.PI) * 0.85;
+    const grd = fx.createLinearGradient(a.x, a.y, bx, by);
+    grd.addColorStop(0, "rgba(255,255,255,0)");
+    grd.addColorStop(1, b.color);
+    fx.strokeStyle = grd;
+    fx.globalAlpha = alpha * detectBoxes.reveal;
+    fx.lineWidth = 1;
+    fx.beginPath(); fx.moveTo(a.x, a.y); fx.lineTo(bx, by); fx.stroke();
+  }
+  fx.globalAlpha = detectBoxes.reveal;
+
+  // ---- boxes themselves ----
+  for (const b of detectBoxes.items){
+    const a = anchors[b.anchorIdx % anchors.length];
+    if (!a) continue;
+    const bx = a.x + b.offX;
+    const by = a.y + b.offY;
+    const age = (now - b.born) / b.life;
+    const alpha = Math.sin(age * Math.PI);
+    fx.globalAlpha = alpha * detectBoxes.reveal;
+
+    fx.setLineDash([3, 3]);
+    fx.strokeStyle = b.color;
+    fx.lineWidth = 1.2;
+    fx.strokeRect(bx - b.w/2, by - b.h/2, b.w, b.h);
+    fx.setLineDash([]);
+
+    const t = 5;
+    const bxL = bx - b.w/2, byT = by - b.h/2, bxR = bx + b.w/2, byB = by + b.h/2;
+    fx.lineWidth = 1.6;
+    fx.beginPath();
+    fx.moveTo(bxL, byT+t); fx.lineTo(bxL, byT); fx.lineTo(bxL+t, byT);
+    fx.moveTo(bxR-t, byT); fx.lineTo(bxR, byT); fx.lineTo(bxR, byT+t);
+    fx.moveTo(bxR, byB-t); fx.lineTo(bxR, byB); fx.lineTo(bxR-t, byB);
+    fx.moveTo(bxL+t, byB); fx.lineTo(bxL, byB); fx.lineTo(bxL, byB-t);
+    fx.stroke();
+
+    const text = `${b.tag}(${b.id}) ${b.conf.toFixed(2)}`;
+    fx.textAlign = "left";
+    fx.fillStyle = "rgba(10,10,16,0.78)";
+    const tw = fx.measureText(text).width + 10;
+    roundRect(fx, bxL, byT - 14, tw, 12, 2);
+    fx.fill();
+    fx.fillStyle = b.color;
+    fx.fillText(text, bxL + 5, byT - 5);
+  }
+
+  fx.globalAlpha = 1;
+  fx.restore();
+}
+
+// ---------------------------------------------------------------------------
+//  SCENE: STREAM  (fiber-optic flow between two hands)
+// ---------------------------------------------------------------------------
+const streamState = {
+  threads: [],
+  init(){
+    this.threads = [];
+    for (let i = 0; i < 60; i++){
+      this.threads.push({
+        offset: Math.random(),
+        speed:  0.35 + Math.random()*0.45,
+        sway:   (Math.random()-0.5) * 0.9,
+        hue:    Math.random() * 0.3,
+        thick:  0.6 + Math.random()*1.4
+      });
+    }
+  }
+};
+streamState.init();
+function sceneStream(points, pinches, hue, dt){
+  clearFx();
+
+  // Priority order for the two stream endpoints:
+  //   1) both hands pinching → each hand's pinch midpoint
+  //   2) one hand pinching with fingers spread → that hand's thumb + index tips (2-finger summon)
+  //   3) two palms visible → palm↔palm
+  //   4) one palm visible → palm → screen center
+  let A = null, B = null;
+  const pA = pinches && pinches[0] && pinches[0].pinching && pinches[0].label ? pinches[0] : null;
+  const pB = pinches && pinches[1] && pinches[1].pinching && pinches[1].label ? pinches[1] : null;
+
+  if (pA && pB){
+    A = { x: pA.x, y: pA.y };
+    B = { x: pB.x, y: pB.y };
+  } else if (pA || pB){
+    const p = pA || pB;
+    const dist = Math.hypot(p.indexX - p.thumbX, p.indexY - p.thumbY);
+    if (dist > 20){
+      // use the two fingers of this single hand as the stream endpoints
+      A = { x: p.thumbX, y: p.thumbY };
+      B = { x: p.indexX, y: p.indexY };
+    }
+  }
+  if (!A && points.palms.length){
+    A = points.palms[0];
+    B = points.palms[1] || { x: W/2, y: H/2 };
+  }
+  if (!A) return;
+
+  const now = performance.now() * 0.001;
+  fx.save();
+  fx.globalCompositeOperation = "lighter";
+
+  // draw many threads with sine curvature
+  for (const th of streamState.threads){
+    th.offset = (th.offset + th.speed * dt * 0.5) % 1;
+    const SEG = 40;
+    const dx = B.x - A.x, dy = B.y - A.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len, ny = dx / len; // perpendicular
+    const amp = Math.min(140, len * 0.25) * th.sway;
+
+    // gradient per thread
+    const hueColor = `hsl(${(hue + th.hue*120)%360}, 100%, 70%)`;
+    const whiteCol = "rgba(255,255,255,0.95)";
+
+    fx.strokeStyle = hueColor;
+    fx.lineWidth = th.thick;
+    fx.beginPath();
+    for (let s = 0; s <= SEG; s++){
+      const u = s / SEG;
+      const bx = A.x + (B.x - A.x) * u;
+      const by = A.y + (B.y - A.y) * u;
+      const env = Math.sin(u * Math.PI);
+      const w = Math.sin((u - th.offset) * Math.PI * 4) * amp * env;
+      const px = bx + nx * w;
+      const py = by + ny * w;
+      if (s === 0) fx.moveTo(px, py); else fx.lineTo(px, py);
+    }
+    fx.stroke();
+
+    // bright head particle traveling along the thread
+    const uH = th.offset;
+    const bxH = A.x + (B.x - A.x) * uH;
+    const byH = A.y + (B.y - A.y) * uH;
+    const envH = Math.sin(uH * Math.PI);
+    const wH = Math.sin((uH - th.offset) * Math.PI * 4) * amp * envH;
+    const hpx = bxH + nx * wH;
+    const hpy = byH + ny * wH;
+    const grd = fx.createRadialGradient(hpx, hpy, 0, hpx, hpy, 8);
+    grd.addColorStop(0, whiteCol);
+    grd.addColorStop(0.4, hueColor);
+    grd.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grd;
+    fx.beginPath();
+    fx.arc(hpx, hpy, 8, 0, TAU);
+    fx.fill();
+  }
+
+  // bright nodes at the two endpoints
+  for (const p of [A, B]){
+    const grd = fx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 30);
+    grd.addColorStop(0, "#fff");
+    grd.addColorStop(0.4, `hsla(${hue}, 100%, 70%, 0.7)`);
+    grd.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grd;
+    fx.beginPath();
+    fx.arc(p.x, p.y, 30, 0, TAU);
+    fx.fill();
+  }
+  fx.restore();
+}
+
+// =========================================================================
+//  10 NEW SENSORY SCENES (TD-inspired, procedural textures)
+// =========================================================================
+
+// ---------- 1. RETICLE: mandala rings + runes on each palm --------------
+function sceneReticle(points, pinches, hue){
+  clearFx();
+  if (!spawn.active) return;
+  const t = performance.now() * 0.001;
+  fx.save();
+  for (let hi = 0; hi < points.palms.length; hi++){
+    const p = points.palms[hi];
+    const pinch = pinches && pinches[hi] ? pinches[hi].pinching : false;
+    const strength = pinch ? 1 : 0.6;
+    fx.save(); fx.translate(p.x, p.y); fx.rotate(t * 0.4);
+    // 3 concentric rings
+    for (let r = 60; r <= 150; r += 30){
+      fx.strokeStyle = `hsla(${(hue + r * 2) % 360}, 100%, 70%, ${strength})`;
+      fx.lineWidth = 1.3;
+      fx.beginPath();
+      fx.arc(0, 0, r, 0, TAU);
+      fx.stroke();
+      // tick marks on ring
+      fx.strokeStyle = `hsla(${(hue + r * 2) % 360}, 100%, 80%, ${0.8*strength})`;
+      for (let k = 0; k < 24; k++){
+        const a = k * TAU / 24;
+        fx.beginPath();
+        fx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+        fx.lineTo(Math.cos(a) * (r + 6), Math.sin(a) * (r + 6));
+        fx.stroke();
+      }
+    }
+    // 6 triangular runes
+    fx.rotate(-t * 0.8);
+    for (let k = 0; k < 6; k++){
+      const a = k * TAU / 6;
+      const rr = 180;
+      const x = Math.cos(a) * rr, y = Math.sin(a) * rr;
+      fx.save(); fx.translate(x, y); fx.rotate(a + t);
+      fx.strokeStyle = `hsla(${(hue + k*60)%360}, 100%, 75%, ${strength})`;
+      fx.lineWidth = 1.5;
+      fx.beginPath();
+      fx.moveTo(-8, 8); fx.lineTo(8, 8); fx.lineTo(0, -10); fx.closePath();
+      fx.stroke();
+      fx.restore();
+    }
+    // sparks falling from palm center on pinch
+    if (pinch){
+      fx.globalCompositeOperation = "lighter";
+      for (let k = 0; k < 20; k++){
+        const a = Math.random() * TAU;
+        const r = 20 + Math.random() * 180;
+        const alpha = Math.random();
+        fx.fillStyle = `hsla(${(hue+k*8)%360},100%,70%,${alpha})`;
+        fx.beginPath();
+        fx.arc(Math.cos(a) * r, Math.sin(a) * r + (Math.random()*60),
+               1 + Math.random()*2, 0, TAU);
+        fx.fill();
+      }
+    }
+    fx.restore();
+  }
+  fx.restore();
+}
+
+// ---------- 2. PLOT3D: 3D heightmap surface in wireframe cube ------------
+function buildScenePlot3d(){
+  clearThree();
+  const SIZE = 2.4, SEG = 42;
+  const geo = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG);
+  const colors = new Float32Array(geo.attributes.position.count * 3);
+  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.MeshBasicMaterial({
+    vertexColors: true, wireframe: true, transparent: true, opacity: 0.95
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.rotation.x = -Math.PI / 2.6;
+  const grp = new THREE.Group();
+  grp.add(mesh);
+  // wireframe cube container
+  const cubeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
+  const cube = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(SIZE, SIZE, SIZE)), cubeMat);
+  grp.add(cube);
+  scene.add(grp);
+  obj3D.plot3dGroup = grp;
+  obj3D.plot3dMesh  = mesh;
+  obj3D.plot3dBase  = geo.attributes.position.array.slice();
+  obj3D.plot3dSeg   = SEG;
+  obj3D.plot3dSize  = SIZE;
+}
+function updateScenePlot3d(hp, dt, hue, pinches){
+  if (!obj3D.plot3dGroup) buildScenePlot3d();
+  if (!spawn.active){ obj3D.plot3dGroup.scale.setScalar(spawn.spawnedScale); return; }
+  const grp = obj3D.plot3dGroup;
+  const mesh = obj3D.plot3dMesh;
+  const pos = mesh.geometry.attributes.position;
+  const col = mesh.geometry.attributes.color;
+  const base = obj3D.plot3dBase;
+  const SEG = obj3D.plot3dSeg;
+  const t = performance.now() * 0.001;
+  // position + scale between pinches
+  let targetScale = 1, mid = { x: 0, y: 0 };
+  const pA = pinches && pinches[0] && pinches[0].pinching ? pinches[0] : null;
+  const pB = pinches && pinches[1] && pinches[1].pinching ? pinches[1] : null;
+  if (pA && pB){
+    const wA = screenToWorld(pA.x, pA.y, 0), wB = screenToWorld(pB.x, pB.y, 0);
+    mid = { x: (wA.x+wB.x)/2, y: (wA.y+wB.y)/2 };
+    targetScale = clamp(Math.hypot(wA.x-wB.x, wA.y-wB.y) * 0.35, 0.6, 4);
+  } else if (pA || pB){
+    const p = pA || pB;
+    const wT = screenToWorld(p.thumbX, p.thumbY, 0), wI = screenToWorld(p.indexX, p.indexY, 0);
+    mid = { x: (wT.x+wI.x)/2, y: (wT.y+wI.y)/2 };
+    targetScale = clamp(Math.hypot(wT.x-wI.x, wT.y-wI.y) * 0.5, 0.5, 3);
+  }
+  grp.position.x = lerp(grp.position.x, mid.x, 0.25);
+  grp.position.y = lerp(grp.position.y, mid.y, 0.25);
+  grp.scale.setScalar(lerp(grp.scale.x || 0, targetScale * spawn.spawnedScale, 0.2) || spawn.spawnedScale);
+  grp.rotation.y += dt * 0.3;
+  // animate surface
+  const S = obj3D.plot3dSize;
+  for (let i = 0; i < pos.count; i++){
+    const bx = base[i*3], by = base[i*3+1];
+    const r = Math.hypot(bx, by);
+    const h2 = Math.sin(bx * 4 + t*2) * Math.cos(by * 4 + t*1.2) * 0.55
+             + Math.exp(-r*r*2) * (0.7 + 0.3*Math.sin(t*2));
+    pos.array[i*3+2] = h2;
+    const c = new THREE.Color().setHSL(((hue + h2 * 120 + t * 20) % 360)/360, 1, 0.55 + h2*0.2);
+    col.array[i*3] = c.r; col.array[i*3+1] = c.g; col.array[i*3+2] = c.b;
+  }
+  pos.needsUpdate = true;
+  col.needsUpdate = true;
+}
+
+// ---------- 3. PRISM: chromatic trapezoidal window held between hands ----
+function buildScenePrism(){
+  clearThree();
+  const geo = new THREE.PlaneGeometry(1, 1, 1, 1);
+  const uniforms = {
+    uMap:   { value: videoTexture },
+    uTime:  { value: 0 },
+    uShift: { value: 0.02 }
+  };
+  const mat = new THREE.ShaderMaterial({
+    uniforms, transparent: true, side: THREE.DoubleSide,
+    vertexShader: ["varying vec2 vUv;","void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }"].join("\n"),
+    fragmentShader: [
+      "precision highp float;",
+      "uniform sampler2D uMap; uniform float uTime, uShift; varying vec2 vUv;",
+      "void main(){",
+      "  vec2 uv = vUv; uv.x = 1.0 - uv.x;",
+      "  float sh = uShift + 0.01*sin(uTime*2.0);",
+      "  float r = texture2D(uMap, uv + vec2(sh, 0.0)).r;",
+      "  float g = texture2D(uMap, uv).g;",
+      "  float b = texture2D(uMap, uv - vec2(sh, 0.0)).b;",
+      "  gl_FragColor = vec4(r,g,b, 0.95);",
+      "}"
+    ].join("\n")
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+  const frame = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(1,1)),
+    new THREE.LineBasicMaterial({ color: 0xffffff, transparent:true, opacity: 0.95 }));
+  mesh.add(frame);
+  obj3D.prism = mesh;
+  obj3D.prismMat = mat;
+  obj3D.prismFrame = frame;
+}
+function updateScenePrism(hp, dt, hue, pinches){
+  if (!obj3D.prism) buildScenePrism();
+  const m = obj3D.prism;
+  if (!spawn.active){ m.scale.setScalar(spawn.spawnedScale); return; }
+  const pA = pinches && pinches[0] && pinches[0].pinching ? pinches[0] : null;
+  const pB = pinches && pinches[1] && pinches[1].pinching ? pinches[1] : null;
+  let A, B;
+  if (pA && pB){ A = screenToWorld(pA.x, pA.y, 0); B = screenToWorld(pB.x, pB.y, 0); }
+  else if (pA || pB){
+    const p = pA || pB;
+    A = screenToWorld(p.thumbX, p.thumbY, 0);
+    B = screenToWorld(p.indexX, p.indexY, 0);
+  }
+  if (A && B){
+    const mid = { x:(A.x+B.x)/2, y:(A.y+B.y)/2 };
+    const d = Math.hypot(B.x-A.x, B.y-A.y);
+    m.position.set(mid.x, mid.y, 0);
+    m.rotation.z = Math.atan2(B.y-A.y, B.x-A.x);
+    m.scale.x = clamp(d, 0.5, 20) * spawn.spawnedScale;
+    m.scale.y = clamp(d * 0.6, 0.3, 14) * spawn.spawnedScale;
+  }
+  obj3D.prismMat.uniforms.uTime.value = performance.now() * 0.001;
+  obj3D.prismMat.uniforms.uShift.value = 0.015 + 0.015 * Math.sin(performance.now() * 0.002);
+  obj3D.prismFrame.material.color.setHSL(((hue + performance.now()*0.03)%360)/360, 1, 0.75);
+}
+
+// ---------- 4. POINTCLOUD: hand skeleton as orbital points + IDs ---------
+function scenePointCloud(points, pinches, hue){
+  clearFx();
+  if (!spawn.active) return;
+  const t = performance.now() * 0.001;
+  const list = latest.multiHandLandmarks || [];
+  if (!list.length) return;
+
+  fx.save();
+  fx.globalCompositeOperation = "lighter";
+  fx.font = "700 10px ui-monospace,monospace";
+
+  // first collect every joint position
+  const allJoints = [];
+  for (let hi = 0; hi < list.length; hi++){
+    const lm = list[hi];
+    const joints = [];
+    for (let j = 0; j < 21; j++) joints.push(lmToPx(lm[j].x, lm[j].y));
+    allJoints.push(joints);
+  }
+
+  for (let hi = 0; hi < allJoints.length; hi++){
+    const joints = allJoints[hi];
+    for (let j = 0; j < 21; j++){
+      const p = joints[j];
+      // central bright node — larger, pulsing
+      const pulse = 1 + 0.4 * Math.sin(t * 3 + j);
+      const nodeR = (j === 0 ? 6 : (j === 4 || j === 8 || j === 12 || j === 16 || j === 20 ? 4.5 : 3)) * pulse;
+      const grd = fx.createRadialGradient(p.x, p.y, 0, p.x, p.y, nodeR * 3);
+      grd.addColorStop(0, `hsl(${(hue + j*17)%360}, 100%, 85%)`);
+      grd.addColorStop(0.4, `hsla(${(hue + j*17)%360}, 100%, 70%, 0.6)`);
+      grd.addColorStop(1, "rgba(0,0,0,0)");
+      fx.fillStyle = grd;
+      fx.beginPath(); fx.arc(p.x, p.y, nodeR*3, 0, TAU); fx.fill();
+      // bright core
+      fx.fillStyle = "#ffffff";
+      fx.beginPath(); fx.arc(p.x, p.y, nodeR * 0.5, 0, TAU); fx.fill();
+
+      // 6 orbital particles around each joint
+      for (let o = 0; o < 6; o++){
+        const a = t * (0.6 + o * 0.25) + j * 0.4 + o * 1.047;
+        const r = 10 + o * 5;
+        const dx = Math.cos(a) * r;
+        const dy = Math.sin(a) * r;
+        const hh = (hue + j*17 + o*30) % 360;
+        fx.fillStyle = `hsla(${hh}, 100%, 75%, 0.95)`;
+        fx.beginPath();
+        fx.arc(p.x + dx, p.y + dy, 2.6, 0, TAU);
+        fx.fill();
+      }
+
+      // ID label every 4th joint
+      if (j % 4 === 0){
+        const txt = `p${j.toString().padStart(2,"0")}`;
+        fx.globalCompositeOperation = "source-over";
+        fx.fillStyle = "rgba(10,10,16,0.9)";
+        const tw = fx.measureText(txt).width + 8;
+        roundRect(fx, p.x + 12, p.y - 8, tw, 14, 3);
+        fx.fill();
+        fx.strokeStyle = "#9cff6b";
+        fx.lineWidth = 1;
+        fx.strokeRect(p.x + 12, p.y - 8, tw, 14);
+        fx.fillStyle = "#9cff6b";
+        fx.textAlign = "left";
+        fx.fillText(txt, p.x + 16, p.y + 2);
+        fx.globalCompositeOperation = "lighter";
+      }
+    }
+    // bright arcs between every pair of fingertips
+    const tipI = [4, 8, 12, 16, 20];
+    for (let i = 0; i < tipI.length; i++){
+      for (let j = i+1; j < tipI.length; j++){
+        const a = joints[tipI[i]];
+        const b = joints[tipI[j]];
+        const pulse = 0.3 + 0.4 * Math.sin(t * 1.5 + i + j);
+        const g2 = fx.createLinearGradient(a.x, a.y, b.x, b.y);
+        g2.addColorStop(0, `hsla(${(hue + i*20)%360},100%,70%,${pulse})`);
+        g2.addColorStop(1, `hsla(${(hue + j*20)%360},100%,70%,${pulse})`);
+        fx.strokeStyle = g2;
+        fx.lineWidth = 1.5;
+        fx.beginPath(); fx.moveTo(a.x, a.y); fx.lineTo(b.x, b.y); fx.stroke();
+      }
+    }
+  }
+
+  // inter-hand connections: fingertips of hand 0 → fingertips of hand 1
+  // -- MUCH brighter now: 3-pass render (wide glow, mid, bright core) + flowing dots
+  if (allJoints.length >= 2){
+    const t2 = performance.now() * 0.001;
+    const tipI = [4, 8, 12, 16, 20];
+    // pass 1: wide cyan outer glow
+    fx.save();
+    fx.globalCompositeOperation = "lighter";
+    fx.lineWidth = 8;
+    fx.strokeStyle = `rgba(68,224,255,0.22)`;
+    for (const i of tipI){
+      for (const j of tipI){
+        const a = allJoints[0][i], b = allJoints[1][j];
+        fx.beginPath(); fx.moveTo(a.x, a.y); fx.lineTo(b.x, b.y); fx.stroke();
+      }
+    }
+    // pass 2: medium chromatic line
+    fx.lineWidth = 2;
+    for (const i of tipI){
+      for (const j of tipI){
+        const a = allJoints[0][i], b = allJoints[1][j];
+        const grd = fx.createLinearGradient(a.x, a.y, b.x, b.y);
+        grd.addColorStop(0, `hsla(${(hue + i*20)%360},100%,70%,0.9)`);
+        grd.addColorStop(1, `hsla(${(hue + j*20 + 180)%360},100%,70%,0.9)`);
+        fx.strokeStyle = grd;
+        fx.beginPath(); fx.moveTo(a.x, a.y); fx.lineTo(b.x, b.y); fx.stroke();
+      }
+    }
+    // pass 3: bright white inner core
+    fx.lineWidth = 0.8;
+    fx.strokeStyle = "rgba(255,255,255,0.95)";
+    for (const i of tipI){
+      for (const j of tipI){
+        const a = allJoints[0][i], b = allJoints[1][j];
+        fx.beginPath(); fx.moveTo(a.x, a.y); fx.lineTo(b.x, b.y); fx.stroke();
+      }
+    }
+    // pass 4: flowing head particles traveling each thread
+    for (let ii = 0; ii < tipI.length; ii++){
+      const i = tipI[ii];
+      for (let jj = 0; jj < tipI.length; jj++){
+        const j = tipI[jj];
+        const a = allJoints[0][i], b = allJoints[1][j];
+        const phase = (t2 * 0.6 + ii * 0.3 + jj * 0.17) % 1;
+        const px = lerp(a.x, b.x, phase);
+        const py = lerp(a.y, b.y, phase);
+        const r = 6;
+        const grd = fx.createRadialGradient(px, py, 0, px, py, r);
+        grd.addColorStop(0, "#ffffff");
+        grd.addColorStop(0.4, `hsla(${(hue + ii*25 + jj*15)%360},100%,70%,0.9)`);
+        grd.addColorStop(1, "rgba(0,0,0,0)");
+        fx.fillStyle = grd;
+        fx.beginPath(); fx.arc(px, py, r, 0, TAU); fx.fill();
+      }
+    }
+    fx.restore();
+  }
+  fx.restore();
+}
+
+// ---------- 5. SPARKS: particle sparks from palm, pinch burst -----------
+const sparks = { items: [], prevPinch: [false, false] };
+function sceneSparks(points, pinches, hue, dt){
+  // persistent trail (soft fade so sparks leave motion traces)
+  if (!spawn.active){ clearFx(); sparks.items.length = 0; return; }
+  fx.save();
+  fx.fillStyle = "rgba(0,0,0,0.22)";
+  fx.fillRect(0, 0, W, H);
+  // emit from palms continuously, extra burst on pinch edge
+  for (let hi = 0; hi < points.palms.length; hi++){
+    const p = points.palms[hi];
+    const pinching = pinches && pinches[hi] && pinches[hi].pinching;
+    const emit = pinching ? 60 : 16;
+    for (let k = 0; k < emit; k++){
+      const a = Math.random() * TAU;
+      const sp = 3 + Math.random() * 9;
+      sparks.items.push({
+        x: p.x + (Math.random()-0.5)*8,
+        y: p.y + (Math.random()-0.5)*8,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 2,
+        life: 1,
+        size: 2 + Math.random()*3,
+        hue: (hue + Math.random()*120) % 360
+      });
+    }
+  }
+  // cap pool so perf stays sane
+  if (sparks.items.length > 2000) sparks.items.splice(0, sparks.items.length - 2000);
+
+  // update + draw
+  fx.globalCompositeOperation = "lighter";
+  const kept = [];
+  for (const s of sparks.items){
+    s.x += s.vx; s.y += s.vy;
+    s.vy += 0.22; // gravity
+    s.vx *= 0.985; s.vy *= 0.996;
+    s.life -= dt * 0.45;
+    if (s.life > 0){
+      const r = s.size + s.life * 2;
+      const grd = fx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r * 2);
+      grd.addColorStop(0, `rgba(255,255,255,${s.life})`);
+      grd.addColorStop(0.3, `hsla(${s.hue},100%,70%,${s.life*0.85})`);
+      grd.addColorStop(1, "rgba(0,0,0,0)");
+      fx.fillStyle = grd;
+      fx.beginPath(); fx.arc(s.x, s.y, r*2, 0, TAU); fx.fill();
+      // bright pinpoint core
+      fx.fillStyle = `rgba(255,255,255,${s.life})`;
+      fx.beginPath(); fx.arc(s.x, s.y, 1.2, 0, TAU); fx.fill();
+      kept.push(s);
+    }
+  }
+  sparks.items = kept;
+  fx.restore();
+}
+
+// ---------- 6. VOXELBOX: cube filled with point grid --------------------
+function buildSceneVoxelbox(){
+  clearThree();
+  const N = 16, SIZE = 2;
+  const posArr = new Float32Array(N*N*N*3);
+  const colArr = new Float32Array(N*N*N*3);
+  let i = 0;
+  for (let x = 0; x < N; x++)
+    for (let y = 0; y < N; y++)
+      for (let z = 0; z < N; z++){
+        posArr[i*3]   = (x/(N-1) - 0.5) * SIZE;
+        posArr[i*3+1] = (y/(N-1) - 0.5) * SIZE;
+        posArr[i*3+2] = (z/(N-1) - 0.5) * SIZE;
+        const c = new THREE.Color().setHSL(((x+y+z)*0.05)%1, 1, 0.6);
+        colArr[i*3] = c.r; colArr[i*3+1] = c.g; colArr[i*3+2] = c.b;
+        i++;
+      }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(posArr, 3));
+  geo.setAttribute("color",    new THREE.BufferAttribute(colArr, 3));
+  const mat = new THREE.PointsMaterial({ size: 0.04, vertexColors: true, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+  const pts = new THREE.Points(geo, mat);
+  const grp = new THREE.Group();
+  grp.add(pts);
+  const cube = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(SIZE, SIZE, SIZE)),
+    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 })
+  );
+  grp.add(cube);
+  scene.add(grp);
+  obj3D.voxelGroup = grp;
+  obj3D.voxelPts = pts;
+}
+function updateSceneVoxelbox(hp, dt, hue, pinches){
+  if (!obj3D.voxelGroup) buildSceneVoxelbox();
+  if (!spawn.active){ obj3D.voxelGroup.scale.setScalar(spawn.spawnedScale); return; }
+  const grp = obj3D.voxelGroup;
+  const pA = pinches && pinches[0] && pinches[0].pinching ? pinches[0] : null;
+  const pB = pinches && pinches[1] && pinches[1].pinching ? pinches[1] : null;
+  let targetScale = 1, mid = { x: 0, y: 0 };
+  if (pA && pB){
+    const wA = screenToWorld(pA.x, pA.y, 0), wB = screenToWorld(pB.x, pB.y, 0);
+    mid = { x:(wA.x+wB.x)/2, y:(wA.y+wB.y)/2 };
+    targetScale = clamp(Math.hypot(wA.x-wB.x, wA.y-wB.y) * 0.35, 0.6, 4);
+  } else if (pA || pB){
+    const p = pA || pB;
+    const wT = screenToWorld(p.thumbX, p.thumbY, 0), wI = screenToWorld(p.indexX, p.indexY, 0);
+    mid = { x:(wT.x+wI.x)/2, y:(wT.y+wI.y)/2 };
+    targetScale = clamp(Math.hypot(wT.x-wI.x, wT.y-wI.y) * 0.5, 0.5, 3);
+  }
+  grp.position.x = lerp(grp.position.x, mid.x, 0.2);
+  grp.position.y = lerp(grp.position.y, mid.y, 0.2);
+  grp.scale.setScalar(lerp(grp.scale.x || 0, targetScale * spawn.spawnedScale, 0.2) || spawn.spawnedScale);
+  grp.rotation.y += dt * 0.4;
+  grp.rotation.x = Math.sin(performance.now() * 0.0005) * 0.3;
+  // flicker point colors
+  const col = obj3D.voxelPts.geometry.attributes.color;
+  const t = performance.now() * 0.001;
+  for (let i = 0; i < col.count; i++){
+    const c = new THREE.Color().setHSL(((hue + i*0.4 + t*20) % 360)/360, 1, 0.5 + 0.3*Math.sin(t*3 + i*0.1));
+    col.array[i*3]=c.r; col.array[i*3+1]=c.g; col.array[i*3+2]=c.b;
+  }
+  col.needsUpdate = true;
+}
+
+// ---------- 7. FLUID: smooth blobs flowing between hands ----------------
+const fluidParts = [];
+function sceneFluid(points, pinches, hue, dt){
+  if (!spawn.active){ clearFx(); fluidParts.length = 0; return; }
+  // soft fade for persistent fluid trails
+  fx.save();
+  fx.fillStyle = "rgba(0,0,0,0.09)";
+  fx.fillRect(0, 0, W, H);
+  // seed many more particles
+  while (fluidParts.length < 500){
+    fluidParts.push({
+      x: W/2 + (Math.random()-0.5)*200,
+      y: H/2 + (Math.random()-0.5)*200,
+      vx: 0, vy: 0,
+      hue: Math.random()*180,
+      size: 0.7 + Math.random()*0.9
+    });
+  }
+  const t = performance.now() * 0.001;
+  const anchors = points.palms.length ? points.palms : [{ x: W/2, y: H/2 }];
+
+  fx.globalCompositeOperation = "lighter";
+  for (const p of fluidParts){
+    // pulled toward nearest anchor
+    let nearest = anchors[0], bd = Infinity;
+    for (const a of anchors){
+      const d = Math.hypot(a.x-p.x, a.y-p.y);
+      if (d < bd){ bd = d; nearest = a; }
+    }
+    const dx = nearest.x - p.x, dy = nearest.y - p.y;
+    const d = Math.hypot(dx, dy) + 20;
+    p.vx += (dx / d) * 2.2;
+    p.vy += (dy / d) * 2.2;
+    // vortex: perpendicular component for curl
+    p.vx += (-dy / d) * 1.2 * Math.sin(t);
+    p.vy += ( dx / d) * 1.2 * Math.sin(t);
+    // noise swirl
+    p.vx += Math.sin(t * 1.5 + p.y*0.015) * 0.7;
+    p.vy += Math.cos(t * 1.3 + p.x*0.015) * 0.7;
+    p.vx *= 0.90; p.vy *= 0.90;
+    p.x += p.vx; p.y += p.vy;
+    // keep in bounds
+    if (p.x < 0 || p.x > W) p.vx *= -0.5;
+    if (p.y < 0 || p.y > H) p.vy *= -0.5;
+    // bright metaball with speed-driven glow
+    const sp = Math.hypot(p.vx, p.vy);
+    const r = (12 + sp * 1.4) * p.size;
+    const h = (hue + p.hue + t*30 + sp*5) % 360;
+    const g = fx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+    g.addColorStop(0, `rgba(255,255,255,${Math.min(0.9, 0.3 + sp*0.04)})`);
+    g.addColorStop(0.25, `hsla(${h},100%,70%,0.85)`);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = g;
+    fx.beginPath(); fx.arc(p.x, p.y, r, 0, TAU); fx.fill();
+  }
+  // bright palm cores
+  for (const a of anchors){
+    const g = fx.createRadialGradient(a.x, a.y, 0, a.x, a.y, 60);
+    g.addColorStop(0, `hsla(${hue},100%,85%,0.95)`);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = g;
+    fx.beginPath(); fx.arc(a.x, a.y, 60, 0, TAU); fx.fill();
+  }
+  fx.restore();
+}
+
+// ---------- 8. PIXELBURST: chromatic pixel squares -----------------------
+const pixelBits = [];
+function scenePixelBurst(points, pinches, hue, dt){
+  if (!spawn.active){ clearFx(); pixelBits.length = 0; return; }
+  // slight trail wash for persistent chromatic feel
+  fx.save();
+  fx.fillStyle = "rgba(0,0,0,0.25)";
+  fx.fillRect(0, 0, W, H);
+  // emit from palms, bigger emission on pinch
+  for (let hi = 0; hi < points.palms.length; hi++){
+    const p = points.palms[hi];
+    const emit = (pinches && pinches[hi] && pinches[hi].pinching) ? 50 : 10;
+    for (let k = 0; k < emit; k++){
+      const a = Math.random() * TAU;
+      const sp = 2 + Math.random() * 10;
+      pixelBits.push({
+        x: p.x + (Math.random()-0.5)*20,
+        y: p.y + (Math.random()-0.5)*20,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+        life: 1, size: 5 + Math.random()*9,
+        chan: Math.floor(Math.random() * 3)
+      });
+    }
+  }
+  if (pixelBits.length > 2500) pixelBits.splice(0, pixelBits.length - 2500);
+  fx.globalCompositeOperation = "screen";
+  const kept = [];
+  for (const b of pixelBits){
+    b.x += b.vx; b.y += b.vy;
+    b.vx *= 0.955; b.vy *= 0.955;
+    b.life -= dt * 0.45;
+    if (b.life <= 0) continue;
+    const c = b.chan === 0 ? "255,70,100" : b.chan === 1 ? "80,255,120" : "80,180,255";
+    const sz = b.size * b.life;
+    fx.fillStyle = `rgba(${c},${b.life})`;
+    fx.fillRect(b.x - sz/2, b.y - sz/2, sz, sz);
+    // bright center highlight
+    fx.fillStyle = `rgba(255,255,255,${b.life*0.6})`;
+    fx.fillRect(b.x - sz/4, b.y - sz/4, sz/2, sz/2);
+    kept.push(b);
+  }
+  pixelBits.length = 0;
+  for (const b of kept) pixelBits.push(b);
+  fx.restore();
+}
+
+// ---------- 9. FLAME: rising flame particles from each palm --------------
+const flameParts = [];
+const flameNoise = (x, y, t) =>
+  Math.sin(x * 0.05 + t) * 0.5 + Math.sin(y * 0.08 - t * 1.2) * 0.3 + Math.cos((x+y)*0.04 + t*0.6)*0.2;
+function sceneFlame(points, pinches, hue, dt){
+  if (!spawn.active){ clearFx(); flameParts.length = 0; return; }
+  fx.save();
+  // soft fade — longer trails for flame feel
+  fx.fillStyle = "rgba(0,0,0,0.12)";
+  fx.fillRect(0, 0, W, H);
+  const t = performance.now() * 0.001;
+  // emit from each palm — more particles with real upward physics
+  for (const p of points.palms){
+    for (let k = 0; k < 20; k++){
+      const spread = (Math.random() - 0.5) * 50;
+      flameParts.push({
+        x: p.x + spread,
+        y: p.y + 10,
+        vx: spread * 0.03 + (Math.random()-0.5)*0.4,
+        vy: -(1.5 + Math.random()*2.2),
+        life: 1,
+        size: 10 + Math.random() * 16,
+        hueOff: Math.random() * 20
+      });
+    }
+  }
+  if (flameParts.length > 1600) flameParts.splice(0, flameParts.length - 1600);
+  fx.globalCompositeOperation = "lighter";
+  const kept = [];
+  for (const f of flameParts){
+    f.x += f.vx + Math.sin(t * 2 + f.y * 0.01) * 0.6; // flicker left/right
+    f.y += f.vy;
+    f.vy *= 0.994;
+    f.vx *= 0.98;
+    f.life -= dt * 0.5;
+    if (f.life > 0){
+      // color grades yellow (life=1) → red (life=0.6) → dark red/smoke (life→0)
+      const h = lerp(5, 55, f.life);
+      const l = lerp(25, 68, f.life);
+      const r = f.size * (0.4 + f.life * 0.9);
+      const grd = fx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+      grd.addColorStop(0, `hsla(${h + f.hueOff}, 100%, ${l}%, ${f.life})`);
+      grd.addColorStop(0.5, `hsla(${h + f.hueOff}, 100%, ${l-15}%, ${f.life*0.5})`);
+      grd.addColorStop(1, "rgba(0,0,0,0)");
+      fx.fillStyle = grd;
+      fx.beginPath(); fx.arc(f.x, f.y, r, 0, TAU); fx.fill();
+      // bright white core while hot
+      if (f.life > 0.75){
+        fx.fillStyle = `rgba(255,255,230,${(f.life-0.75)*2})`;
+        fx.beginPath(); fx.arc(f.x, f.y, r*0.25, 0, TAU); fx.fill();
+      }
+      kept.push(f);
+    }
+  }
+  flameParts.length = 0;
+  for (const f of kept) flameParts.push(f);
+  // bright base glow on each palm
+  for (const p of points.palms){
+    const grd = fx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 60);
+    grd.addColorStop(0, "rgba(255,220,120,0.9)");
+    grd.addColorStop(1, "rgba(0,0,0,0)");
+    fx.fillStyle = grd;
+    fx.beginPath(); fx.arc(p.x, p.y, 60, 0, TAU); fx.fill();
+  }
+  fx.restore();
+}
+
+// ---------- 10. CONSTELLATION: orbital rings + inter-hand connections ---
+function sceneConstellation(points, pinches, hue){
+  clearFx();
+  if (!spawn.active) return;
+  const t = performance.now() * 0.001;
+  fx.save();
+  fx.globalCompositeOperation = "lighter";
+  // orbital rings per palm
+  const nodes = []; // collect node positions for inter-palm linking
+  for (let hi = 0; hi < points.palms.length; hi++){
+    const p = points.palms[hi];
+    for (let ring = 0; ring < 3; ring++){
+      const rr = 50 + ring * 30;
+      // ring itself
+      fx.strokeStyle = `hsla(${(hue + ring*50)%360},100%,70%,0.5)`;
+      fx.lineWidth = 1;
+      fx.beginPath();
+      fx.arc(p.x, p.y, rr, 0, TAU);
+      fx.stroke();
+      // nodes on ring (orbiting)
+      const nnode = 5 + ring*2;
+      for (let k = 0; k < nnode; k++){
+        const a = (k / nnode) * TAU + t * (0.3 + ring * 0.2) * (hi === 0 ? 1 : -1);
+        const nx = p.x + Math.cos(a) * rr;
+        const ny = p.y + Math.sin(a) * rr;
+        fx.fillStyle = `hsla(${(hue + ring*50 + k*20)%360},100%,80%,0.95)`;
+        fx.beginPath(); fx.arc(nx, ny, 2.5, 0, TAU); fx.fill();
+        nodes.push({ x: nx, y: ny, hand: hi });
+      }
+    }
+    // palm center bright node
+    fx.fillStyle = `hsla(${hue},100%,85%,0.95)`;
+    fx.beginPath(); fx.arc(p.x, p.y, 5, 0, TAU); fx.fill();
+  }
+  // sparse inter-hand connections for 2+ hands
+  if (points.palms.length >= 2){
+    for (let i = 0; i < nodes.length; i += 3){
+      for (let j = 0; j < nodes.length; j += 7){
+        if (nodes[i].hand === nodes[j].hand) continue;
+        fx.strokeStyle = `hsla(${(hue + i)%360},100%,70%,0.12)`;
+        fx.lineWidth = 0.6;
+        fx.beginPath();
+        fx.moveTo(nodes[i].x, nodes[i].y);
+        fx.lineTo(nodes[j].x, nodes[j].y);
+        fx.stroke();
+      }
+    }
+  }
+  fx.restore();
+}
+
+// =========================================================================
+//  5 NEW 3D SCENES (TD-inspired)
+// =========================================================================
+
+// Helper: lerp group transform + scale to pinch midpoint (used by all 5)
+function _pinchAnchor(pinches){
+  const pA = pinches && pinches[0] && pinches[0].pinching && pinches[0].label ? pinches[0] : null;
+  const pB = pinches && pinches[1] && pinches[1].pinching && pinches[1].label ? pinches[1] : null;
+  if (pA && pB){
+    const wA = screenToWorld(pA.x, pA.y, 0), wB = screenToWorld(pB.x, pB.y, 0);
+    return { mid: { x:(wA.x+wB.x)/2, y:(wA.y+wB.y)/2 },
+             dist: Math.hypot(wA.x-wB.x, wA.y-wB.y), A: wA, B: wB };
+  }
+  if (pA || pB){
+    const p = pA || pB;
+    const wT = screenToWorld(p.thumbX, p.thumbY, 0), wI = screenToWorld(p.indexX, p.indexY, 0);
+    return { mid: { x:(wT.x+wI.x)/2, y:(wT.y+wI.y)/2 },
+             dist: Math.hypot(wT.x-wI.x, wT.y-wI.y), A: wT, B: wI };
+  }
+  return null;
+}
+
+// ---------- 1. TUNNEL: receding wireframe ring tunnel --------------------
+function buildSceneTunnel(){
+  clearThree();
+  const grp = new THREE.Group();
+  const rings = [];
+  for (let i = 0; i < 24; i++){
+    const r = new THREE.Mesh(
+      new THREE.TorusGeometry(1, 0.03, 8, 48),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent:true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite:false })
+    );
+    r.position.z = -i * 0.8;
+    grp.add(r);
+    rings.push(r);
+  }
+  scene.add(grp);
+  obj3D.tunnelGrp = grp;
+  obj3D.tunnelRings = rings;
+}
+function updateSceneTunnel(hp, dt, hue, pinches){
+  if (!obj3D.tunnelGrp) buildSceneTunnel();
+  const grp = obj3D.tunnelGrp;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  const a = _pinchAnchor(pinches);
+  const t = performance.now() * 0.001;
+  if (a){
+    grp.position.x = lerp(grp.position.x, a.mid.x, 0.2);
+    grp.position.y = lerp(grp.position.y, a.mid.y, 0.2);
+    grp.scale.setScalar(lerp(grp.scale.x || 0, clamp(a.dist * 0.4, 0.5, 4) * spawn.spawnedScale, 0.18) || spawn.spawnedScale);
+  }
+  // scroll rings forward, respawn behind camera
+  for (let i = 0; i < obj3D.tunnelRings.length; i++){
+    const r = obj3D.tunnelRings[i];
+    r.position.z += dt * 2.2;
+    if (r.position.z > 2) r.position.z -= 24 * 0.8;
+    // scale rings based on distance (fake perspective)
+    const d = 2 - r.position.z;
+    const s = 0.5 + d * 0.3;
+    r.scale.set(s, s, 1);
+    r.rotation.z = t * 0.3 + i * 0.1;
+    r.material.color.setHSL(((hue + d * 20 + t * 10) % 360)/360, 1, 0.6 + 0.2 * Math.sin(d + t));
+    r.material.opacity = 0.9 * Math.max(0, 1 - Math.abs(r.position.z - (-6)) / 10);
+  }
+}
+
+// ---------- 2. RIBBON: undulating 3D ribbon ------------------------------
+function buildSceneRibbon(){
+  clearThree();
+  // placeholder — rebuilt each frame since curve changes
+  const grp = new THREE.Group();
+  scene.add(grp);
+  obj3D.ribbonGrp = grp;
+  obj3D.ribbonMesh = null;
+}
+function updateSceneRibbon(hp, dt, hue, pinches){
+  if (!obj3D.ribbonGrp) buildSceneRibbon();
+  const grp = obj3D.ribbonGrp;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  const a = _pinchAnchor(pinches);
+  if (!a){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  // build a wavy curve between A and B
+  const t = performance.now() * 0.001;
+  const SEG = 32;
+  const pts = [];
+  for (let i = 0; i <= SEG; i++){
+    const u = i / SEG;
+    const bx = lerp(a.A.x, a.B.x, u);
+    const by = lerp(a.A.y, a.B.y, u);
+    const env = Math.sin(u * Math.PI);
+    const w  = Math.sin(u * 6 + t * 3) * 0.5 * env;
+    const wz = Math.cos(u * 6 + t * 2) * 0.5 * env;
+    pts.push(new THREE.Vector3(bx, by + w, wz));
+  }
+  if (obj3D.ribbonMesh){
+    grp.remove(obj3D.ribbonMesh);
+    obj3D.ribbonMesh.geometry.dispose();
+    obj3D.ribbonMesh.material.dispose();
+  }
+  const curve = new THREE.CatmullRomCurve3(pts);
+  const geo = new THREE.TubeGeometry(curve, SEG * 2, 0.08, 10, false);
+  // chromatic vertex colors along length
+  const posCount = geo.attributes.position.count;
+  const colors = new Float32Array(posCount * 3);
+  for (let i = 0; i < posCount; i++){
+    const u = (i % (SEG*2+1)) / (SEG*2);
+    const c = new THREE.Color().setHSL(((hue + u * 360 + t * 60) % 360) / 360, 1, 0.6);
+    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+  }
+  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 });
+  obj3D.ribbonMesh = new THREE.Mesh(geo, mat);
+  grp.add(obj3D.ribbonMesh);
+  grp.scale.setScalar(spawn.spawnedScale);
+}
+
+// ---------- 3. LATTICE: icosahedral vertex graph with pulsing nodes ------
+function buildSceneLattice(){
+  clearThree();
+  const grp = new THREE.Group();
+  // use icosahedron vertices as node positions
+  const geo = new THREE.IcosahedronGeometry(1, 1);
+  const pos = geo.attributes.position;
+  const nodes = [];
+  const seen = new Set();
+  for (let i = 0; i < pos.count; i++){
+    const key = `${pos.array[i*3].toFixed(2)}_${pos.array[i*3+1].toFixed(2)}_${pos.array[i*3+2].toFixed(2)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const n = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.08, 0),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent:true, opacity: 0.95 })
+    );
+    n.position.set(pos.array[i*3], pos.array[i*3+1], pos.array[i*3+2]);
+    grp.add(n);
+    nodes.push(n);
+  }
+  // edges from icosahedron geometry (use EdgesGeometry on the base ico)
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(geo),
+    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false })
+  );
+  grp.add(edges);
+  scene.add(grp);
+  obj3D.latticeGrp = grp;
+  obj3D.latticeNodes = nodes;
+  obj3D.latticeEdges = edges;
+}
+function updateSceneLattice(hp, dt, hue, pinches){
+  if (!obj3D.latticeGrp) buildSceneLattice();
+  const grp = obj3D.latticeGrp;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  const a = _pinchAnchor(pinches);
+  const t = performance.now() * 0.001;
+  if (a){
+    grp.position.x = lerp(grp.position.x, a.mid.x, 0.2);
+    grp.position.y = lerp(grp.position.y, a.mid.y, 0.2);
+    const target = clamp(a.dist * 0.45, 0.5, 4);
+    grp.scale.setScalar(lerp(grp.scale.x || 0, target * spawn.spawnedScale, 0.15) || spawn.spawnedScale);
+  }
+  grp.rotation.y += dt * 0.4;
+  grp.rotation.x = Math.sin(t * 0.5) * 0.3;
+  // pulse nodes
+  for (let i = 0; i < obj3D.latticeNodes.length; i++){
+    const n = obj3D.latticeNodes[i];
+    const pulse = 1 + 0.5 * Math.sin(t * 2.5 + i * 0.6);
+    n.scale.setScalar(pulse);
+    n.material.color.setHSL(((hue + i * 20 + t * 20) % 360)/360, 1, 0.65);
+  }
+  obj3D.latticeEdges.material.color.setHSL(((hue + t * 25) % 360)/360, 0.3, 0.9);
+}
+
+// ---------- 4. TORNADO: vertical rotating column of cubes ---------------
+function buildSceneTornado(){
+  clearThree();
+  const grp = new THREE.Group();
+  const N = 40;
+  const cubes = [];
+  for (let i = 0; i < N; i++){
+    const c = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.12, 0.12),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 })
+    );
+    grp.add(c);
+    cubes.push(c);
+  }
+  scene.add(grp);
+  obj3D.tornadoGrp = grp;
+  obj3D.tornadoCubes = cubes;
+}
+function updateSceneTornado(hp, dt, hue, pinches){
+  if (!obj3D.tornadoGrp) buildSceneTornado();
+  const grp = obj3D.tornadoGrp;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  const a = _pinchAnchor(pinches);
+  const t = performance.now() * 0.001;
+  if (a){
+    grp.position.x = lerp(grp.position.x, a.mid.x, 0.2);
+    grp.position.y = lerp(grp.position.y, a.mid.y, 0.2);
+    const target = clamp(a.dist * 0.35, 0.4, 3);
+    grp.scale.setScalar(lerp(grp.scale.x || 0, target * spawn.spawnedScale, 0.15) || spawn.spawnedScale);
+  }
+  const N = obj3D.tornadoCubes.length;
+  for (let i = 0; i < N; i++){
+    const c = obj3D.tornadoCubes[i];
+    const u = i / N;
+    const spin = t * (1.5 + u * 1.5);
+    const r = 0.3 + Math.sin(u * Math.PI) * 0.9;
+    const y = (u - 0.5) * 3;
+    c.position.set(Math.cos(spin + u * 8) * r, y, Math.sin(spin + u * 8) * r);
+    c.rotation.x = spin; c.rotation.y = spin * 0.7;
+    c.scale.setScalar(0.9 + 0.4 * Math.sin(t * 3 + i * 0.5));
+    c.material.color.setHSL(((hue + i * 10 + t * 30) % 360)/360, 1, 0.65);
+  }
+  grp.rotation.y += dt * 0.1;
+}
+
+// ---------- CHROME: liquid metal blob with hand-deformed vertices ------
+function buildSceneChrome(){
+  clearThree();
+  const geo = new THREE.IcosahedronGeometry(1.2, 5);
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, metalness: 1.0, roughness: 0.05,
+    envMapIntensity: 2.5, clearcoat: 1.0, clearcoatRoughness: 0.03,
+    side: THREE.DoubleSide
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  const grp = new THREE.Group();
+  grp.add(mesh);
+  scene.add(grp);
+  obj3D.chromeGrp = grp;
+  obj3D.chromeMesh = mesh;
+  obj3D.chromeBase = geo.attributes.position.array.slice();
+}
+function updateSceneChrome(hp, dt, hue, pinches){
+  if (!obj3D.chromeGrp) buildSceneChrome();
+  const grp = obj3D.chromeGrp;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  const a = _pinchAnchor(pinches);
+  const t = performance.now() * 0.001;
+  if (a){
+    grp.position.x = lerp(grp.position.x, a.mid.x, 0.22);
+    grp.position.y = lerp(grp.position.y, a.mid.y, 0.22);
+    const target = clamp(a.dist * 0.38, 0.5, 3.2);
+    grp.scale.setScalar(lerp(grp.scale.x || 0, target * spawn.spawnedScale, 0.15) || spawn.spawnedScale);
+  }
+  // deform vertices with multi-frequency noise + attraction toward each visible fingertip
+  const pos = obj3D.chromeMesh.geometry.attributes.position;
+  const base = obj3D.chromeBase;
+  const tipsWorld = (hp.tips || []).map(tt => screenToWorld(tt.x, tt.y, 0));
+  for (let i = 0; i < pos.count; i++){
+    const bx = base[i*3], by = base[i*3+1], bz = base[i*3+2];
+    // noise bulge (liquid feel)
+    const n = Math.sin(bx*3 + t*2) * Math.cos(by*3 + t*1.4) * Math.sin(bz*3 + t);
+    let nx = bx + bx * n * 0.15;
+    let ny = by + by * n * 0.15;
+    let nz = bz + bz * n * 0.15;
+    // attract vertex toward tips within range
+    for (const tp of tipsWorld){
+      const localTarget = { x: tp.x - grp.position.x, y: tp.y - grp.position.y, z: 0 };
+      const dx = localTarget.x / (grp.scale.x||1) - bx;
+      const dy = localTarget.y / (grp.scale.y||1) - by;
+      const dz = -bz;
+      const d2 = dx*dx + dy*dy + dz*dz + 0.5;
+      const F = 0.9 / d2;
+      nx += dx * F; ny += dy * F; nz += dz * F;
+    }
+    pos.array[i*3]=nx; pos.array[i*3+1]=ny; pos.array[i*3+2]=nz;
+  }
+  pos.needsUpdate = true;
+  obj3D.chromeMesh.geometry.computeVertexNormals();
+  grp.rotation.y += dt * 0.15;
+  grp.rotation.x = Math.sin(t * 0.4) * 0.2;
+  // subtle color drift (chrome stays mostly white but tints slightly)
+  obj3D.chromeMesh.material.color.setHSL(((hue + t * 10) % 360)/360, 0.1, 0.95);
+}
+
+// ---------- GLASS: tinted glass cube with animated colored liquid inside -
+function buildSceneGlass(){
+  clearThree();
+  const grp = new THREE.Group();
+  // outer tinted glass cube
+  const cubeGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
+  const cubeMat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, metalness: 0, roughness: 0.0,
+    transmission: 1.0, thickness: 1.3, ior: 1.52,
+    envMapIntensity: 2.0, clearcoat: 1.0, clearcoatRoughness: 0.02,
+    transparent: true, opacity: 0.6, side: THREE.DoubleSide
+  });
+  const cube = new THREE.Mesh(cubeGeo, cubeMat);
+  grp.add(cube);
+  // bright wireframe outline so edges catch the eye
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(cubeGeo),
+    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 })
+  );
+  grp.add(edges);
+  // inner "liquid": additive-blended point cloud inside the cube
+  const N = 240;
+  const pts = new Float32Array(N * 3);
+  const vel = new Float32Array(N * 3);
+  const col = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++){
+    pts[i*3]   = (Math.random() - 0.5) * 1.0;
+    pts[i*3+1] = (Math.random() - 0.5) * 1.0;
+    pts[i*3+2] = (Math.random() - 0.5) * 1.0;
+    const c = new THREE.Color().setHSL(0.6 + Math.random()*0.1, 1, 0.6);
+    col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pts, 3));
+  geo.setAttribute("color",    new THREE.BufferAttribute(col, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.09, vertexColors: true, transparent: true, opacity: 0.9,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  });
+  const liquid = new THREE.Points(geo, mat);
+  grp.add(liquid);
+  scene.add(grp);
+  obj3D.glassGrp = grp;
+  obj3D.glassCube = cube;
+  obj3D.glassLiquid = liquid;
+  obj3D.glassVel = vel;
+}
+function updateSceneGlass(hp, dt, hue, pinches){
+  if (!obj3D.glassGrp) buildSceneGlass();
+  const grp = obj3D.glassGrp;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  const a = _pinchAnchor(pinches);
+  const t = performance.now() * 0.001;
+  if (a){
+    grp.position.x = lerp(grp.position.x, a.mid.x, 0.22);
+    grp.position.y = lerp(grp.position.y, a.mid.y, 0.22);
+    const target = clamp(a.dist * 0.4, 0.5, 3.2);
+    grp.scale.setScalar(lerp(grp.scale.x || 0, target * spawn.spawnedScale, 0.15) || spawn.spawnedScale);
+  }
+  grp.rotation.y += dt * 0.3;
+  grp.rotation.x = Math.sin(t * 0.4) * 0.2;
+  // move inner liquid particles — turbulent flow with container bounds
+  const pos = obj3D.glassLiquid.geometry.attributes.position;
+  const col = obj3D.glassLiquid.geometry.attributes.color;
+  const vel = obj3D.glassVel;
+  const B = 0.65; // bounds for inside the cube (slightly inside walls)
+  for (let i = 0; i < pos.count; i++){
+    // noise force
+    vel[i*3]   += Math.sin(pos.array[i*3+1] * 3 + t * 1.5) * 0.015;
+    vel[i*3+1] += Math.cos(pos.array[i*3] * 3 + t * 1.2) * 0.015;
+    vel[i*3+2] += Math.sin((pos.array[i*3] + pos.array[i*3+1]) * 2 + t) * 0.012;
+    // gentle gravity-ish drift so liquid pools when still
+    vel[i*3+1] -= 0.004;
+    // integrate
+    vel[i*3]   *= 0.95; vel[i*3+1] *= 0.95; vel[i*3+2] *= 0.95;
+    pos.array[i*3]   += vel[i*3];
+    pos.array[i*3+1] += vel[i*3+1];
+    pos.array[i*3+2] += vel[i*3+2];
+    // bounce off cube walls
+    for (let k = 0; k < 3; k++){
+      if (pos.array[i*3+k] >  B){ pos.array[i*3+k] =  B; vel[i*3+k] *= -0.5; }
+      if (pos.array[i*3+k] < -B){ pos.array[i*3+k] = -B; vel[i*3+k] *= -0.5; }
+    }
+    // color drift
+    const c = new THREE.Color().setHSL(((hue + i * 0.5 + t * 20) % 360)/360, 1, 0.6);
+    col.array[i*3]=c.r; col.array[i*3+1]=c.g; col.array[i*3+2]=c.b;
+  }
+  pos.needsUpdate = true;
+  col.needsUpdate = true;
+}
+
+// ---------- MERCURY: liquid metal puddle stretched between hands --------
+function buildSceneMercury(){
+  clearThree();
+  // A low-poly subdivided plane as a mercury surface, animated with noise.
+  const geo = new THREE.PlaneGeometry(2, 2, 48, 48);
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, metalness: 1.0, roughness: 0.08,
+    envMapIntensity: 2.2, clearcoat: 1.0, clearcoatRoughness: 0.04,
+    side: THREE.DoubleSide
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.rotation.x = -Math.PI / 2.4; // tilt so we see reflection
+  const grp = new THREE.Group();
+  grp.add(mesh);
+  scene.add(grp);
+  obj3D.mercuryGrp = grp;
+  obj3D.mercuryMesh = mesh;
+  obj3D.mercuryBase = geo.attributes.position.array.slice();
+}
+function updateSceneMercury(hp, dt, hue, pinches){
+  if (!obj3D.mercuryGrp) buildSceneMercury();
+  const grp = obj3D.mercuryGrp;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  const a = _pinchAnchor(pinches);
+  const t = performance.now() * 0.001;
+  if (a){
+    grp.position.x = lerp(grp.position.x, a.mid.x, 0.22);
+    grp.position.y = lerp(grp.position.y, a.mid.y, 0.22);
+    const target = clamp(a.dist * 0.4, 0.6, 3);
+    grp.scale.setScalar(lerp(grp.scale.x || 0, target * spawn.spawnedScale, 0.15) || spawn.spawnedScale);
+  }
+  grp.rotation.y += dt * 0.2;
+  // animate surface with multi-wave noise so the chrome reflections dance
+  const pos = obj3D.mercuryMesh.geometry.attributes.position;
+  const base = obj3D.mercuryBase;
+  for (let i = 0; i < pos.count; i++){
+    const bx = base[i*3], by = base[i*3+1];
+    const z = Math.sin(bx * 3 + t * 2) * 0.15 +
+              Math.cos(by * 3.5 + t * 1.6) * 0.12 +
+              Math.sin((bx + by) * 4 + t * 2.4) * 0.08;
+    pos.array[i*3+2] = z;
+  }
+  pos.needsUpdate = true;
+  obj3D.mercuryMesh.geometry.computeVertexNormals();
+}
+
+// ---------- 5. BLOOM: crystal shards bursting outward ------------------
+function buildSceneBloom(){
+  clearThree();
+  const grp = new THREE.Group();
+  const N = 24;
+  const shards = [];
+  for (let i = 0; i < N; i++){
+    const s = new THREE.Mesh(
+      new THREE.ConeGeometry(0.08, 0.4, 4),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, side: THREE.DoubleSide })
+    );
+    grp.add(s);
+    shards.push(s);
+  }
+  // central core
+  const core = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.25, 2),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 })
+  );
+  grp.add(core);
+  scene.add(grp);
+  obj3D.bloomGrp = grp;
+  obj3D.bloomShards = shards;
+  obj3D.bloomCore = core;
+}
+function updateSceneBloom(hp, dt, hue, pinches){
+  if (!obj3D.bloomGrp) buildSceneBloom();
+  const grp = obj3D.bloomGrp;
+  if (!spawn.active){ grp.scale.setScalar(spawn.spawnedScale); return; }
+  const a = _pinchAnchor(pinches);
+  const t = performance.now() * 0.001;
+  let openness = a ? Math.min(1, a.dist / 3) : 0;
+  if (a){
+    grp.position.x = lerp(grp.position.x, a.mid.x, 0.2);
+    grp.position.y = lerp(grp.position.y, a.mid.y, 0.2);
+    grp.scale.setScalar(lerp(grp.scale.x || 0, spawn.spawnedScale, 0.15) || spawn.spawnedScale);
+  }
+  // shards spherically arranged (fibonacci sphere)
+  const N = obj3D.bloomShards.length;
+  for (let i = 0; i < N; i++){
+    const s = obj3D.bloomShards[i];
+    const phi = Math.acos(1 - 2 * (i + 0.5) / N);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+    const dir = new THREE.Vector3(
+      Math.sin(phi) * Math.cos(theta),
+      Math.sin(phi) * Math.sin(theta),
+      Math.cos(phi)
+    );
+    const burst = 0.4 + openness * 2.5;
+    s.position.copy(dir.clone().multiplyScalar(burst));
+    s.lookAt(0, 0, 0);
+    s.rotateX(Math.PI);
+    const pulse = 1 + 0.4 * Math.sin(t * 3 + i * 0.5);
+    s.scale.set(pulse, pulse * (1 + openness), pulse);
+    s.material.color.setHSL(((hue + i * 15 + t * 20) % 360)/360, 1, 0.65);
+  }
+  obj3D.bloomCore.scale.setScalar(0.8 + 0.4 * Math.sin(t * 4));
+  obj3D.bloomCore.material.color.setHSL(((hue + t * 40) % 360)/360, 1, 0.8);
+  grp.rotation.y += dt * 0.3;
+}
+
 function clearFx(){
   fx.setTransform(1,0,0,1,0,0);
   fx.clearRect(0,0,fxc.width,fxc.height);
@@ -2480,28 +4767,52 @@ function drawBones(){
   const handed = latest.multiHandedness || [];
   for (let i = 0; i < list.length; i++){
     const lm = list[i];
+
+    // precompute pixel positions once
+    const pts = new Array(21);
+    for (let j = 0; j < 21; j++) pts[j] = lmToPx(lm[j].x, lm[j].y);
+
     g.save();
-    g.lineWidth = 3;
-    g.strokeStyle = "#00ff5a";
-    g.shadowColor = "#00ff5a";
+
+    // --- PASS 1: wide cyan halo (outer glow) ---
+    g.lineWidth = 10;
+    g.strokeStyle = "rgba(68,224,255,0.18)";
+    g.shadowColor = "#44e0ff";
+    g.shadowBlur = 18;
+    g.beginPath();
+    for (const [a,b] of CONN){
+      g.moveTo(pts[a].x, pts[a].y);
+      g.lineTo(pts[b].x, pts[b].y);
+    }
+    g.stroke();
+
+    // --- PASS 2: inner bright core (thin bone) ---
+    g.lineWidth = 2;
+    g.strokeStyle = "rgba(230,255,245,0.95)";
+    g.shadowColor = "#9cff6b";
     g.shadowBlur = 6;
     g.beginPath();
     for (const [a,b] of CONN){
-      const pa = lmToPx(lm[a].x, lm[a].y);
-      const pb = lmToPx(lm[b].x, lm[b].y);
-      g.moveTo(pa.x, pa.y);
-      g.lineTo(pb.x, pb.y);
+      g.moveTo(pts[a].x, pts[a].y);
+      g.lineTo(pts[b].x, pts[b].y);
     }
     g.stroke();
     g.shadowBlur = 0;
-    g.fillStyle = "#ff2d4a";
-    g.shadowColor = "#ff2d4a";
-    g.shadowBlur = 4;
+
+    // --- joints: hollow pink ring + white center ---
     for (let j = 0; j < 21; j++){
-      const px = lmToPx(lm[j].x, lm[j].y);
-      g.beginPath();
-      g.arc(px.x, px.y, j === 0 ? 6 : 4, 0, TAU);
-      g.fill();
+      const p = pts[j];
+      const r = j === 0 ? 6 : 4;
+      // halo
+      g.fillStyle = "rgba(255,74,156,0.35)";
+      g.beginPath(); g.arc(p.x, p.y, r + 3, 0, TAU); g.fill();
+      // ring
+      g.strokeStyle = "#ff4a9c";
+      g.lineWidth = 1.5;
+      g.beginPath(); g.arc(p.x, p.y, r, 0, TAU); g.stroke();
+      // bright core
+      g.fillStyle = "#fff";
+      g.beginPath(); g.arc(p.x, p.y, Math.max(1, r - 2), 0, TAU); g.fill();
     }
     // highlight thumb + index tips when this hand is pinching (visual feedback for summon anchor)
     const handLabel = (handed[i] && handed[i].label) || (i === 0 ? "Right" : "Left");
@@ -2517,6 +4828,63 @@ function drawBones(){
       g.lineWidth = 1.5;
       g.beginPath(); g.moveTo(t.x, t.y); g.lineTo(ix.x, ix.y); g.stroke();
     }
+
+    // ---- AR OVERLAY: fingertip detection boxes + labels (debug-tracker look) ----
+    if (MODE === "sense" && SHOW_AR_LABELS){
+      const tips  = [[4,"T",0xffd166], [8,"I",0x44e0ff], [12,"M",0xff2d7a], [16,"R",0x9cff6b], [20,"P",0xc689ff]];
+      // deterministic faux-confidence per landmark (looks stable, no RNG churn)
+      const conf = (idx) => (90 + ((idx * 17 + i * 11) % 10)).toString() + "." +
+                           (((idx * 7 + i * 3) % 10)).toString();
+      g.save();
+      g.font = "600 9px ui-monospace,monospace";
+      g.textAlign = "left";
+      g.shadowBlur = 0;
+      for (const [idx, k, col] of tips){
+        const p = pts[idx];
+        const boxW = 32, boxH = 32;
+        const bx = p.x - boxW/2, by = p.y - boxH/2;
+        // dashed detection square
+        g.strokeStyle = "rgba(255,255,255,0.6)";
+        g.setLineDash([3, 3]);
+        g.lineWidth = 1;
+        g.strokeRect(bx, by, boxW, boxH);
+        g.setLineDash([]);
+        // corner ticks (brackets)
+        const tick = 6;
+        const colStr = "#" + col.toString(16).padStart(6,"0");
+        g.strokeStyle = colStr;
+        g.lineWidth = 1.5;
+        g.beginPath();
+        g.moveTo(bx, by+tick); g.lineTo(bx, by); g.lineTo(bx+tick, by);
+        g.moveTo(bx+boxW-tick, by); g.lineTo(bx+boxW, by); g.lineTo(bx+boxW, by+tick);
+        g.moveTo(bx+boxW, by+boxH-tick); g.lineTo(bx+boxW, by+boxH); g.lineTo(bx+boxW-tick, by+boxH);
+        g.moveTo(bx+tick, by+boxH); g.lineTo(bx, by+boxH); g.lineTo(bx, by+boxH-tick);
+        g.stroke();
+        // label pill above the box
+        const txt = `${k}_${idx} · ${conf(idx)}`;
+        const tw = g.measureText(txt).width + 10;
+        g.fillStyle = "rgba(10,10,16,0.78)";
+        roundRect(g, bx + boxW/2 - tw/2, by - 16, tw, 13, 3);
+        g.fill();
+        g.fillStyle = colStr;
+        g.fillText(txt, bx + boxW/2 - tw/2 + 5, by - 6);
+      }
+      // wrist tag with hand label
+      const wp = pts[0];
+      const wTxt = `HAND_${i} · ${handLabel.toUpperCase()}`;
+      g.font = "700 10px ui-monospace,monospace";
+      const wtw = g.measureText(wTxt).width + 14;
+      g.fillStyle = "rgba(10,10,16,0.85)";
+      roundRect(g, wp.x - wtw/2, wp.y + 18, wtw, 16, 4);
+      g.fill();
+      g.strokeStyle = "#44e0ff"; g.lineWidth = 1;
+      g.strokeRect(wp.x - wtw/2, wp.y + 18, wtw, 16);
+      g.fillStyle = "#44e0ff";
+      g.textAlign = "center";
+      g.fillText(wTxt, wp.x, wp.y + 29);
+      g.restore();
+    }
+
     g.restore();
 
     if (MODE === "music"){
@@ -3198,13 +5566,14 @@ function renderFrame(){
     const pts = collectHandPoints();
     const three = is3DScene(SENSE_SCENE);
     threeC.style.display = three ? "block" : "none";
+    // collect pinches up front so BOTH 2D and 3D branches can read them
+    const pinches = collectPinches();
+    while (pinches.length < 2) pinches.push({ pinching:false, strength:0, x:0, y:0, z:0, label:"", fist:false, palmX:0, palmY:0, thumbX:0, thumbY:0, indexX:0, indexY:0, spread:0 });
+    // update spawn state once per frame so BOTH branches share the same gating
+    if (needsSpawn(SENSE_SCENE)) updateSpawnState(pinches);
+    else showHint("");
     if (three){
       clearFx();
-      const pinches = collectPinches();
-      // pad to length 2 so scene code can read pinches[0], pinches[1] safely
-      while (pinches.length < 2) pinches.push({ pinching:false, strength:0, x:0, y:0, z:0, label:"", fist:false, palmX:0, palmY:0, thumbX:0, thumbY:0, indexX:0, indexY:0, spread:0 });
-      if (needsSpawn(SENSE_SCENE)) updateSpawnState(pinches);
-      else showHint("");
       if (SENSE_SCENE === "sphere")      updateSceneSphere(pts, dt, hue);
       else if (SENSE_SCENE === "wave")   updateSceneWave(pts, dt, hue, force, pinches);
       else if (SENSE_SCENE === "blob")   updateSceneBlob(pts, dt, hue);
@@ -3213,13 +5582,21 @@ function renderFrame(){
       else if (SENSE_SCENE === "card")   updateSceneCard(pts, dt, hue, pinches);
       else if (SENSE_SCENE === "lens")   updateSceneLens(pts, dt, hue, pinches);
       else if (SENSE_SCENE === "taffy")  updateSceneTaffy(pts, dt, hue, pinches);
-      else if (SENSE_SCENE === "draw")   updateSceneDraw(pinches, dt, hue);
       else if (SENSE_SCENE === "sculpt") updateSceneSculpt(pinches, dt, hue);
+      else if (SENSE_SCENE === "plot3d")   updateScenePlot3d(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "prism")    updateScenePrism(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "voxelbox") updateSceneVoxelbox(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "tunnel")   updateSceneTunnel(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "ribbon")   updateSceneRibbon(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "lattice")  updateSceneLattice(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "tornado")  updateSceneTornado(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "bloom")    updateSceneBloom(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "chrome")   updateSceneChrome(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "glass")    updateSceneGlass(pts, dt, hue, pinches);
+      else if (SENSE_SCENE === "mercury")  updateSceneMercury(pts, dt, hue, pinches);
       renderer.render(scene, camera);
     } else {
-      if (SENSE_SCENE === "goo")        sceneGoo(pts, intensity, hue);
-      else if (SENSE_SCENE === "warp")  sceneWarp(pts, intensity, hue, force);
-      else if (SENSE_SCENE === "paint") scenePaint(pts, intensity, hue);
+      if (SENSE_SCENE === "pointcloud") scenePointCloud(pts, pinches, hue);
     }
   }
   drawBones();
@@ -3363,9 +5740,18 @@ function wireUI(){
       if (SENSE_SCENE === "card")   buildSceneCard();
       if (SENSE_SCENE === "lens")   buildSceneLens();
       if (SENSE_SCENE === "taffy")  buildSceneTaffy();
-      if (SENSE_SCENE === "draw")   buildSceneDraw();
       if (SENSE_SCENE === "sculpt") buildSceneSculpt();
-      if (SENSE_SCENE === "warp")   initGrid();
+      if (SENSE_SCENE === "plot3d")   buildScenePlot3d();
+      if (SENSE_SCENE === "prism")    buildScenePrism();
+      if (SENSE_SCENE === "voxelbox") buildSceneVoxelbox();
+      if (SENSE_SCENE === "tunnel")   buildSceneTunnel();
+      if (SENSE_SCENE === "ribbon")   buildSceneRibbon();
+      if (SENSE_SCENE === "lattice")  buildSceneLattice();
+      if (SENSE_SCENE === "tornado")  buildSceneTornado();
+      if (SENSE_SCENE === "bloom")    buildSceneBloom();
+      if (SENSE_SCENE === "chrome")   buildSceneChrome();
+      if (SENSE_SCENE === "glass")    buildSceneGlass();
+      if (SENSE_SCENE === "mercury")  buildSceneMercury();
       spawn.active = false; spawn.spawnedScale = 0;
       el("scene-caption").textContent = describeScene(SENSE_SCENE);
     });
@@ -3375,12 +5761,21 @@ function wireUI(){
   el("btn-settings").addEventListener("click", () => el("drawer").classList.toggle("open"));
   el("drawer-close").addEventListener("click", () => el("drawer").classList.remove("open"));
   el("btn-dismiss").addEventListener("click", () => dismissSense());
+  el("btn-guide").addEventListener("click", openGuide);
+  el("guide-close").addEventListener("click", closeGuide);
+  el("guide-modal").addEventListener("click", (e) => { if (e.target === el("guide-modal")) closeGuide(); });
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "F11" && window.winctl){ e.preventDefault(); window.winctl.fullscreen(); }
     if (e.key === "1"){ setMode("music"); }
     if (e.key === "2"){ setMode("sense"); }
     if (e.key === "3"){ setMode("patch"); }
+    if (e.key === "l" || e.key === "L"){ SHOW_AR_LABELS = !SHOW_AR_LABELS; }
+    if (e.key === "?" || e.key === "h" || e.key === "H"){
+      e.preventDefault();
+      if (el("guide-modal").classList.contains("hide")) openGuide(); else closeGuide();
+    }
+    if (e.key === "Escape"){ closeGuide(); }
     if (e.key === "r" || e.key === "R"){ el("btn-rec").click(); }
     if (e.key === "c" || e.key === "C"){ clearFx(); clearThree(); }
     if (MODE === "music"){
