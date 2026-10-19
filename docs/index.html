@@ -523,6 +523,12 @@ for (const spec of shapeSpecs){
     if (!mesh) return;
     mesh.material = materialFor(spec.key);
     mesh.scale.setScalar(spec.scale);
+    // start at the orbit position so they appear immediately, not spring from origin
+    mesh.position.set(
+      Math.sin(spec.phi) * Math.cos(spec.theta) * spec.radius,
+      Math.sin(spec.phi) * Math.sin(spec.theta) * spec.radius,
+      Math.cos(spec.phi) * spec.radius
+    );
     const u = {
       orbitRadius: spec.radius,
       orbitPhi: spec.phi,
