@@ -1,0 +1,11 @@
+{
+  "name": "Palma",
+  "short_name": "Palma",
+  "description": "Faire de la musique et jouer avec des formes 3D rien qu'avec les mains.",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#050508",
+  "theme_color": "#050508",
+  "icons": []
+}

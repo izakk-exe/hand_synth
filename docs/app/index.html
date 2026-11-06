@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#050508"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Palma — version tactile</title>
+<style>
+  :root{
+    --bg:#050508; --ink:#f4f4f6; --dim:#8b8b96;
+    --cold:#44e0ff; --hot:#ff2d7a; --violet:#c689ff; --lime:#9cff6b; --warm:#ffd166;
+    --edge:rgba(255,255,255,.14); --panel:rgba(14,14,20,.9);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;width:100%;background:#000;color:var(--ink);font-family:var(--sans);overflow:hidden;overscroll-behavior:none;touch-action:none}
+  #stage{position:fixed;inset:0}
+  video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0;background:#000}
+  canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  canvas#fx{z-index:1;mix-blend-mode:screen}
+  canvas#three{z-index:2;display:none}
+  canvas#bones{z-index:5}
+
+  /* ---------- start overlay (tap-to-begin) ---------- */
+  #start{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(circle at center, #0b0b14 0%, #050508 60%);text-align:center;padding:24px}
+  #start.hide{display:none}
+  #start h1{font-size:64px;font-weight:900;letter-spacing:-.03em;margin-bottom:12px;background:linear-gradient(135deg,var(--cold),var(--hot));-webkit-background-clip:text;background-clip:text;color:transparent}
+  #start .sub{color:var(--dim);font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:28px}
+  #start .copy{color:var(--ink);font-size:16px;line-height:1.5;max-width:420px;margin-bottom:28px;opacity:.85}
+  #start button{padding:20px 46px;background:var(--cold);color:#000;border:none;border-radius:999px;font-family:var(--mono);font-size:15px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;box-shadow:0 12px 40px rgba(68,224,255,.35)}
+  #start .legal{position:absolute;bottom:18px;left:0;right:0;font-size:10px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase}
+
+  /* ---------- HUD (top mode bar + bottom tray) ---------- */
+  .hud{position:absolute;inset:0;pointer-events:none;z-index:4}
+  .hud.hide{display:none}
+
+  .top{position:absolute;top:env(safe-area-inset-top,0);left:0;right:0;padding:10px 12px;display:flex;gap:8px;pointer-events:auto;background:linear-gradient(180deg,rgba(5,5,10,.85),rgba(5,5,10,0));backdrop-filter:blur(8px)}
+  .brand{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.25em;text-transform:uppercase;font-weight:800;padding:0 10px;color:var(--ink);min-width:0}
+  .brand .dot{width:8px;height:8px;background:var(--cold);border-radius:50%;box-shadow:0 0 10px var(--cold)}
+  .modebar{flex:1;display:flex;gap:6px;justify-content:flex-end;overflow-x:auto}
+  .modebar button{background:rgba(14,14,20,.78);border:1px solid var(--edge);color:var(--ink);padding:12px 18px;border-radius:12px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;cursor:pointer;min-height:46px;white-space:nowrap}
+  .modebar button.on{background:var(--cold);color:#000;border-color:var(--cold)}
+  .modebar button.on.sense{background:var(--violet);border-color:var(--violet)}
+  .modebar button.on.create{background:var(--lime);border-color:var(--lime);color:#000}
+
+  .toptools{position:absolute;top:calc(env(safe-area-inset-top,0) + 60px);right:10px;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+  .tool-btn{width:44px;height:44px;background:rgba(14,14,20,.78);border:1px solid var(--edge);color:var(--ink);border-radius:12px;display:grid;place-items:center;font-size:20px;cursor:pointer}
+  .tool-btn.hide{display:none}
+
+  /* ---------- tuner (music mode) ---------- */
+  .tuner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:3}
+  .tuner.hide{display:none}
+  .tuner .note{font-size:min(44vw, 240px);font-weight:900;color:var(--ink);line-height:1;letter-spacing:-.05em;text-shadow:0 0 50px rgba(68,224,255,.5)}
+  .tuner .chord{font-family:var(--mono);font-size:14px;color:var(--cold);letter-spacing:.3em;text-transform:uppercase;margin-top:10px;min-height:1em}
+  .tuner .sub{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.3em;text-transform:uppercase;margin-top:6px}
+
+  /* ---------- bottom tray ---------- */
+  .tray{position:absolute;bottom:env(safe-area-inset-bottom,0);left:0;right:0;padding:10px 10px 12px;pointer-events:auto;background:linear-gradient(0deg,rgba(5,5,10,.95),rgba(5,5,10,.6) 70%,transparent);backdrop-filter:blur(8px)}
+  .tray-row{display:flex;gap:8px;overflow-x:auto;padding:4px 2px;scrollbar-width:none}
+  .tray-row::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;min-width:88px;padding:12px 16px;background:rgba(14,14,20,.85);border:1.5px solid var(--edge);border-radius:14px;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:60px}
+  .chip .glyph{font-size:22px;line-height:1}
+  .chip.on{border-color:var(--cold);background:rgba(68,224,255,.14);color:var(--cold)}
+  .caption{text-align:center;color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:8px 0 0}
+
+  /* ---------- create stage (modal-like) ---------- */
+  .create-pane{position:absolute;inset:0;z-index:6;background:rgba(5,5,10,.96);pointer-events:auto;overflow-y:auto;padding:70px 16px 120px;-webkit-overflow-scrolling:touch}
+  .create-pane.hide{display:none}
+  .create-pane h2{font-size:22px;font-weight:800;color:var(--ink);margin:20px 0 6px}
+  .create-pane h2:first-child{margin-top:0}
+  .create-pane .lead{font-size:13px;color:var(--dim);margin-bottom:14px}
+  .create-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px}
+  .create-tile{background:rgba(14,14,20,.85);border:2px solid var(--edge);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;min-height:110px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+  .create-tile.on{border-color:var(--cold);background:rgba(68,224,255,.14)}
+  .create-tile .emoji{font-size:38px;line-height:1}
+  .create-tile .name{font-size:13px;font-weight:700;color:var(--ink)}
+  .create-tile .desc{font-size:10px;color:var(--dim);line-height:1.3}
+  .create-swatch{width:100%;height:46px;border-radius:10px;margin-bottom:6px}
+  .create-cta{position:fixed;bottom:env(safe-area-inset-bottom,0);left:0;right:0;padding:12px;display:flex;gap:10px;background:rgba(5,5,10,.95);border-top:1px solid var(--edge);z-index:7}
+  .create-cta.hide{display:none}
+  .create-cta button{flex:1;padding:16px;background:var(--cold);color:#000;border:none;border-radius:999px;font-family:var(--mono);font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+  .create-cta button.ghost{background:transparent;color:var(--ink);border:1px solid var(--edge);flex:0 0 auto;padding:16px 18px}
+
+  /* ---------- hint ---------- */
+  .hint{position:absolute;top:calc(env(safe-area-inset-top,0) + 72px);left:50%;transform:translateX(-50%);background:rgba(14,14,20,.9);border:1px solid var(--edge);padding:8px 14px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink);text-transform:uppercase;z-index:3;pointer-events:none;display:flex;align-items:center;gap:8px}
+  .hint.hide{display:none}
+  .hint .dot{width:6px;height:6px;background:var(--cold);border-radius:50%;animation:blink 1.4s infinite}
+  @keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+
+  /* ---------- error ---------- */
+  #err{position:fixed;inset:0;z-index:100;background:#000;color:#fff;display:none;place-items:center;text-align:center;padding:24px}
+  #err.show{display:grid}
+  #err p{max-width:420px;font-size:14px;line-height:1.6;color:var(--dim)}
+  #err h2{font-size:22px;margin-bottom:12px;color:var(--hot)}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <video id="cam" playsinline muted autoplay></video>
+  <canvas id="fx"></canvas>
+  <canvas id="three"></canvas>
+  <canvas id="bones"></canvas>
+
+  <div class="hud hide" id="hud">
+    <div class="top">
+      <div class="brand"><span class="dot"></span>PALMA</div>
+      <div class="modebar" id="modebar">
+        <button data-mode="music" class="on">musique</button>
+        <button data-mode="sense">sensoriel</button>
+        <button data-mode="create">créer</button>
+      </div>
+    </div>
+
+    <div class="toptools">
+      <button class="tool-btn" id="tool-flip" title="caméra avant/arrière">⟲</button>
+      <button class="tool-btn" id="tool-fullscreen" title="plein écran">⛶</button>
+    </div>
+
+    <div class="hint" id="hint"><span class="dot"></span><span id="hint-text">lève un doigt pour jouer</span></div>
+
+    <div class="tuner" id="tuner">
+      <div class="note" id="t-note">—</div>
+      <div class="chord" id="t-chord">&nbsp;</div>
+      <div class="sub">chante cette note</div>
+    </div>
+
+    <div class="tray" id="tray">
+      <div class="tray-row" id="tray-row-music">
+        <div class="chip on" data-sound="piano"><span class="glyph">🎹</span>piano</div>
+        <div class="chip" data-sound="flute"><span class="glyph">🎶</span>flûte</div>
+        <div class="chip" data-sound="xylophone"><span class="glyph">🪵</span>xylo</div>
+        <div class="chip" data-sound="marimba"><span class="glyph">🥁</span>marimba</div>
+        <div class="chip" data-sound="bells"><span class="glyph">🔔</span>cloches</div>
+        <div class="chip" data-sound="harp"><span class="glyph">🎻</span>harpe</div>
+        <div class="chip" data-sound="strings"><span class="glyph">🎻</span>cordes</div>
+        <div class="chip" data-sound="pad"><span class="glyph">🌫️</span>nappe</div>
+        <div class="chip" data-sound="organ"><span class="glyph">⛪</span>orgue</div>
+        <div class="chip" data-sound="bass"><span class="glyph">🎚️</span>basse</div>
+        <div class="chip" data-sound="pluck"><span class="glyph">🎸</span>pincée</div>
+        <div class="chip" data-sound="lead"><span class="glyph">🎛️</span>lead</div>
+        <div class="chip" data-sound="voice"><span class="glyph">🗣️</span>voix</div>
+        <div class="chip" data-sound="guitar"><span class="glyph">🎸</span>guitare</div>
+      </div>
+      <div class="tray-row hide" id="tray-row-sense">
+        <div class="chip on" data-scene="sphere"><span class="glyph">◯</span>sphère</div>
+        <div class="chip" data-scene="orb"><span class="glyph">◉</span>boule</div>
+        <div class="chip" data-scene="blob"><span class="glyph">◍</span>blob</div>
+        <div class="chip" data-scene="galaxy"><span class="glyph">✦</span>galaxie</div>
+        <div class="chip" data-scene="wave"><span class="glyph">∿</span>onde</div>
+        <div class="chip" data-scene="chrome"><span class="glyph">◐</span>chrome</div>
+      </div>
+      <div class="caption" id="caption">lève un doigt pour jouer une note · tonalité do majeur</div>
+    </div>
+
+    <div class="create-pane hide" id="create-pane">
+      <h2>Choisis ton instrument</h2>
+      <div class="lead">Le son qui sort quand tu bouges la main.</div>
+      <div class="create-grid" id="c-sounds"></div>
+      <h2>Choisis ta couleur</h2>
+      <div class="lead">La teinte des scènes 3D.</div>
+      <div class="create-grid" id="c-colors"></div>
+      <h2>Choisis ta forme</h2>
+      <div class="lead">L'objet 3D à manipuler.</div>
+      <div class="create-grid" id="c-shapes"></div>
+    </div>
+    <div class="create-cta hide" id="create-cta">
+      <button class="ghost" id="c-reset">Reset</button>
+      <button id="c-apply">Jouer avec mes choix</button>
+    </div>
+  </div>
+</div>
+
+<div id="start">
+  <div>
+    <h1>PALMA</h1>
+    <div class="sub">Mobile · Tablette</div>
+    <div class="copy">Fais de la musique et joue avec des formes 3D rien qu'en bougeant les mains devant la caméra. Autorise la caméra au premier lancement.</div>
+    <button id="go">Commencer</button>
+  </div>
+  <div class="legal">100% hors-ligne après chargement · aucun compte · aucune donnée · 1Z4K</div>
+</div>
+
+<div id="err">
+  <div>
+    <h2>Oups</h2>
+    <p id="err-msg">Un problème est survenu.</p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+const stage = $("stage"), video = $("cam"), fx = $("fx"), three = $("three"), bones = $("bones");
+const fxCtx = fx.getContext("2d"), bonesCtx = bones.getContext("2d");
+
+let W = 0, H = 0;
+function sizeCanvas(){
+  const r = stage.getBoundingClientRect();
+  W = Math.floor(r.width);
+  H = Math.floor(r.height);
+  [fx, three, bones].forEach(c => { c.width = W; c.height = H; });
+}
+window.addEventListener("resize", sizeCanvas);
+sizeCanvas();
+
+// ============================== STATE ==============================
+let MODE = "music";
+let AUDIO_READY = false;
+let mel, chord, master, reverb;
+let scene3D, camera3D, renderer3D, sceneRoot;
+let latest = { multiHandLandmarks: [], multiHandedness: [] };
+let CAM_FACING = "user";
+let currentSound = "piano";
+let currentScene = "sphere";
+let COLOR_HEX = "#44e0ff";
+let COLOR_HUE = 0.55;
+let hintTimer = 0;
+
+// ============================== AUDIO ==============================
+const PRESETS = {
+  piano:     { osc:{type:"triangle"},  env:{attack:0.004, decay:1.0,  sustain:0.2, release:1.1} },
+  pad:       { osc:{type:"sawtooth"},  env:{attack:0.5,   decay:0.3,  sustain:0.8, release:1.6} },
+  pluck:     { osc:{type:"triangle"},  env:{attack:0.001, decay:0.25, sustain:0.0, release:0.3} },
+  organ:     { osc:{type:"sine"},      env:{attack:0.01,  decay:0.1,  sustain:0.9, release:0.3} },
+  flute:     { osc:{type:"sine"},      env:{attack:0.08,  decay:0.1,  sustain:0.9, release:0.4} },
+  xylophone: { osc:{type:"sine"},      env:{attack:0.001, decay:0.6,  sustain:0.0, release:0.4} },
+  marimba:   { osc:{type:"triangle"},  env:{attack:0.002, decay:0.5,  sustain:0.0, release:0.5} },
+  bells:     { osc:{type:"sine"},      env:{attack:0.001, decay:1.6,  sustain:0.0, release:1.4} },
+  harp:      { osc:{type:"triangle"},  env:{attack:0.003, decay:0.7,  sustain:0.0, release:0.7} },
+  strings:   { osc:{type:"sawtooth"},  env:{attack:0.2,   decay:0.3,  sustain:0.7, release:1.2} },
+  bass:      { osc:{type:"square"},    env:{attack:0.005, decay:0.4,  sustain:0.3, release:0.5} },
+  lead:      { osc:{type:"sawtooth"},  env:{attack:0.01,  decay:0.15, sustain:0.5, release:0.4} },
+  voice:     { osc:{type:"sine"},      env:{attack:0.15,  decay:0.2,  sustain:0.85,release:0.8} },
+  guitar:    { osc:{type:"triangle"},  env:{attack:0.003, decay:0.35, sustain:0.1, release:0.5} }
+};
+
+async function initAudio(){
+  await Tone.start();
+  Tone.context.lookAhead = 0.02;
+  master = new Tone.Gain(0.85).toDestination();
+  reverb = new Tone.Reverb({ decay: 4, wet: 0.3 }).connect(master);
+  mel = new Tone.MonoSynth({
+    oscillator: PRESETS.piano.osc, envelope: PRESETS.piano.env,
+    filterEnvelope:{attack:0.01,decay:0.3,sustain:0.4,release:0.6,baseFrequency:800,octaves:2.5},
+    portamento: 0.02, volume: -6
+  }).connect(reverb);
+  chord = new Tone.PolySynth(Tone.Synth, {
+    oscillator:{ type:"triangle" },
+    envelope:{ attack:0.08, decay:0.4, sustain:0.6, release:1.2 }, volume: -14
+  }).connect(reverb);
+  await reverb.generate();
+  AUDIO_READY = true;
+}
+function setSound(name){
+  if (!AUDIO_READY) return;
+  const p = PRESETS[name] || PRESETS.piano;
+  try { mel.set({ oscillator: p.osc, envelope: p.env }); } catch(e){}
+  currentSound = name;
+}
+
+// ============================== MUSIC THEORY ==============================
+// Pentatonic C major: C D E G A (lanes = fingers 0..4)
+const PENTA_SEMI = [0, 2, 4, 7, 9];
+const ROOT_MIDI  = 60; // middle C
+function melodyFreq(idx){
+  const semi = PENTA_SEMI[clamp(idx, 0, 4)];
+  const midi = ROOT_MIDI + semi;
+  return Tone.Frequency(midi, "midi").toFrequency();
+}
+function chordNotes(n){
+  // n = 1..5 fingers on left hand → I, ii, IV, V, vi style
+  n = clamp(n, 1, 5);
+  const roots = [0, 7, 5, 2, 9]; // C G F D A
+  const base = ROOT_MIDI - 12 + roots[n-1];
+  return [ base, base + 4, base + 7 ].map(m => Tone.Frequency(m, "midi").toFrequency());
+}
+
+let MEL_ON = false, CHORD_ON = false, LAST_MEL_IDX = -1, LAST_CHORD_N = -1;
+function playMelody(idx){
+  if (!AUDIO_READY) return;
+  if (!MEL_ON || idx !== LAST_MEL_IDX){
+    const f = melodyFreq(idx);
+    try { mel.triggerAttack(f); } catch(e){}
+    MEL_ON = true; LAST_MEL_IDX = idx;
+  }
+}
+function stopMelody(){
+  if (!AUDIO_READY) return;
+  if (MEL_ON){ try { mel.triggerRelease(); } catch(e){}; MEL_ON = false; LAST_MEL_IDX = -1; }
+}
+function playChord(n){
+  if (!AUDIO_READY) return;
+  if (!CHORD_ON || n !== LAST_CHORD_N){
+    if (CHORD_ON){ try { chord.releaseAll(); } catch(e){} }
+    try { chord.triggerAttack(chordNotes(n)); } catch(e){}
+    CHORD_ON = true; LAST_CHORD_N = n;
+  }
+}
+function stopChord(){
+  if (!AUDIO_READY) return;
+  if (CHORD_ON){ try { chord.releaseAll(); } catch(e){}; CHORD_ON = false; LAST_CHORD_N = -1; }
+}
+
+// ============================== HANDS ==============================
+let hands;
+async function initHands(){
+  // ask camera
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: CAM_FACING, width: { ideal: 960 }, height: { ideal: 720 } },
+      audio: false
+    });
+    video.srcObject = stream;
+    await video.play();
+  } catch (err){
+    showError("Camera refusée. Autorise l'accès à la caméra dans les réglages du navigateur.");
+    throw err;
+  }
+  hands = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}` });
+  hands.setOptions({
+    maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5, selfieMode: true
+  });
+  hands.onResults(r => latest = r);
+  // feed frames
+  async function pump(){
+    if (video.readyState >= 2){
+      try { await hands.send({ image: video }); } catch(e){}
+    }
+    requestAnimationFrame(pump);
+  }
+  pump();
+}
+
+function lmToPx(ux, uy){
+  // video is object-fit: cover with scaleX(-1) flip. Compute cover scale.
+  const vw = video.videoWidth || 960, vh = video.videoHeight || 720;
+  const sx = W / vw, sy = H / vh, s = Math.max(sx, sy);
+  const dw = vw * s, dh = vh * s;
+  const ox = (W - dw) / 2, oy = (H - dh) / 2;
+  const mirroredUx = 1 - ux;
+  return { x: ox + mirroredUx * dw, y: oy + uy * dh };
+}
+
+function detectExtended(lm, sens){
+  sens = sens || 1.0;
+  // thumb: x distance from palm
+  const palmX = lm[0].x;
+  const thumbExt = Math.abs(lm[4].x - palmX) > 0.1 * sens;
+  // other 4 fingers: tip Y above PIP y (smaller y)
+  const fingers = [
+    [8, 6],   // index
+    [12, 10], // middle
+    [16, 14], // ring
+    [20, 18]  // pinky
+  ];
+  const ext = fingers.map(([tip, pip]) => (lm[pip].y - lm[tip].y) > 0.02 * sens);
+  return [thumbExt, ...ext];
+}
+
+// ============================== THREE.JS SENSORY ==============================
+function initThree(){
+  renderer3D = new THREE.WebGLRenderer({ canvas: three, alpha: true, antialias: true, powerPreference: "low-power" });
+  renderer3D.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer3D.setSize(W, H, false);
+  scene3D = new THREE.Scene();
+  camera3D = new THREE.PerspectiveCamera(55, W/H, 0.1, 100);
+  camera3D.position.set(0, 0, 5);
+  scene3D.add(new THREE.AmbientLight(0xffffff, 0.5));
+  const key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(3, 4, 5); scene3D.add(key);
+  const rim = new THREE.PointLight(0x44e0ff, 1.5, 15); rim.position.set(-3, -2, 3); scene3D.add(rim);
+  const rim2 = new THREE.PointLight(0xff4a9c, 1.2, 15); rim2.position.set(3, 2, 3); scene3D.add(rim2);
+  sceneRoot = new THREE.Group();
+  scene3D.add(sceneRoot);
+  window.addEventListener("resize", () => {
+    renderer3D.setSize(W, H, false);
+    camera3D.aspect = W/H;
+    camera3D.updateProjectionMatrix();
+  });
+}
+
+let sceneMesh = null, sceneMeshBase = null, sceneMeshType = "sphere";
+function buildScene(kind){
+  // dispose existing
+  while (sceneRoot.children.length){
+    const c = sceneRoot.children.pop();
+    if (c.geometry) c.geometry.dispose();
+    if (c.material){ if (Array.isArray(c.material)) c.material.forEach(m => m.dispose()); else c.material.dispose(); }
+  }
+  sceneMesh = null; sceneMeshBase = null;
+  sceneMeshType = kind;
+  const col = new THREE.Color(COLOR_HEX);
+  if (kind === "sphere"){
+    const g = new THREE.IcosahedronGeometry(1.4, 2);
+    const m = new THREE.MeshStandardMaterial({ color: col, wireframe: true });
+    sceneMesh = new THREE.Mesh(g, m);
+    sceneRoot.add(sceneMesh);
+  } else if (kind === "orb"){
+    const g = new THREE.SphereGeometry(1.2, 48, 32);
+    const m = new THREE.MeshPhysicalMaterial({ color: col, metalness: 0.1, roughness: 0.1, transmission: 0.85, thickness: 1, ior: 1.5 });
+    sceneMesh = new THREE.Mesh(g, m);
+    sceneRoot.add(sceneMesh);
+  } else if (kind === "blob"){
+    const g = new THREE.IcosahedronGeometry(1.3, 3);
+    sceneMeshBase = g.attributes.position.array.slice();
+    const m = new THREE.MeshStandardMaterial({ color: col, flatShading: true });
+    sceneMesh = new THREE.Mesh(g, m);
+    sceneRoot.add(sceneMesh);
+  } else if (kind === "galaxy"){
+    const N = 1000;
+    const g = new THREE.BufferGeometry();
+    const pos = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++){
+      const r = Math.random() * 2.5;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      pos[i*3  ] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i*3+2] = r * Math.cos(phi) * 0.4;
+    }
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    const m = new THREE.PointsMaterial({ color: col, size: 0.03, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending });
+    sceneMesh = new THREE.Points(g, m);
+    sceneRoot.add(sceneMesh);
+  } else if (kind === "wave"){
+    const N = 60;
+    const g = new THREE.PlaneGeometry(4, 2, N, N/2);
+    sceneMeshBase = g.attributes.position.array.slice();
+    const m = new THREE.MeshStandardMaterial({ color: col, wireframe: true });
+    sceneMesh = new THREE.Mesh(g, m);
+    sceneMesh.rotation.x = -0.5;
+    sceneRoot.add(sceneMesh);
+  } else if (kind === "chrome"){
+    const g = new THREE.IcosahedronGeometry(1.3, 4);
+    sceneMeshBase = g.attributes.position.array.slice();
+    const m = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.08, envMapIntensity: 2.0, clearcoat: 1 });
+    sceneMesh = new THREE.Mesh(g, m);
+    sceneRoot.add(sceneMesh);
+  }
+}
+
+function updateScene(t, pinches){
+  if (!sceneMesh) return;
+  const pos = sceneMesh.geometry && sceneMesh.geometry.attributes && sceneMesh.geometry.attributes.position;
+  const p = pinches[0] || null;
+  const q = pinches[1] || null;
+  // simple mapping: hand x/y → object position + rotation
+  let tx = 0, ty = 0;
+  if (p){ tx = (p.ndcX || 0) * 2; ty = (p.ndcY || 0) * 1.4; }
+  sceneMesh.position.x += (tx - sceneMesh.position.x) * 0.1;
+  sceneMesh.position.y += (ty - sceneMesh.position.y) * 0.1;
+  sceneMesh.rotation.x = Math.sin(t * 0.4) * 0.2;
+  sceneMesh.rotation.y = t * 0.3;
+  // vertex-level
+  if ((sceneMeshType === "blob" || sceneMeshType === "chrome") && sceneMeshBase){
+    const arr = pos.array;
+    for (let i = 0; i < pos.count; i++){
+      const bx = sceneMeshBase[i*3], by = sceneMeshBase[i*3+1], bz = sceneMeshBase[i*3+2];
+      const n = Math.sin(bx*2.4 + t*1.2) * Math.cos(by*2.4 + t*0.9) * Math.sin(bz*2.4 + t);
+      const scl = 1 + n * (sceneMeshType === "chrome" ? 0.1 : 0.2);
+      arr[i*3  ] = bx * scl;
+      arr[i*3+1] = by * scl;
+      arr[i*3+2] = bz * scl;
+    }
+    pos.needsUpdate = true;
+    sceneMesh.geometry.computeVertexNormals();
+  }
+  if (sceneMeshType === "wave" && sceneMeshBase){
+    const arr = pos.array;
+    for (let i = 0; i < pos.count; i++){
+      const bx = sceneMeshBase[i*3], by = sceneMeshBase[i*3+1];
+      arr[i*3+2] = Math.sin(bx * 2 + t * 2) * 0.3 + Math.cos(by * 2 + t * 1.5) * 0.3;
+    }
+    pos.needsUpdate = true;
+    sceneMesh.geometry.computeVertexNormals();
+  }
+}
+
+// ============================== RENDER LOOP ==============================
+let LAST_T = performance.now();
+function renderFrame(){
+  const now = performance.now();
+  const dt = (now - LAST_T) * 0.001;
+  LAST_T = now;
+  const t = now * 0.001;
+
+  const list = latest.multiHandLandmarks || [];
+  const handed = latest.multiHandedness || [];
+  fxCtx.clearRect(0, 0, W, H);
+  bonesCtx.clearRect(0, 0, W, H);
+
+  // draw bones overlay (thin lines)
+  for (let i = 0; i < list.length; i++){
+    const lm = list[i];
+    bonesCtx.strokeStyle = (handed[i]?.label === "Right") ? "#44e0ff" : "#ff4a9c";
+    bonesCtx.lineWidth = 1.5;
+    const CONN = [[0,4],[0,5],[5,8],[0,9],[9,12],[0,13],[13,16],[0,17],[17,20],[5,9],[9,13],[13,17]];
+    for (const [a,b] of CONN){
+      const A = lmToPx(lm[a].x, lm[a].y);
+      const B = lmToPx(lm[b].x, lm[b].y);
+      bonesCtx.beginPath(); bonesCtx.moveTo(A.x, A.y); bonesCtx.lineTo(B.x, B.y); bonesCtx.stroke();
+    }
+    bonesCtx.fillStyle = "#fff";
+    for (let k = 0; k < 21; k++){
+      const p = lmToPx(lm[k].x, lm[k].y);
+      bonesCtx.beginPath(); bonesCtx.arc(p.x, p.y, 2.5, 0, Math.PI*2); bonesCtx.fill();
+    }
+  }
+
+  // pinches-like summary
+  const pinches = [];
+  for (let i = 0; i < list.length; i++){
+    const lm = list[i];
+    const label = handed[i]?.label || (i === 0 ? "Right" : "Left");
+    const palmPx = lmToPx((lm[0].x + lm[9].x)/2, (lm[0].y + lm[9].y)/2);
+    pinches.push({
+      label,
+      lm,
+      palmPx,
+      ndcX: ((palmPx.x / W) * 2 - 1),
+      ndcY: -((palmPx.y / H) * 2 - 1),
+      ext: detectExtended(lm)
+    });
+  }
+
+  if (MODE === "music"){
+    three.style.display = "none";
+    // highest finger raised on right hand → melody; left hand count → chord
+    const right = pinches.find(p => p.label === "Right");
+    const left  = pinches.find(p => p.label === "Left");
+    let played = -1;
+    if (right){
+      let chosen = -1;
+      for (let i = 4; i >= 0; i--){ if (right.ext[i]){ chosen = i; break; } }
+      if (chosen >= 0){ playMelody(chosen); played = chosen; $("t-note").textContent = ["Do","Ré","Mi","Sol","La"][chosen]; }
+      else { stopMelody(); $("t-note").textContent = "—"; }
+    } else { stopMelody(); $("t-note").textContent = "—"; }
+    if (left){
+      const count = left.ext.filter(Boolean).length;
+      if (count > 0){ playChord(count); $("t-chord").textContent = "Accord " + count; }
+      else { stopChord(); $("t-chord").textContent = ""; }
+    } else { stopChord(); $("t-chord").textContent = ""; }
+    // draw tap ripple for played finger
+    if (played >= 0 && right){
+      const tipIdx = [4, 8, 12, 16, 20][played];
+      const p = lmToPx(right.lm[tipIdx].x, right.lm[tipIdx].y);
+      fxCtx.beginPath();
+      const rad = 20 + Math.sin(t * 6) * 4;
+      fxCtx.strokeStyle = COLOR_HEX; fxCtx.lineWidth = 3;
+      fxCtx.arc(p.x, p.y, rad, 0, Math.PI*2); fxCtx.stroke();
+    }
+  } else if (MODE === "sense"){
+    stopMelody(); stopChord();
+    three.style.display = "block";
+    updateScene(t, pinches);
+    renderer3D.render(scene3D, camera3D);
+  } else {
+    three.style.display = "none";
+    stopMelody(); stopChord();
+  }
+
+  requestAnimationFrame(renderFrame);
+}
+
+// ============================== UI WIRING ==============================
+function setMode(m){
+  MODE = m;
+  document.querySelectorAll("#modebar button").forEach(b => {
+    const on = b.dataset.mode === m;
+    b.classList.toggle("on", on);
+    b.classList.toggle("sense", on && m === "sense");
+    b.classList.toggle("create", on && m === "create");
+  });
+  $("tuner").classList.toggle("hide", m !== "music");
+  $("tray-row-music").classList.toggle("hide", m !== "music");
+  $("tray-row-sense").classList.toggle("hide", m !== "sense");
+  $("create-pane").classList.toggle("hide", m !== "create");
+  $("create-cta").classList.toggle("hide", m !== "create");
+  $("tray").style.display = (m === "create") ? "none" : "block";
+  $("caption").textContent = (m === "music") ? "lève un doigt pour jouer une note · do majeur pentatonique"
+    : (m === "sense") ? "pince avec tes doigts pour animer la forme"
+    : "choisis ton instrument, ta couleur et ta forme";
+}
+
+document.querySelectorAll("#modebar button").forEach(btn => {
+  btn.addEventListener("click", () => setMode(btn.dataset.mode));
+});
+
+document.querySelectorAll("#tray-row-music .chip").forEach(c => {
+  c.addEventListener("click", () => {
+    document.querySelectorAll("#tray-row-music .chip").forEach(b => b.classList.remove("on"));
+    c.classList.add("on");
+    setSound(c.dataset.sound);
+  });
+});
+document.querySelectorAll("#tray-row-sense .chip").forEach(c => {
+  c.addEventListener("click", () => {
+    document.querySelectorAll("#tray-row-sense .chip").forEach(b => b.classList.remove("on"));
+    c.classList.add("on");
+    currentScene = c.dataset.scene;
+    buildScene(currentScene);
+  });
+});
+
+// ============================== CREATE PANE ==============================
+const COLOR_CHOICES = [
+  { key:"cyan",   hex:"#44e0ff", hue:0.55, name:"Cyan" },
+  { key:"pink",   hex:"#ff4a9c", hue:0.92, name:"Rose" },
+  { key:"violet", hex:"#c689ff", hue:0.75, name:"Violet" },
+  { key:"green",  hex:"#9cff6b", hue:0.3,  name:"Vert" },
+  { key:"gold",   hex:"#ffd166", hue:0.12, name:"Or" },
+  { key:"white",  hex:"#ffffff", hue:0.0,  name:"Blanc" }
+];
+const SHAPE_CHOICES = [
+  { key:"sphere", emoji:"⚪", name:"Sphère",  desc:"Sphère filaire" },
+  { key:"orb",    emoji:"◉",  name:"Boule",    desc:"Boule de verre" },
+  { key:"blob",   emoji:"◍",  name:"Blob",     desc:"Blob qui vibre" },
+  { key:"galaxy", emoji:"✨", name:"Galaxie",  desc:"Nuage d'étoiles" },
+  { key:"wave",   emoji:"〰️", name:"Onde",     desc:"Grille ondulée" },
+  { key:"chrome", emoji:"💧", name:"Chrome",   desc:"Métal liquide" }
+];
+const CREATE = { sound: "piano", color: "cyan", shape: "sphere" };
+function tileClick(host, key, state, apply){
+  host.querySelectorAll(".create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === key));
+  state(key); apply && apply();
+}
+function buildCreateCards(){
+  const s = $("c-sounds");
+  Object.entries(PRESETS).forEach(([k]) => {
+    const niceName = ({piano:"Piano",pad:"Nappe",pluck:"Pincée",organ:"Orgue",flute:"Flûte",xylophone:"Xylophone",marimba:"Marimba",bells:"Cloches",harp:"Harpe",strings:"Cordes",bass:"Basse",lead:"Lead",voice:"Voix",guitar:"Guitare"})[k];
+    const emoji = ({piano:"🎹",pad:"🌫️",pluck:"🎸",organ:"⛪",flute:"🎶",xylophone:"🪵",marimba:"🥁",bells:"🔔",harp:"🎻",strings:"🎻",bass:"🎚️",lead:"🎛️",voice:"🗣️",guitar:"🎸"})[k];
+    const d = document.createElement("div");
+    d.className = "create-tile" + (k === CREATE.sound ? " on" : "");
+    d.dataset.key = k;
+    d.innerHTML = `<div class="emoji">${emoji}</div><div class="name">${niceName}</div>`;
+    d.addEventListener("click", () => tileClick(s, k, kk => CREATE.sound = kk));
+    s.appendChild(d);
+  });
+  const c = $("c-colors");
+  COLOR_CHOICES.forEach(cc => {
+    const d = document.createElement("div");
+    d.className = "create-tile" + (cc.key === CREATE.color ? " on" : "");
+    d.dataset.key = cc.key;
+    d.innerHTML = `<div class="create-swatch" style="background:${cc.hex}"></div><div class="name">${cc.name}</div>`;
+    d.addEventListener("click", () => tileClick(c, cc.key, kk => CREATE.color = kk));
+    c.appendChild(d);
+  });
+  const sh = $("c-shapes");
+  SHAPE_CHOICES.forEach(scp => {
+    const d = document.createElement("div");
+    d.className = "create-tile" + (scp.key === CREATE.shape ? " on" : "");
+    d.dataset.key = scp.key;
+    d.innerHTML = `<div class="emoji">${scp.emoji}</div><div class="name">${scp.name}</div><div class="desc">${scp.desc}</div>`;
+    d.addEventListener("click", () => tileClick(sh, scp.key, kk => CREATE.shape = kk));
+    sh.appendChild(d);
+  });
+  $("c-apply").addEventListener("click", () => {
+    setSound(CREATE.sound);
+    // reflect in music tray
+    document.querySelectorAll("#tray-row-music .chip").forEach(b => b.classList.toggle("on", b.dataset.sound === CREATE.sound));
+    const col = COLOR_CHOICES.find(c => c.key === CREATE.color);
+    if (col){ COLOR_HEX = col.hex; COLOR_HUE = col.hue; }
+    currentScene = CREATE.shape;
+    buildScene(currentScene);
+    document.querySelectorAll("#tray-row-sense .chip").forEach(b => b.classList.toggle("on", b.dataset.scene === currentScene));
+    setMode("sense");
+  });
+  $("c-reset").addEventListener("click", () => {
+    CREATE.sound = "piano"; CREATE.color = "cyan"; CREATE.shape = "sphere";
+    document.querySelectorAll("#c-sounds .create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === "piano"));
+    document.querySelectorAll("#c-colors .create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === "cyan"));
+    document.querySelectorAll("#c-shapes .create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === "sphere"));
+  });
+}
+
+// ============================== TOOL BTNS ==============================
+$("tool-fullscreen").addEventListener("click", () => {
+  const r = document.documentElement;
+  if (!document.fullscreenElement){
+    (r.requestFullscreen || r.webkitRequestFullscreen).call(r).catch(()=>{});
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document).catch(()=>{});
+  }
+});
+$("tool-flip").addEventListener("click", async () => {
+  CAM_FACING = (CAM_FACING === "user") ? "environment" : "user";
+  try {
+    const old = video.srcObject;
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: CAM_FACING }, audio: false });
+    if (old) old.getTracks().forEach(t => t.stop());
+    video.srcObject = stream;
+    await video.play();
+  } catch(e){}
+});
+
+// ============================== BOOT ==============================
+function showError(msg){
+  $("err-msg").textContent = msg;
+  $("err").classList.add("show");
+}
+$("go").addEventListener("click", async () => {
+  const go = $("go");
+  go.disabled = true;
+  go.textContent = "Préparation…";
+  try {
+    await initAudio();
+    await initHands();
+    initThree();
+    buildScene("sphere");
+    buildCreateCards();
+    $("start").classList.add("hide");
+    $("hud").classList.remove("hide");
+    setMode("music");
+    sizeCanvas();
+    renderFrame();
+  } catch(err){
+    go.disabled = false;
+    go.textContent = "Recommencer";
+    console.error(err);
+  }
+});
+</script>
+
+</body>
+</html>
