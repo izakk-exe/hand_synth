@@ -74,6 +74,57 @@
   .guide-foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--edge);font-size:11px;color:var(--dim);text-align:center;letter-spacing:.08em}
   .guide-foot kbd{font-family:var(--mono);font-size:10px;background:#1a1a24;border:1px solid var(--edge);border-radius:4px;padding:2px 6px;color:var(--ink);margin:0 2px}
 
+  /* ---------- cover mode (chansons à reproduire) ---------- */
+  .cover-stage{position:absolute;inset:0;background:rgba(5,5,10,.88);z-index:4;pointer-events:auto;overflow:hidden;display:grid;grid-template-columns:260px 1fr;color:var(--ink)}
+  .cover-stage.hide{display:none}
+  .cover-songlist{background:rgba(10,10,16,.95);border-right:1px solid var(--edge);padding:22px 16px;overflow-y:auto}
+  .cover-songlist h2{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--edge)}
+  .cover-song{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:8px;background:rgba(14,14,20,.7);border:1px solid var(--edge);border-radius:8px;cursor:pointer;transition:all .15s}
+  .cover-song:hover{border-color:var(--cold);transform:translateX(3px)}
+  .cover-song.on{background:rgba(68,224,255,.14);border-color:var(--cold)}
+  .cover-song .ico{font-size:22px;color:var(--cold);width:30px;text-align:center}
+  .cover-song .t{font-weight:700;font-size:14px;color:#fff;margin-bottom:2px}
+  .cover-song .d{font-size:10px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+  .cover-game{position:relative;overflow:hidden}
+  .cover-game canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .cover-bighud{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:30px;background:rgba(10,10,16,.75);border:1px solid var(--edge);border-radius:10px;padding:10px 20px;z-index:3}
+  .cover-bighud .lab{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:3px}
+  .cover-bighud .val{font-weight:800;font-size:22px;color:#fff;font-variant-numeric:tabular-nums}
+  .cover-bighud .val.good{color:var(--lime)}
+  .cover-bighud .val.hot{color:var(--hot)}
+  .cover-start{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,5,10,.9);z-index:5}
+  .cover-start.hide{display:none}
+  .cover-start button{padding:20px 50px;background:var(--cold);color:#000;border:none;border-radius:60px;font-family:var(--mono);font-size:16px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;box-shadow:0 10px 40px rgba(68,224,255,.5);transition:transform .15s}
+  .cover-start button:hover{transform:scale(1.05)}
+  .cover-start .ready{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;margin-bottom:20px}
+  .cover-start .title{font-size:40px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-.01em}
+  .cover-start .sub{color:var(--dim);font-size:14px;margin-bottom:30px;max-width:400px;text-align:center;line-height:1.5}
+  .cover-done{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,5,10,.92);z-index:5}
+  .cover-done.hide{display:none}
+  .cover-done .stars{font-size:72px;color:gold;margin-bottom:16px;letter-spacing:8px}
+  .cover-done .bravo{font-size:44px;font-weight:800;color:#fff;margin-bottom:8px}
+  .cover-done .score{color:var(--dim);font-family:var(--mono);font-size:14px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:30px}
+  .cover-done button{padding:14px 32px;background:transparent;color:#fff;border:1px solid #fff;font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;margin:0 6px}
+
+  /* ---------- create mode (version ultra-simple) ---------- */
+  .create-stage{position:absolute;inset:0;background:rgba(5,5,10,.9);z-index:4;pointer-events:auto;overflow-y:auto;padding:40px 60px;color:var(--ink)}
+  .create-stage.hide{display:none}
+  .create-stage h1{font-size:34px;font-weight:800;color:#fff;margin:30px 0 8px 0;letter-spacing:-.02em}
+  .create-stage h1:first-child{margin-top:10px}
+  .create-stage .section-sub{color:var(--dim);font-size:14px;margin-bottom:24px}
+  .create-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px;margin-bottom:40px}
+  .create-card{background:rgba(14,14,20,.85);border:2px solid var(--edge);border-radius:14px;padding:22px 16px;cursor:pointer;transition:all .15s;text-align:center;position:relative}
+  .create-card:hover{border-color:var(--cold);transform:translateY(-3px)}
+  .create-card.on{border-color:var(--cold);background:rgba(68,224,255,.14);box-shadow:0 0 0 2px var(--cold)}
+  .create-card .emoji{font-size:54px;margin-bottom:10px;line-height:1}
+  .create-card .name{font-weight:700;font-size:16px;color:#fff;margin-bottom:4px}
+  .create-card .desc{font-size:11px;color:var(--dim);line-height:1.4}
+  .create-card.on::after{content:"✓";position:absolute;top:10px;right:12px;color:var(--cold);font-size:20px;font-weight:900}
+  .create-swatch{width:100%;height:60px;border-radius:10px;margin-bottom:10px}
+  .create-cta{display:flex;justify-content:center;gap:12px;margin:30px 0 20px 0}
+  .create-cta button{padding:16px 36px;background:var(--cold);color:#000;border:none;border-radius:60px;font-family:var(--mono);font-size:14px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
+  .create-cta button.ghost{background:transparent;color:var(--ink);border:1px solid var(--edge)}
+
   /* ---------- patch mode (node graph) ---------- */
   .patch-stage{position:absolute;inset:0;background:rgba(7,7,11,.82);z-index:4;pointer-events:auto;overflow:hidden}
   .patch-stage.hide{display:none}
@@ -497,9 +548,9 @@
     <div class="top">
       <div class="brand"><span class="dot"></span>PALMA <span class="sig">· 1Z4K</span></div>
       <div class="modebar" id="modebar">
-        <button id="mode-music" class="on" data-mode="music">music</button>
-        <button id="mode-sense" data-mode="sense">sensory</button>
-        <button id="mode-patch" data-mode="patch">patch</button>
+        <button id="mode-music" class="on" data-mode="music">musique</button>
+        <button id="mode-sense" data-mode="sense">sensoriel</button>
+        <button id="mode-create" data-mode="create">créer</button>
       </div>
       <div class="top-right">
         <div class="mini-chip" id="chip-key">KEY<b id="r-key">G maj</b></div>
@@ -577,7 +628,59 @@
       </div>
     </div>
 
-    <!-- patch stage (node graph) -->
+    <!-- COVER STAGE — reproduire des chansons avec les mains -->
+    <div class="cover-stage hide" id="cover-stage">
+      <aside class="cover-songlist" id="cover-songlist">
+        <h2>Chansons</h2>
+      </aside>
+      <div class="cover-game">
+        <canvas id="cover-canvas"></canvas>
+        <div class="cover-bighud">
+          <div><span class="lab">Score</span><span class="val" id="cov-score">0</span></div>
+          <div><span class="lab">Combo</span><span class="val" id="cov-combo">0</span></div>
+          <div><span class="lab">Chanson</span><span class="val" id="cov-title">—</span></div>
+        </div>
+        <div class="cover-start" id="cover-start">
+          <div style="text-align:center">
+            <div class="ready">Mode Chansons</div>
+            <div class="title">Choisis une chanson à gauche</div>
+            <div class="sub">Lève le doigt indiqué quand la note descendante touche la ligne blanche. Main droite seule — 5 doigts = 5 notes.</div>
+            <button id="cov-startbtn">Commencer</button>
+          </div>
+        </div>
+        <div class="cover-done hide" id="cover-done">
+          <div style="text-align:center">
+            <div class="stars" id="cov-stars">★ ★ ★</div>
+            <div class="bravo" id="cov-bravo">Bravo !</div>
+            <div class="score" id="cov-finalscore">Score 0 · 0 / 0 notes</div>
+            <button id="cov-again">Recommencer</button>
+            <button id="cov-pick">Autre chanson</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE STAGE — très simple pour non-techs -->
+    <div class="create-stage hide" id="create-stage">
+      <h1>Choisis ton instrument</h1>
+      <div class="section-sub">Le son qui sort quand tu bouges la main.</div>
+      <div class="create-grid" id="create-sounds"></div>
+
+      <h1>Choisis ta couleur</h1>
+      <div class="section-sub">La couleur des formes et de la lumière.</div>
+      <div class="create-grid" id="create-colors"></div>
+
+      <h1>Choisis ta forme</h1>
+      <div class="section-sub">L'objet que tu tiens entre tes deux mains.</div>
+      <div class="create-grid" id="create-shapes"></div>
+
+      <div class="create-cta">
+        <button id="create-apply">Jouer avec mes choix</button>
+        <button id="create-reset" class="ghost">Tout remettre à zéro</button>
+      </div>
+    </div>
+
+    <!-- patch stage (node graph — mode avancé, caché par défaut) -->
     <div class="patch-stage hide" id="patch-stage">
       <div class="patch-grid"></div>
       <svg class="wires" id="patch-wires"></svg>
@@ -632,6 +735,15 @@
             <option value="pluck">pluck</option>
             <option value="organ">organ</option>
             <option value="flute">flute</option>
+            <option value="xylophone">xylophone</option>
+            <option value="marimba">marimba</option>
+            <option value="bells">cloches</option>
+            <option value="harp">harpe</option>
+            <option value="strings">cordes</option>
+            <option value="bass">basse</option>
+            <option value="lead">synthé lead</option>
+            <option value="voice">voix</option>
+            <option value="guitar">guitare</option>
           </select><output></output>
         </div>
         <div class="row"><label>mel vol</label>
@@ -755,11 +867,21 @@ let AUDIO_READY = false;
 let mel, chord, filtMel, filtChord, reverb, delay, master, limiter, recorder, click;
 
 const PRESETS = {
-  piano:  { osc:{type:"triangle"}, env:{attack:0.004, decay:1.0, sustain:0.2, release:1.1} },
-  pad:    { osc:{type:"sawtooth"}, env:{attack:0.5,   decay:0.3, sustain:0.8, release:1.6} },
-  pluck:  { osc:{type:"triangle"}, env:{attack:0.001, decay:0.25,sustain:0.0, release:0.3} },
-  organ:  { osc:{type:"sine"},     env:{attack:0.01,  decay:0.1, sustain:0.9, release:0.3} },
-  flute:  { osc:{type:"sine"},     env:{attack:0.08,  decay:0.1, sustain:0.9, release:0.4} }
+  piano:     { osc:{type:"triangle"},  env:{attack:0.004, decay:1.0,  sustain:0.2, release:1.1} },
+  pad:       { osc:{type:"sawtooth"},  env:{attack:0.5,   decay:0.3,  sustain:0.8, release:1.6} },
+  pluck:     { osc:{type:"triangle"},  env:{attack:0.001, decay:0.25, sustain:0.0, release:0.3} },
+  organ:     { osc:{type:"sine"},      env:{attack:0.01,  decay:0.1,  sustain:0.9, release:0.3} },
+  flute:     { osc:{type:"sine"},      env:{attack:0.08,  decay:0.1,  sustain:0.9, release:0.4} },
+  // nouveaux instruments (v1.0.3)
+  xylophone: { osc:{type:"sine"},      env:{attack:0.001, decay:0.6,  sustain:0.0, release:0.4} },
+  marimba:   { osc:{type:"triangle"},  env:{attack:0.002, decay:0.5,  sustain:0.0, release:0.5} },
+  bells:     { osc:{type:"sine"},      env:{attack:0.001, decay:1.6,  sustain:0.0, release:1.4} },
+  harp:      { osc:{type:"triangle"},  env:{attack:0.003, decay:0.7,  sustain:0.0, release:0.7} },
+  strings:   { osc:{type:"sawtooth"},  env:{attack:0.2,   decay:0.3,  sustain:0.7, release:1.2} },
+  bass:      { osc:{type:"square"},    env:{attack:0.005, decay:0.4,  sustain:0.3, release:0.5} },
+  lead:      { osc:{type:"sawtooth"},  env:{attack:0.01,  decay:0.15, sustain:0.5, release:0.4} },
+  voice:     { osc:{type:"sine"},      env:{attack:0.15,  decay:0.2,  sustain:0.85,release:0.8} },
+  guitar:    { osc:{type:"triangle"},  env:{attack:0.003, decay:0.35, sustain:0.1, release:0.5} }
 };
 
 async function initAudio(){
@@ -996,6 +1118,7 @@ function collectPinches(){
     const ext = detectExtended(list[i], 1.0);
     const extCount = ext.filter(Boolean).length;
     p.fist = extCount === 0;
+    p.ext = ext;              // [thumb, index, middle, ring, pinky] booleans — for cover mode
     const palmU = { x:(list[i][0].x+list[i][9].x+list[i][13].x)/3, y:(list[i][0].y+list[i][9].y+list[i][13].y)/3 };
     const palmPx = lmToPx(palmU.x, palmU.y);
     p.palmX = palmPx.x;
@@ -1139,8 +1262,9 @@ function setMode(m){
   el("mode-music").classList.toggle("on", m === "music");
   el("mode-sense").classList.toggle("on", m === "sense");
   el("mode-sense").classList.toggle("sense", m === "sense");
-  el("mode-patch").classList.toggle("on", m === "patch");
-  el("mode-patch").classList.toggle("patch", m === "patch");
+  const covBtn = el("mode-cover"); if (covBtn){ covBtn.classList.toggle("on", m === "cover"); covBtn.classList.toggle("cover", m === "cover"); }
+  el("mode-create").classList.toggle("on", m === "create");
+  el("mode-create").classList.toggle("create", m === "create");
   el("palette-music").classList.toggle("hide", m !== "music");
   el("palette-sense").classList.toggle("hide", m !== "sense");
   el("btn-dismiss").style.display = (m === "sense") ? "grid" : "none";
@@ -1150,23 +1274,33 @@ function setMode(m){
   el("drawer-sense").classList.toggle("hide", m !== "sense");
   el("tuner").classList.toggle("hide",   m !== "music");
   el("chip-key").classList.toggle("hide",m !== "music");
-  el("patch-stage").classList.toggle("hide", m !== "patch");
-  threeC.style.display = (m === "patch") ? "block" : (m === "sense" && is3DScene(SENSE_SCENE)) ? "block" : "none";
+  el("cover-stage").classList.toggle("hide", m !== "cover");
+  el("create-stage").classList.toggle("hide", m !== "create");
+  el("patch-stage").classList.toggle("hide", true); // legacy — hidden
+  threeC.style.display = (m === "sense" && is3DScene(SENSE_SCENE)) ? "block" : "none";
   // bottom caption only in sense/music
-  el("scene-caption").parentElement.style.display = (m === "patch") ? "none" : "flex";
+  el("scene-caption").parentElement.style.display = (m === "cover" || m === "create") ? "none" : "flex";
   if (m === "sense"){
     stopMelody(); stopChord();
+    coverStop();
     if (AUDIO_READY) master.gain.rampTo(0, 0.1);
     el("scene-caption").textContent = describeScene(SENSE_SCENE);
     clearPatchThree();
   } else if (m === "music"){
+    coverStop();
     if (AUDIO_READY && !musicMuted) master.gain.rampTo(0.95, 0.1);
     el("scene-caption").textContent = "RIGHT HAND = MELODY · LEFT HAND = CHORD";
     clearPatchThree();
-  } else if (m === "patch"){
+  } else if (m === "cover"){
     stopMelody(); stopChord();
-    if (AUDIO_READY) master.gain.rampTo(0.95, 0.1); // allow patch audio
-    clearThree(); // wipe sensory scene objects
+    if (AUDIO_READY && !musicMuted) master.gain.rampTo(0.95, 0.1);
+    clearPatchThree();
+    coverEnter();
+  } else if (m === "create"){
+    stopMelody(); stopChord();
+    coverStop();
+    if (AUDIO_READY) master.gain.rampTo(0, 0.1);
+    clearPatchThree();
   }
   updateLegend();
   clearFx();
@@ -1174,7 +1308,8 @@ function setMode(m){
 
 el("mode-music").addEventListener("click", () => setMode("music"));
 el("mode-sense").addEventListener("click", () => setMode("sense"));
-el("mode-patch").addEventListener("click", () => setMode("patch"));
+const _mc = el("mode-cover"); if (_mc) _mc.addEventListener("click", () => setMode("cover"));
+el("mode-create").addEventListener("click", () => setMode("create"));
 
 const SCENES_3D   = ["sphere","wave","blob","galaxy","cards","card","lens","taffy","sculpt","plot3d","prism","voxelbox","tunnel","ribbon","lattice","tornado","bloom","chrome","glass","mercury"];
 const SCENES_SPAWN= ["cards","card","lens","taffy","sculpt","galaxy","wave","plot3d","prism","voxelbox","pointcloud","tunnel","ribbon","lattice","tornado","bloom","chrome","glass","mercury"];
@@ -5714,6 +5849,26 @@ function renderFrame(){
     return;
   }
 
+  if (MODE === "cover"){
+    clearFx();
+    // feed the right hand's finger-extended state into the cover game
+    let rightExt = null;
+    for (let i = 0; i < list.length; i++){
+      const label = handed[i]?.label || (i === 0 ? "Right" : "Left");
+      if (label === "Right"){ rightExt = detectExtended(list[i], 1.0); break; }
+    }
+    coverTick(rightExt);
+    drawBones();
+    requestAnimationFrame(renderFrame);
+    return;
+  }
+  if (MODE === "create"){
+    clearFx();
+    drawBones();
+    requestAnimationFrame(renderFrame);
+    return;
+  }
+
   if (MODE === "music"){
     clearFx();
     const rk = el("key").value, md = el("scalemode").value;
@@ -5955,7 +6110,7 @@ function wireUI(){
     if (e.key === "F11" && window.winctl){ e.preventDefault(); window.winctl.fullscreen(); }
     if (e.key === "1"){ setMode("music"); }
     if (e.key === "2"){ setMode("sense"); }
-    if (e.key === "3"){ setMode("patch"); }
+    if (e.key === "3"){ setMode("create"); }
     if (e.key === "l" || e.key === "L"){ SHOW_AR_LABELS = !SHOW_AR_LABELS; }
     if (e.key === "?" || e.key === "h" || e.key === "H"){
       e.preventDefault();
@@ -6002,6 +6157,382 @@ el("go").addEventListener("click", async () => {
 });
 
 sizeCanvas();
+
+// ===========================================================================
+//  MODE CHANSONS (COVERS) — reproduire des mélodies populaires
+// ===========================================================================
+// Lanes: 0=pouce C, 1=index D, 2=majeur E, 3=annulaire G, 4=auriculaire A
+// Notes: [lane, beats]  (beats of a quarter note)
+const SONGS = [
+  { title: "Au clair de la lune", author: "Trad.", bpm: 100, icon: "🌙",
+    notes: [ [0,1],[0,1],[0,1],[1,1],[2,2],[1,2],[0,1],[2,1],[1,1],[1,1],[0,4] ] },
+  { title: "Ah vous dirai-je maman", author: "Trad.", bpm: 100, icon: "⭐",
+    notes: [ [0,1],[0,1],[3,1],[3,1],[4,1],[4,1],[3,2], [2,1],[2,1],[2,1],[2,1],[1,1],[1,1],[0,2],
+             [3,1],[3,1],[2,1],[2,1],[1,1],[1,1],[0,2], [3,1],[3,1],[2,1],[2,1],[1,1],[1,1],[0,2],
+             [0,1],[0,1],[3,1],[3,1],[4,1],[4,1],[3,2], [2,1],[2,1],[2,1],[2,1],[1,1],[1,1],[0,2] ] },
+  { title: "Frère Jacques", author: "Trad.", bpm: 112, icon: "🔔",
+    notes: [ [0,1],[1,1],[2,1],[0,1], [0,1],[1,1],[2,1],[0,1],
+             [2,1],[2,1],[3,2], [2,1],[2,1],[3,2],
+             [3,0.5],[4,0.5],[3,0.5],[2,0.5],[2,1],[0,1], [3,0.5],[4,0.5],[3,0.5],[2,0.5],[2,1],[0,1],
+             [0,1],[3,1],[0,2], [0,1],[3,1],[0,2] ] },
+  { title: "Mary Had a Little Lamb", author: "Trad.", bpm: 100, icon: "🐑",
+    notes: [ [2,1],[1,1],[0,1],[1,1],[2,1],[2,1],[2,2], [1,1],[1,1],[1,2], [2,1],[3,1],[3,2],
+             [2,1],[1,1],[0,1],[1,1],[2,1],[2,1],[2,1],[2,1],[1,1],[1,1],[2,1],[1,1],[0,4] ] },
+  { title: "Hymne à la joie", author: "Beethoven", bpm: 112, icon: "🎼",
+    notes: [ [2,1],[2,1],[2,1],[3,1],[3,1],[2,1],[2,1],[1,1],[0,1],[0,1],[1,1],[2,1],[2,1.5],[1,0.5],[1,2],
+             [2,1],[2,1],[2,1],[3,1],[3,1],[2,1],[2,1],[1,1],[0,1],[0,1],[1,1],[2,1],[1,1.5],[0,0.5],[0,2] ] },
+  { title: "Twinkle v2 (ma cover)", author: "Trad.", bpm: 120, icon: "✨",
+    notes: [ [0,1],[0,1],[3,1],[3,1],[4,1],[4,1],[3,2], [2,1],[2,1],[2,1],[2,1],[1,1],[1,1],[0,2] ] }
+];
+
+const COVER_LANE_COLORS = ["#44e0ff","#ff4a9c","#c689ff","#9cff6b","#ffd25a"];
+const COVER_LANE_LABELS = ["pouce","index","majeur","annulaire","auriculaire"];
+const COVER_LANE_GLYPHS = ["👍","👆","🖕","💍","🤙"];
+const COVER_LANE_NOTE_OFFSETS = [0, 2, 4, 7, 9]; // pentatonic do ré mi sol la
+
+const COV = {
+  song: null, selectedIdx: 0, running: false, startTime: 0,
+  score: 0, combo: 0, hits: 0, totalPlayed: 0, timeline: [],
+  lanePressed: [0,0,0,0,0], laneWasUp: [false,false,false,false,false],
+  lastPlayedIdx: -1, canvas: null, ctx: null, raf: 0,
+};
+
+function coverBuildSongList(){
+  const host = el("cover-songlist");
+  // remove old song divs but keep the h2
+  while (host.children.length > 1) host.removeChild(host.lastChild);
+  SONGS.forEach((s, i) => {
+    const d = document.createElement("div");
+    d.className = "cover-song" + (i === COV.selectedIdx ? " on" : "");
+    d.innerHTML = `<div class="ico">${s.icon}</div><div><div class="t">${s.title}</div><div class="d">${s.author} · ${s.bpm} BPM</div></div>`;
+    d.addEventListener("click", () => {
+      COV.selectedIdx = i;
+      coverBuildSongList();
+      coverStart();
+    });
+    host.appendChild(d);
+  });
+}
+
+function coverEnter(){
+  COV.canvas = el("cover-canvas");
+  COV.ctx = COV.canvas.getContext("2d");
+  coverResizeCanvas();
+  coverBuildSongList();
+  el("cover-start").classList.remove("hide");
+  el("cover-done").classList.add("hide");
+  el("cov-title").textContent = SONGS[COV.selectedIdx].title;
+  el("cov-score").textContent = "0";
+  el("cov-combo").textContent = "0";
+  COV.running = false;
+  // button handlers — guard by wiring once
+  if (!COV._wired){
+    COV._wired = true;
+    el("cov-startbtn").addEventListener("click", coverStart);
+    el("cov-again").addEventListener("click", coverStart);
+    el("cov-pick").addEventListener("click", () => {
+      el("cover-done").classList.add("hide");
+      el("cover-start").classList.remove("hide");
+    });
+    window.addEventListener("resize", coverResizeCanvas);
+  }
+}
+function coverResizeCanvas(){
+  if (!COV.canvas) return;
+  const r = COV.canvas.parentElement.getBoundingClientRect();
+  COV.canvas.width = Math.max(1, Math.floor(r.width));
+  COV.canvas.height = Math.max(1, Math.floor(r.height));
+}
+function coverStop(){
+  COV.running = false;
+  if (COV.raf) cancelAnimationFrame(COV.raf);
+  COV.raf = 0;
+}
+function coverStart(){
+  const s = SONGS[COV.selectedIdx];
+  COV.song = s;
+  // build timeline: each note has a start time (sec) and lane
+  COV.timeline = [];
+  let t = 0;
+  const beatSec = 60 / s.bpm;
+  s.notes.forEach(([lane, beats], i) => {
+    COV.timeline.push({ lane, t, dur: beats * beatSec, played: false, hit: false, missed: false });
+    t += beats * beatSec;
+  });
+  COV.totalPlayed = COV.timeline.length;
+  COV.hits = 0; COV.score = 0; COV.combo = 0;
+  COV.startTime = performance.now();
+  COV.lastPlayedIdx = -1;
+  COV.running = true;
+  el("cover-start").classList.add("hide");
+  el("cover-done").classList.add("hide");
+  el("cov-title").textContent = s.title;
+  coverResizeCanvas();
+}
+
+const COVER_LOOKAHEAD_SEC = 2.2;   // how far ahead of the hit line notes are visible
+const COVER_HIT_WINDOW = 0.28;     // ± seconds for a hit to count
+
+function coverTick(rightExt){
+  if (!COV.ctx) return;
+  const c = COV.ctx, W = COV.canvas.width, H = COV.canvas.height;
+  // bg
+  c.fillStyle = "#050510";
+  c.fillRect(0, 0, W, H);
+  // lanes
+  const laneCount = 5;
+  const laneW = W / laneCount;
+  const hitY = H - 100;
+  // vertical lane bands
+  for (let i = 0; i < laneCount; i++){
+    const col = COVER_LANE_COLORS[i];
+    c.fillStyle = col + "14";       // 8% alpha
+    c.fillRect(i * laneW, 0, laneW, H);
+    c.strokeStyle = col + "55";
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo((i+1) * laneW, 0); c.lineTo((i+1) * laneW, H); c.stroke();
+  }
+  // hit line
+  c.strokeStyle = "#ffffff";
+  c.lineWidth = 3;
+  c.beginPath(); c.moveTo(0, hitY); c.lineTo(W, hitY); c.stroke();
+  // lane labels below hit line
+  for (let i = 0; i < laneCount; i++){
+    const cx = i * laneW + laneW/2;
+    const active = rightExt && rightExt[i];
+    c.fillStyle = active ? COVER_LANE_COLORS[i] : "#666";
+    c.font = "28px -apple-system, Segoe UI, system-ui";
+    c.textAlign = "center";
+    c.fillText(COVER_LANE_GLYPHS[i], cx, hitY + 44);
+    c.font = "10px ui-monospace, Consolas, monospace";
+    c.fillStyle = active ? COVER_LANE_COLORS[i] : "#888";
+    c.fillText(COVER_LANE_LABELS[i].toUpperCase(), cx, hitY + 70);
+    // pressed ring indicator
+    if (active){
+      c.beginPath(); c.arc(cx, hitY, 24, 0, Math.PI*2);
+      c.strokeStyle = COVER_LANE_COLORS[i]; c.lineWidth = 3; c.stroke();
+    }
+  }
+
+  if (!COV.running){
+    c.fillStyle = "#888";
+    c.font = "14px ui-monospace, monospace";
+    c.textAlign = "center";
+    c.fillText("CHOISIS UNE CHANSON À GAUCHE", W/2, H/2);
+    COV.raf = requestAnimationFrame(() => {});
+    return;
+  }
+
+  const now = (performance.now() - COV.startTime) / 1000;
+
+  // scoring: detect rising edges — finger just went up → check nearest note in that lane
+  if (rightExt){
+    for (let i = 0; i < 5; i++){
+      const up = !!rightExt[i];
+      if (up && !COV.laneWasUp[i]){
+        // rising edge — look for nearest unplayed note in this lane within hit window
+        let best = -1, bestDist = Infinity;
+        for (let k = 0; k < COV.timeline.length; k++){
+          const n = COV.timeline[k];
+          if (n.lane !== i || n.hit || n.missed) continue;
+          const d = Math.abs(n.t - now);
+          if (d < bestDist && d < COVER_HIT_WINDOW){ best = k; bestDist = d; }
+        }
+        if (best >= 0){
+          COV.timeline[best].hit = true;
+          COV.hits++;
+          COV.combo++;
+          const bonus = Math.min(10, Math.floor(COV.combo / 3));
+          const quality = 100 - Math.floor(bestDist * 300);
+          COV.score += Math.max(10, quality) + bonus * 5;
+          coverPlayNote(i);
+          coverFlash(i);
+        }
+      }
+      COV.laneWasUp[i] = up;
+    }
+  } else {
+    for (let i = 0; i < 5; i++) COV.laneWasUp[i] = false;
+  }
+
+  // mark notes that passed the hit line without being pressed
+  for (const n of COV.timeline){
+    if (!n.hit && !n.missed && n.t < now - COVER_HIT_WINDOW){
+      n.missed = true;
+      COV.combo = 0;
+    }
+  }
+
+  // draw falling notes
+  const pxPerSec = (hitY - 40) / COVER_LOOKAHEAD_SEC;
+  for (const n of COV.timeline){
+    const dt = n.t - now;
+    if (dt > COVER_LOOKAHEAD_SEC + 0.5) continue;
+    if (dt < -0.5) continue;
+    const y = hitY - dt * pxPerSec;
+    const cx = n.lane * laneW + laneW/2;
+    const col = COVER_LANE_COLORS[n.lane];
+    if (n.hit){
+      c.fillStyle = "#9cff6b";
+    } else if (n.missed){
+      c.fillStyle = "#555";
+    } else {
+      c.fillStyle = col;
+    }
+    const r = laneW * 0.32;
+    c.beginPath(); c.arc(cx, y, r, 0, Math.PI*2); c.fill();
+    c.strokeStyle = "#000"; c.lineWidth = 2; c.stroke();
+  }
+
+  // update HUD
+  el("cov-score").textContent = COV.score;
+  el("cov-combo").textContent = COV.combo + "×";
+
+  // finished?
+  if (now > COV.timeline[COV.timeline.length-1].t + COVER_HIT_WINDOW + 1){
+    coverFinish();
+    return;
+  }
+}
+
+const COV_FLASH = [0,0,0,0,0];
+function coverFlash(i){ COV_FLASH[i] = 0.4; }
+
+function coverPlayNote(lane){
+  if (!AUDIO_READY || !mel) return;
+  const rk = el("key").value, oct = parseInt(el("oct").value, 10);
+  const semi = COVER_LANE_NOTE_OFFSETS[lane];
+  const midi = midiFromRoot(rk, oct, semi);
+  try { mel.triggerAttackRelease(Tone.Frequency(midi, "midi").toFrequency(), "8n"); }
+  catch(e){}
+}
+
+function coverFinish(){
+  COV.running = false;
+  const ratio = COV.totalPlayed > 0 ? COV.hits / COV.totalPlayed : 0;
+  let stars = "☆ ☆ ☆";
+  if (ratio >= 0.95) stars = "★ ★ ★";
+  else if (ratio >= 0.65) stars = "★ ★ ☆";
+  else if (ratio >= 0.35) stars = "★ ☆ ☆";
+  el("cov-stars").textContent = stars;
+  el("cov-bravo").textContent = ratio >= 0.65 ? "Bravo !" : ratio >= 0.35 ? "Pas mal !" : "Essaie encore !";
+  el("cov-finalscore").textContent = `Score ${COV.score} · ${COV.hits} / ${COV.totalPlayed} notes`;
+  el("cover-done").classList.remove("hide");
+}
+
+// ===========================================================================
+//  MODE CRÉER — version ultra simple
+// ===========================================================================
+const SOUND_CHOICES = [
+  { key: "piano",     emoji: "🎹", name: "Piano",       desc: "Doux et clair" },
+  { key: "flute",     emoji: "🎶", name: "Flûte",       desc: "Léger et aérien" },
+  { key: "pad",       emoji: "🌫️", name: "Nappe",       desc: "Enveloppant" },
+  { key: "pluck",     emoji: "🎸", name: "Pincée",      desc: "Comme une corde" },
+  { key: "organ",     emoji: "⛪", name: "Orgue",       desc: "Profond" },
+  { key: "xylophone", emoji: "🪵", name: "Xylophone",   desc: "Bois frappé" },
+  { key: "marimba",   emoji: "🥁", name: "Marimba",     desc: "Bois chaud" },
+  { key: "bells",     emoji: "🔔", name: "Cloches",     desc: "Cristallin" },
+  { key: "harp",      emoji: "🎻", name: "Harpe",       desc: "Perlé" },
+  { key: "strings",   emoji: "🎻", name: "Cordes",      desc: "Nappe tenue" },
+  { key: "bass",      emoji: "🎚️", name: "Basse",       desc: "Grave et rond" },
+  { key: "lead",      emoji: "🎛️", name: "Synthé lead", desc: "Nerveux" },
+  { key: "voice",     emoji: "🗣️", name: "Voix",        desc: "Humain doux" },
+  { key: "guitar",    emoji: "🎸", name: "Guitare",     desc: "Acoustique" }
+];
+const COLOR_CHOICES = [
+  { key: "cyan",   hex: "#44e0ff", hue: 0.55, name: "Cyan" },
+  { key: "pink",   hex: "#ff4a9c", hue: 0.92, name: "Rose" },
+  { key: "purple", hex: "#c689ff", hue: 0.75, name: "Violet" },
+  { key: "green",  hex: "#9cff6b", hue: 0.3,  name: "Vert" },
+  { key: "gold",   hex: "#ffd25a", hue: 0.12, name: "Or" },
+  { key: "white",  hex: "#ffffff", hue: 0.0,  name: "Blanc" }
+];
+const SHAPE_CHOICES = [
+  { key: "lens",    emoji: "⚪", name: "Boule",      desc: "Une boule de verre" },
+  { key: "cards",   emoji: "🔷", name: "Fenêtres",  desc: "Des plaques qui s'étirent" },
+  { key: "sculpt",  emoji: "🧊", name: "Cube",       desc: "Un cube à déformer" },
+  { key: "card",    emoji: "〰️", name: "Vague",      desc: "Une onde qui danse" },
+  { key: "galaxy",  emoji: "✨", name: "Galaxie",    desc: "Un nuage d'étoiles" },
+  { key: "chrome",  emoji: "💧", name: "Métal",      desc: "Un métal liquide" },
+  { key: "glass",   emoji: "🧪", name: "Verre",      desc: "Un cube de liquide" },
+  { key: "bloom",   emoji: "🌸", name: "Fleur",      desc: "Des pétales de cristal" }
+];
+const CREATE = { sound: "piano", color: "cyan", shape: "lens" };
+
+function renderCreateCards(){
+  const soundHost = el("create-sounds");
+  const colorHost = el("create-colors");
+  const shapeHost = el("create-shapes");
+  if (!soundHost || soundHost.children.length > 0) return;  // render once
+  SOUND_CHOICES.forEach(s => {
+    const d = document.createElement("div");
+    d.className = "create-card" + (s.key === CREATE.sound ? " on" : "");
+    d.dataset.key = s.key;
+    d.innerHTML = `<div class="emoji">${s.emoji}</div><div class="name">${s.name}</div><div class="desc">${s.desc}</div>`;
+    d.addEventListener("click", () => {
+      CREATE.sound = s.key;
+      soundHost.querySelectorAll(".create-card").forEach(c => c.classList.toggle("on", c.dataset.key === s.key));
+    });
+    soundHost.appendChild(d);
+  });
+  COLOR_CHOICES.forEach(c => {
+    const d = document.createElement("div");
+    d.className = "create-card" + (c.key === CREATE.color ? " on" : "");
+    d.dataset.key = c.key;
+    d.innerHTML = `<div class="create-swatch" style="background:${c.hex}"></div><div class="name">${c.name}</div>`;
+    d.addEventListener("click", () => {
+      CREATE.color = c.key;
+      colorHost.querySelectorAll(".create-card").forEach(cc => cc.classList.toggle("on", cc.dataset.key === c.key));
+    });
+    colorHost.appendChild(d);
+  });
+  SHAPE_CHOICES.forEach(sh => {
+    const d = document.createElement("div");
+    d.className = "create-card" + (sh.key === CREATE.shape ? " on" : "");
+    d.dataset.key = sh.key;
+    d.innerHTML = `<div class="emoji">${sh.emoji}</div><div class="name">${sh.name}</div><div class="desc">${sh.desc}</div>`;
+    d.addEventListener("click", () => {
+      CREATE.shape = sh.key;
+      shapeHost.querySelectorAll(".create-card").forEach(cc => cc.classList.toggle("on", cc.dataset.key === sh.key));
+    });
+    shapeHost.appendChild(d);
+  });
+  el("create-apply").addEventListener("click", () => {
+    // apply the picks: set the sound, set a hue (via s-hue slider if present), set the scene, go to sensory
+    try { setSound(CREATE.sound); } catch(e){}
+    const soundSel = el("sound");
+    if (soundSel){ soundSel.value = CREATE.sound; }
+    const col = COLOR_CHOICES.find(c => c.key === CREATE.color);
+    const hueSlider = el("s-hue");
+    if (hueSlider && col){ hueSlider.value = col.hue; hueSlider.dispatchEvent(new Event("input")); }
+    // set sensory scene
+    SENSE_SCENE = CREATE.shape;
+    // reflect in the sense palette on-state
+    document.querySelectorAll('#palette-sense button').forEach(b => b.classList.toggle("on", b.dataset.scene === SENSE_SCENE));
+    // build the scene if needed (names match existing builders)
+    try {
+      if (CREATE.shape === "cards")  buildSceneCards();
+      else if (CREATE.shape === "card")   buildSceneCard();
+      else if (CREATE.shape === "lens")   buildSceneLens();
+      else if (CREATE.shape === "sculpt") buildSceneSculpt();
+      else if (CREATE.shape === "galaxy") buildSceneGalaxy(parseInt(el("s-count").value, 10));
+      else if (CREATE.shape === "chrome") buildSceneChrome && buildSceneChrome();
+      else if (CREATE.shape === "glass")  buildSceneGlass && buildSceneGlass();
+      else if (CREATE.shape === "bloom")  buildSceneBloom && buildSceneBloom();
+    } catch(e){}
+    setMode("sense");
+  });
+  el("create-reset").addEventListener("click", () => {
+    CREATE.sound = "piano"; CREATE.color = "cyan"; CREATE.shape = "lens";
+    soundHost.querySelectorAll(".create-card").forEach(c => c.classList.toggle("on", c.dataset.key === "piano"));
+    colorHost.querySelectorAll(".create-card").forEach(c => c.classList.toggle("on", c.dataset.key === "cyan"));
+    shapeHost.querySelectorAll(".create-card").forEach(c => c.classList.toggle("on", c.dataset.key === "lens"));
+  });
+}
+
+// render cards once the DOM is ready
+renderCreateCards();
+
 </script>
 </body>
 </html>
