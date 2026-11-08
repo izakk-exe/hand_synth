@@ -218,6 +218,8 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const stage = $("stage"), video = $("cam"), fx = $("fx"), three = $("three"), bones = $("bones");
 const fxCtx = fx.getContext("2d"), bonesCtx = bones.getContext("2d");
 
+// hoisted so sizeCanvas (called before initThree) doesn't hit a TDZ
+var renderer3D, camera3D, scene3D, sceneRoot, envMap;
 let W = 0, H = 0;
 function sizeCanvas(){
   const r = stage.getBoundingClientRect();
@@ -240,7 +242,6 @@ sizeCanvas();
 let MODE = "music";
 let AUDIO_READY = false;
 let mel, chord, master, reverb;
-let scene3D, camera3D, renderer3D, sceneRoot, envMap;
 let latest = { multiHandLandmarks: [], multiHandedness: [] };
 let CAM_FACING = "user";
 let currentSound = "piano";
