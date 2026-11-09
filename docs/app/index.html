@@ -1,1043 +1,1123 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
-<meta name="theme-color" content="#0a0a0f"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<link rel="manifest" href="manifest.json"/>
-<title>Palma — tactile</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#06070b" />
+<title>Palma — 1Z4K</title>
+<link rel="manifest" href="./manifest.json" />
 <style>
   :root{
-    --bg:#0a0a0f;
-    --ink:#f7f7fa;
-    --dim:#7a7a85;
-    --mute:rgba(255,255,255,.5);
+    --bg:#06070b;
+    --ink:#f4f4f6;
+    --dim:#8a8c99;
     --line:rgba(255,255,255,.08);
-    --panel:rgba(16,16,22,.72);
-    --accent:#ffffff;
-    --cold:#5fd8ff;
-    --hot:#ff5c8a;
-    --violet:#c89fff;
-    --lime:#a5ff82;
-    --warm:#ffcf6b;
-    --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",system-ui,sans-serif;
+    --panel:rgba(14,14,20,.78);
+    --hot:#ff2d7a;
+    --cold:#44e0ff;
+    --warm:#ffd166;
+    --lime:#9cff6b;
+    --violet:#c689ff;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bot: env(safe-area-inset-bottom, 0px);
+    --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",system-ui,sans-serif;
+    --tap:48px;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bot:env(safe-area-inset-bottom,0px);
   }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;width:100%;background:#000;color:var(--ink);font-family:var(--sans);overflow:hidden;overscroll-behavior:none;touch-action:none;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%;background:#000;color:var(--ink);font-family:var(--sans);overflow:hidden;overscroll-behavior:none;user-select:none;touch-action:none}
+  button{font-family:inherit;color:inherit;background:transparent;border:0;padding:0;cursor:pointer;-webkit-appearance:none}
 
-  /* ---------- stage ---------- */
-  #stage{position:fixed;inset:0}
-  video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0;background:#000}
-  canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-  canvas#fx{z-index:1;mix-blend-mode:screen}
-  canvas#three{z-index:2;display:none}
-  canvas#bones{z-index:5;opacity:.72}
+  /* ---------- camera + canvas stack ---------- */
+  video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0}
+  canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;display:block}
+  canvas#three{z-index:2}
+  canvas#bones{z-index:3}
+  canvas#fx{z-index:1}
 
-  /* ---------- tap-to-start ---------- */
-  #start{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:
-    radial-gradient(1200px 800px at 50% 30%, #121224 0%, #050508 60%, #000 100%);text-align:center;padding:32px}
-  #start.hide{display:none}
-  #start h1{font-size:88px;font-weight:900;letter-spacing:-.04em;margin-bottom:8px;color:var(--ink)}
-  #start .sub{color:var(--dim);font-family:var(--mono);font-size:10.5px;letter-spacing:.42em;text-transform:uppercase;margin-bottom:34px}
-  #start .copy{color:var(--mute);font-size:15.5px;line-height:1.55;max-width:440px;margin:0 auto 34px}
-  #start button{padding:18px 44px;background:var(--ink);color:#0a0a0f;border:none;border-radius:999px;font-family:var(--sans);font-size:15px;font-weight:700;letter-spacing:.02em;cursor:pointer}
-  #start .legal{position:absolute;bottom:24px;left:0;right:0;font-size:10px;color:var(--dim);letter-spacing:.3em;text-transform:uppercase}
+  /* ---------- boot screen ---------- */
+  #boot{position:fixed;inset:0;z-index:50;background:radial-gradient(ellipse at center,#0a0e1a 0%,#000 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:18px;color:var(--ink);text-align:center}
+  #boot.hide{display:none}
+  #boot .mark{width:120px;height:120px;opacity:.9}
+  #boot h1{margin:0;font-size:36px;font-weight:800;letter-spacing:.14em}
+  #boot .sub{color:var(--dim);font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase}
+  #boot button.go{margin-top:12px;background:linear-gradient(135deg,var(--cold),var(--violet));color:#000;font-weight:800;font-size:16px;letter-spacing:.18em;text-transform:uppercase;padding:18px 44px;border-radius:999px;box-shadow:0 12px 42px rgba(68,224,255,.42)}
+  #boot .note{color:var(--dim);font-family:var(--mono);font-size:11px;max-width:320px;line-height:1.5}
+  #boot .credit{position:absolute;bottom:calc(16px + var(--safe-bot));font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
 
-  /* ---------- HUD ---------- */
-  .hud{position:absolute;inset:0;pointer-events:none;z-index:4}
+  /* ---------- hud ---------- */
+  .hud{position:fixed;inset:0;z-index:10;pointer-events:none;display:flex;flex-direction:column}
   .hud.hide{display:none}
 
-  /* top bar: brand on the left, mode pills in the middle, tool stack on the right */
-  .top{position:absolute;top:calc(var(--safe-top) + 10px);left:12px;right:12px;display:flex;align-items:center;gap:10px;pointer-events:auto}
-  .brand{font-family:var(--mono);font-size:10px;letter-spacing:.32em;text-transform:uppercase;font-weight:700;color:var(--ink);opacity:.85;flex-shrink:0}
-  .brand::before{content:"";display:inline-block;width:6px;height:6px;background:var(--cold);border-radius:50%;margin-right:8px;vertical-align:middle}
-  .modebar{flex:1;display:flex;gap:4px;justify-content:center;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px}
-  .modebar button{background:transparent;border:none;color:var(--dim);padding:10px 16px;border-radius:999px;font-family:var(--sans);font-size:12.5px;letter-spacing:.04em;font-weight:600;cursor:pointer;min-height:36px;white-space:nowrap;transition:color .15s,background .15s}
-  .modebar button.on{background:var(--ink);color:#0a0a0f}
-  .toptools{display:flex;gap:6px;flex-shrink:0}
-  .tool-btn{width:38px;height:38px;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:999px;display:grid;place-items:center;font-size:16px;cursor:pointer}
+  /* top : logo + tabs */
+  .top{padding:calc(var(--safe-top) + 10px) 10px 10px;display:flex;align-items:center;gap:8px;pointer-events:auto}
+  .brand{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;backdrop-filter:blur(14px)}
+  .brand .dot{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .tabs{flex:1;display:flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;backdrop-filter:blur(14px);overflow:hidden}
+  .tabs button{flex:1;padding:12px 6px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;font-weight:700;text-transform:uppercase;color:var(--dim);transition:all .18s;min-height:var(--tap)}
+  .tabs button.on{color:#000;background:#fff}
+  .tabs button.on.music{background:var(--cold)}
+  .tabs button.on.sense{background:var(--lime)}
+  .tabs button.on.flux{background:linear-gradient(90deg,var(--cold),var(--violet))}
 
-  /* main readout — minimal note letter in the center for music mode */
-  .readout{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);text-align:center;pointer-events:none;z-index:3}
-  .readout.hide{display:none}
-  .readout .note{font-size:min(38vw,220px);font-weight:900;color:var(--ink);line-height:.95;letter-spacing:-.06em;opacity:.95;text-shadow:0 0 40px rgba(0,0,0,.6)}
-  .readout .chord{font-family:var(--mono);font-size:12px;color:var(--cold);letter-spacing:.3em;text-transform:uppercase;margin-top:12px;min-height:1em}
-  .readout .hint{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.3em;text-transform:uppercase;margin-top:8px}
+  .right-tools{display:flex;gap:6px}
+  .chip{background:var(--panel);border:1px solid var(--line);padding:0 10px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink);min-height:var(--tap);display:flex;align-items:center;gap:6px;backdrop-filter:blur(14px)}
+  .chip b{color:var(--cold);font-weight:700;letter-spacing:.08em}
+  .icon-btn{width:var(--tap);height:var(--tap);display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);border-radius:50%;color:var(--ink);backdrop-filter:blur(14px)}
+  .icon-btn svg{width:20px;height:20px}
 
-  /* bottom tray — single scrollable row of soft pills */
-  .tray{position:absolute;left:0;right:0;bottom:calc(var(--safe-bot) + 10px);padding:0 10px;pointer-events:auto;z-index:3}
-  .tray-wrap{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:10px;position:relative}
-  .tray-row{display:flex;gap:8px;overflow-x:auto;padding:2px;scroll-behavior:smooth;scrollbar-width:none;mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
-  .tray-row::-webkit-scrollbar{display:none}
-  .chip{flex:0 0 auto;min-width:76px;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;color:var(--mute);font-family:var(--sans);font-size:11.5px;letter-spacing:.01em;font-weight:600;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:60px}
-  .chip .glyph{font-size:20px;line-height:1;opacity:.95}
-  .chip.on{background:var(--ink);color:#0a0a0f;border-color:var(--ink)}
-  .chip.on .glyph{filter:none}
-  .caption{text-align:center;color:var(--dim);font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;padding:10px 0 2px}
+  /* caption bar */
+  .caption{align-self:center;margin-top:6px;background:var(--panel);border:1px solid var(--line);padding:6px 14px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--ink);backdrop-filter:blur(14px);text-align:center;max-width:94vw}
 
-  /* ---------- create pane ---------- */
-  .create-pane{position:absolute;inset:0;z-index:6;background:rgba(10,10,15,.98);pointer-events:auto;overflow-y:auto;padding:calc(var(--safe-top) + 72px) 16px 140px;-webkit-overflow-scrolling:touch}
-  .create-pane.hide{display:none}
-  .create-pane h2{font-size:22px;font-weight:700;color:var(--ink);margin:22px 0 4px;letter-spacing:-.01em}
-  .create-pane h2:first-child{margin-top:0}
-  .create-pane .lead{font-size:13px;color:var(--dim);margin-bottom:14px}
-  .create-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:22px}
-  .create-tile{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;min-height:104px;display:flex;flex-direction:column;justify-content:center;gap:6px;transition:border-color .15s,background .15s}
-  .create-tile.on{border-color:var(--ink);background:rgba(255,255,255,.08)}
-  .create-tile .emoji{font-size:34px;line-height:1}
-  .create-tile .name{font-size:13px;font-weight:600;color:var(--ink)}
-  .create-tile .desc{font-size:10.5px;color:var(--dim);line-height:1.35}
-  .create-swatch{width:100%;height:44px;border-radius:10px;margin-bottom:6px}
-  .create-cta{position:fixed;bottom:0;left:0;right:0;padding:12px 12px calc(var(--safe-bot) + 12px);display:flex;gap:10px;background:rgba(10,10,15,.98);border-top:1px solid var(--line);z-index:7}
-  .create-cta.hide{display:none}
-  .create-cta button{flex:1;padding:16px;background:var(--ink);color:#0a0a0f;border:none;border-radius:999px;font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer}
-  .create-cta button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);flex:0 0 auto;padding:16px 18px;font-weight:500}
+  /* main zone spacer */
+  .hud .spacer{flex:1}
 
-  /* ---------- hint toast ---------- */
-  .hint{position:absolute;top:calc(var(--safe-top) + 62px);left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);padding:7px 14px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--mute);text-transform:uppercase;z-index:3;pointer-events:none;transition:opacity .25s}
-  .hint.hide{opacity:0}
+  /* bottom shelves (one per mode) */
+  .shelf{pointer-events:auto;padding:12px 10px calc(16px + var(--safe-bot));display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.72) 50%,rgba(0,0,0,.92) 100%)}
+  .shelf.hide{display:none}
 
-  /* ---------- error ---------- */
-  #err{position:fixed;inset:0;z-index:100;background:#000;color:#fff;display:none;place-items:center;text-align:center;padding:24px}
-  #err.show{display:grid}
-  #err p{max-width:420px;font-size:14px;line-height:1.6;color:var(--dim)}
-  #err h2{font-size:22px;margin-bottom:12px;color:var(--hot)}
+  /* bottom · generic row of large tappable buttons that scrolls horizontally */
+  .scroll-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 4px 4px;scroll-snap-type:x mandatory}
+  .scroll-row::-webkit-scrollbar{display:none}
+  .pill{scroll-snap-align:start;flex:0 0 auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;min-width:88px;min-height:var(--tap);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink);text-transform:uppercase;backdrop-filter:blur(14px)}
+  .pill .emoji{font-size:22px;line-height:1}
+  .pill .k{color:var(--dim);font-size:9px}
+  .pill.on{border-color:var(--cold);background:rgba(68,224,255,.14);color:#fff}
+  .pill.on.lime{border-color:var(--lime);background:rgba(156,255,107,.14)}
+  .pill.on.violet{border-color:var(--violet);background:rgba(198,137,255,.14)}
 
-  /* ====== PORTRAIT PHONES ====== */
-  @media (orientation:portrait) and (max-width:620px){
-    #start h1{font-size:64px}
-    #start .copy{font-size:14px}
-    /* top bar becomes stacked — brand row on top, tool stack floats, modebar full width */
-    .top{flex-wrap:wrap;gap:8px}
-    .brand{order:1;flex:1}
-    .toptools{order:2}
-    .modebar{order:3;flex-basis:100%;justify-content:space-between}
-    .modebar button{flex:1;padding:12px 8px;font-size:13px;min-height:42px}
-    .readout .note{font-size:min(45vw,180px)}
-    .readout{top:42%}
-    .tray{bottom:calc(var(--safe-bot) + 8px)}
-    .tray-wrap{padding:8px}
-    .chip{min-width:64px;padding:8px;min-height:54px;font-size:10.5px}
-    .chip .glyph{font-size:18px}
-    .caption{font-size:9px}
-    .tool-btn{width:36px;height:36px;font-size:15px}
-    .create-pane{padding-top:calc(var(--safe-top) + 112px)}
-    .create-grid{grid-template-columns:repeat(2,1fr)}
-  }
-  /* very small screens */
-  @media (max-width:360px){
-    .brand{font-size:9px;letter-spacing:.24em}
-    .modebar button{padding:10px 6px;font-size:12px}
+  /* music mode HUD extras — note indicator + chord */
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .info-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px;backdrop-filter:blur(14px)}
+  .info-card .lab{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+  .info-card .val{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+  .info-card .val.cold{color:var(--cold)}
+  .info-card .val.lime{color:var(--lime)}
+
+  /* drawer — settings */
+  .drawer{position:fixed;top:calc(var(--safe-top) + 72px);bottom:calc(var(--safe-bot) + 16px);right:10px;width:min(320px,calc(100vw - 20px));background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;overflow-y:auto;backdrop-filter:blur(18px);z-index:12;transform:translateX(calc(100% + 24px));transition:transform .28s cubic-bezier(.4,0,.2,1);pointer-events:auto}
+  .drawer.open{transform:translateX(0)}
+  .drawer h3{margin:0 0 8px;font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;font-weight:700}
+  .drawer .row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);gap:10px}
+  .drawer .row:last-child{border-bottom:0}
+  .drawer .row > label{font-size:13px;color:var(--ink);flex:1}
+  .drawer select, .drawer input[type="range"]{flex:0 0 auto;width:150px;background:transparent;color:var(--ink);font-family:var(--mono);font-size:12px}
+  .drawer select{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  .drawer .close{position:sticky;top:0;float:right;margin:-6px -6px 6px 0;background:rgba(255,255,255,.08);border-radius:50%;width:32px;height:32px;display:grid;place-items:center;color:var(--ink)}
+
+  /* flux sub-scene bar — floats under top bar when flux is on */
+  .fluxbar{align-self:center;display:none;background:var(--panel);border:1px solid var(--line);border-radius:999px;backdrop-filter:blur(14px);margin-top:6px;overflow:hidden}
+  .fluxbar.on{display:flex}
+  .fluxbar button{padding:10px 14px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;min-height:40px;border-right:1px solid var(--line)}
+  .fluxbar button:last-child{border-right:0}
+  .fluxbar button.on{color:#000;background:#fff}
+
+  /* subtle onboarding toast */
+  .toast{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--safe-top) + 100px);background:var(--panel);border:1px solid var(--line);padding:10px 16px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink);backdrop-filter:blur(14px);opacity:0;transition:opacity .25s}
+  .toast.on{opacity:.95}
+
+  @media (orientation:landscape) and (max-height:500px){
+    .shelf{padding:10px 10px calc(10px + var(--safe-bot))}
+    .scroll-row{padding-bottom:0}
+    .pill{min-width:72px}
+    .info-card .val{font-size:18px}
   }
 </style>
 </head>
 <body>
 
-<div id="stage">
-  <video id="cam" playsinline muted autoplay></video>
-  <canvas id="fx"></canvas>
-  <canvas id="three"></canvas>
-  <canvas id="bones"></canvas>
+<video id="cam" playsinline muted autoplay></video>
+<canvas id="fx"></canvas>
+<canvas id="three"></canvas>
+<canvas id="bones"></canvas>
 
-  <div class="hud hide" id="hud">
-    <div class="top">
-      <div class="brand">PALMA</div>
-      <div class="toptools">
-        <button class="tool-btn" id="tool-flip" aria-label="caméra avant/arrière">⟲</button>
-        <button class="tool-btn" id="tool-fullscreen" aria-label="plein écran">⛶</button>
-      </div>
-      <nav class="modebar" id="modebar">
-        <button data-mode="music" class="on">Musique</button>
-        <button data-mode="sense">Sensoriel</button>
-        <button data-mode="create">Créer</button>
-      </nav>
+<!-- ---------- boot ---------- -->
+<div id="boot">
+  <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
+    <defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9ec8ff"/></linearGradient></defs>
+    <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,.1)"/>
+    <g stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none">
+      <path d="M60 50 L60 150"/><path d="M60 50 L120 50 C150 50,150 110,120 110 L60 110"/>
+    </g>
+    <circle cx="100" cy="100" r="8" fill="url(#bm)"/>
+  </svg>
+  <h1>PALMA</h1>
+  <div class="sub">Gesture Instrument · 1Z4K</div>
+  <button class="go" id="btn-start">Commencer</button>
+  <div class="note">Autorise la caméra sur l'écran suivant. Rien n'est enregistré. Tiens tes mains devant la webcam pour jouer.</div>
+  <div class="credit">Édité par 1Z4K</div>
+</div>
+
+<!-- ---------- HUD ---------- -->
+<div class="hud hide" id="hud">
+  <div class="top">
+    <div class="brand"><span class="dot"></span>PALMA</div>
+    <div class="tabs" id="tabs">
+      <button class="on music" data-mode="music">musique</button>
+      <button data-mode="sense">sensoriel</button>
+      <button data-mode="flux">flux</button>
     </div>
-
-    <div class="hint hide" id="hint"><span id="hint-text">lève un doigt pour jouer</span></div>
-
-    <div class="readout" id="readout">
-      <div class="note" id="t-note">—</div>
-      <div class="chord" id="t-chord">&nbsp;</div>
-      <div class="hint-small" id="t-hint" style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.3em;text-transform:uppercase;margin-top:4px">chante cette note</div>
+    <div class="right-tools">
+      <button class="icon-btn" id="btn-settings" aria-label="réglages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
+  </div>
 
-    <div class="tray" id="tray">
-      <div class="tray-wrap">
-        <div class="tray-row" id="tray-row-music"></div>
-        <div class="tray-row hide" id="tray-row-sense"></div>
-        <div class="caption" id="caption">lève un doigt pour jouer</div>
-      </div>
-    </div>
+  <!-- flux sub-scene bar -->
+  <div class="fluxbar" id="fluxbar">
+    <button data-fx="galaxy" class="on">galaxie</button>
+    <button data-fx="aurora">aurore</button>
+    <button data-fx="ink">encre</button>
+    <button data-fx="plasma">plasma</button>
+    <button data-fx="field">champ</button>
+  </div>
 
-    <div class="create-pane hide" id="create-pane">
-      <h2>Choisis ton instrument</h2>
-      <div class="lead">Le son qui sort quand tu bouges la main.</div>
-      <div class="create-grid" id="c-sounds"></div>
-      <h2>Choisis ta couleur</h2>
-      <div class="lead">La teinte des scènes 3D.</div>
-      <div class="create-grid" id="c-colors"></div>
-      <h2>Choisis ta forme</h2>
-      <div class="lead">L'objet 3D à manipuler.</div>
-      <div class="create-grid" id="c-shapes"></div>
+  <div class="caption" id="caption">MAIN DROITE = MÉLODIE · MAIN GAUCHE = ACCORD</div>
+
+  <div class="toast" id="toast">Montre tes deux mains à la caméra</div>
+
+  <div class="spacer"></div>
+
+  <!-- music shelf -->
+  <div class="shelf music" id="shelf-music">
+    <div class="info-grid">
+      <div class="info-card"><div class="lab">note</div><div class="val cold" id="note-val">—</div></div>
+      <div class="info-card"><div class="lab">accord</div><div class="val lime" id="chord-val">—</div></div>
     </div>
-    <div class="create-cta hide" id="create-cta">
-      <button class="ghost" id="c-reset">Reset</button>
-      <button id="c-apply">Jouer avec mes choix</button>
+    <div class="scroll-row" id="inst-row"></div>
+  </div>
+
+  <!-- sense shelf -->
+  <div class="shelf sense hide" id="shelf-sense">
+    <div class="scroll-row" id="obj-row"></div>
+  </div>
+
+  <!-- flux shelf -->
+  <div class="shelf flux hide" id="shelf-flux">
+    <div class="info-grid">
+      <div class="info-card"><div class="lab">mains</div><div class="val cold" id="hands-val">0</div></div>
+      <div class="info-card"><div class="lab">geste</div><div class="val lime" id="gest-val">—</div></div>
     </div>
   </div>
 </div>
 
-<div id="start">
-  <div>
-    <h1>PALMA</h1>
-    <div class="sub">Tactile · Mobile &amp; tablette</div>
-    <div class="copy">Faites de la musique et jouez avec des formes 3D rien qu'en bougeant les mains devant la caméra. Autorisez la caméra au premier lancement.</div>
-    <button id="go">Commencer</button>
+<!-- ---------- Drawer settings ---------- -->
+<div class="drawer" id="drawer">
+  <button class="close" id="drawer-close" aria-label="fermer">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <h3>Musique</h3>
+  <div class="row"><label>Tonalité</label>
+    <select id="opt-key">
+      <option>C</option><option>D</option><option>E</option><option>F</option><option selected>G</option><option>A</option><option>B</option>
+    </select>
   </div>
-  <div class="legal">100% hors-ligne après chargement · aucun compte · 1Z4K</div>
+  <div class="row"><label>Mode</label>
+    <select id="opt-scale"><option value="maj">majeur</option><option value="min">mineur</option></select>
+  </div>
+  <div class="row"><label>Octave</label>
+    <input type="range" id="opt-oct" min="2" max="6" step="1" value="4" />
+  </div>
+  <div class="row"><label>Reverb</label>
+    <input type="range" id="opt-rev" min="0" max="1" step="0.01" value="0.3" />
+  </div>
+  <h3>Général</h3>
+  <div class="row"><label>Squelette</label>
+    <select id="opt-bones"><option value="1" selected>Afficher</option><option value="0">Masquer</option></select>
+  </div>
+  <div class="row"><label>Son</label>
+    <select id="opt-mute"><option value="0" selected>Actif</option><option value="1">Muet</option></select>
+  </div>
 </div>
 
-<div id="err"><div><h2>Oups</h2><p id="err-msg">Un problème est survenu.</p></div></div>
-
+<!-- ---------- Libs ---------- -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
 
 <script>
 "use strict";
-const $ = (id) => document.getElementById(id);
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
 
-const stage = $("stage"), video = $("cam"), fx = $("fx"), three = $("three"), bones = $("bones");
-const fxCtx = fx.getContext("2d"), bonesCtx = bones.getContext("2d");
+// ---------- util ----------
+const el = id => document.getElementById(id);
+const clamp = (v,a,b) => v<a?a:v>b?b:v;
+const lerp = (a,b,t) => a+(b-a)*t;
 
-// hoisted so sizeCanvas (called before initThree) doesn't hit a TDZ
+// ---------- canvases ----------
+const video = el("cam");
+const fxc = el("fx"), threeC = el("three"), bonesC = el("bones");
+const fx = fxc.getContext("2d"), g = bonesC.getContext("2d");
+let W = 1, H = 1, DPR = 1;
+
+// three globals (hoisted for setup order)
 var renderer3D, camera3D, scene3D, sceneRoot, envMap;
-let W = 0, H = 0;
+var FLUX_READY = false;
+
 function sizeCanvas(){
-  const r = stage.getBoundingClientRect();
-  W = Math.floor(r.width);
-  H = Math.floor(r.height);
-  [fx, three, bones].forEach(c => { c.width = W; c.height = H; });
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  for (const c of [fxc, bonesC]){
+    c.width = Math.floor(W*DPR); c.height = Math.floor(H*DPR);
+    c.style.width = W+"px"; c.style.height = H+"px";
+    c.getContext("2d").setTransform(DPR,0,0,DPR,0,0);
+  }
+  threeC.width = Math.floor(W*DPR); threeC.height = Math.floor(H*DPR);
+  threeC.style.width = W+"px"; threeC.style.height = H+"px";
   if (renderer3D){
+    renderer3D.setPixelRatio(DPR);
     renderer3D.setSize(W, H, false);
-    camera3D.aspect = W / H;
+    camera3D.aspect = W/H;
     camera3D.updateProjectionMatrix();
   }
+  if (FLUX_READY) FLUX.resize();
 }
 window.addEventListener("resize", sizeCanvas);
 window.addEventListener("orientationchange", () => setTimeout(sizeCanvas, 150));
-sizeCanvas();
 
-// ================================================================
-// STATE
-// ================================================================
-let MODE = "music";
-let AUDIO_READY = false;
-let mel, chord, master, reverb;
+// ---------- state ----------
+let MODE = "music";    // music | sense | flux
+let OBJ_KEY = "cube";
+let FX_KEY  = "galaxy";
 let latest = { multiHandLandmarks: [], multiHandedness: [] };
-let CAM_FACING = "user";
-let currentSound = "piano";
-let currentScene = "cube";
-let COLOR_HEX = "#5fd8ff";
-let COLOR_OBJ = new THREE.Color("#5fd8ff");
+let lastT = performance.now();
 
-// ================================================================
-// AUDIO
-// ================================================================
-const PRESETS = {
-  piano:     { osc:{type:"triangle"},  env:{attack:0.004, decay:1.0,  sustain:0.2, release:1.1} },
-  pad:       { osc:{type:"sawtooth"},  env:{attack:0.5,   decay:0.3,  sustain:0.8, release:1.6} },
-  pluck:     { osc:{type:"triangle"},  env:{attack:0.001, decay:0.25, sustain:0.0, release:0.3} },
-  organ:     { osc:{type:"sine"},      env:{attack:0.01,  decay:0.1,  sustain:0.9, release:0.3} },
-  flute:     { osc:{type:"sine"},      env:{attack:0.08,  decay:0.1,  sustain:0.9, release:0.4} },
-  xylophone: { osc:{type:"sine"},      env:{attack:0.001, decay:0.6,  sustain:0.0, release:0.4} },
-  marimba:   { osc:{type:"triangle"},  env:{attack:0.002, decay:0.5,  sustain:0.0, release:0.5} },
-  bells:     { osc:{type:"sine"},      env:{attack:0.001, decay:1.6,  sustain:0.0, release:1.4} },
-  harp:      { osc:{type:"triangle"},  env:{attack:0.003, decay:0.7,  sustain:0.0, release:0.7} },
-  strings:   { osc:{type:"sawtooth"},  env:{attack:0.2,   decay:0.3,  sustain:0.7, release:1.2} },
-  bass:      { osc:{type:"square"},    env:{attack:0.005, decay:0.4,  sustain:0.3, release:0.5} },
-  lead:      { osc:{type:"sawtooth"},  env:{attack:0.01,  decay:0.15, sustain:0.5, release:0.4} },
-  voice:     { osc:{type:"sine"},      env:{attack:0.15,  decay:0.2,  sustain:0.85,release:0.8} },
-  guitar:    { osc:{type:"triangle"},  env:{attack:0.003, decay:0.35, sustain:0.1, release:0.5} }
+// ---------- audio ----------
+let master, mel, chord, reverb;
+let AUDIO_READY = false;
+let mutedFlag = false;
+
+const INSTRUMENTS = {
+  piano:    { label: "Piano",    emoji: "🎹", osc: { type: "triangle" },    env: { attack: 0.004, decay: 0.3, sustain: 0.3, release: 1.0 } },
+  pad:      { label: "Pad",      emoji: "🌊", osc: { type: "sine" },        env: { attack: 0.6, decay: 0.5, sustain: 0.8, release: 2.5 } },
+  pluck:    { label: "Pluck",    emoji: "🪕", osc: { type: "sawtooth" },    env: { attack: 0.002, decay: 0.12, sustain: 0.0, release: 0.3 } },
+  organ:    { label: "Orgue",    emoji: "⛪", osc: { type: "sine" },        env: { attack: 0.01, decay: 0.1, sustain: 1, release: 0.1 } },
+  flute:    { label: "Flûte",    emoji: "🪈", osc: { type: "sine" },        env: { attack: 0.08, decay: 0.2, sustain: 0.9, release: 0.4 } },
+  bells:    { label: "Cloches", emoji: "🔔", osc: { type: "triangle" },     env: { attack: 0.001, decay: 0.4, sustain: 0.1, release: 1.4 } },
+  harp:     { label: "Harpe",   emoji: "🎼", osc: { type: "sawtooth" },     env: { attack: 0.003, decay: 0.3, sustain: 0.2, release: 1.2 } },
+  strings:  { label: "Cordes",  emoji: "🎻", osc: { type: "sawtooth" },     env: { attack: 0.3, decay: 0.3, sustain: 0.8, release: 1.6 } },
+  bass:     { label: "Basse",   emoji: "🎸", osc: { type: "square" },       env: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.3 } },
+  lead:     { label: "Lead",    emoji: "⚡",  osc: { type: "sawtooth" },     env: { attack: 0.005, decay: 0.1, sustain: 0.7, release: 0.2 } },
+  voice:    { label: "Voix",    emoji: "🎤", osc: { type: "sine" },         env: { attack: 0.08, decay: 0.3, sustain: 0.6, release: 0.8 } }
 };
-const SOUND_META = {
-  piano:{icon:"🎹",name:"Piano"}, flute:{icon:"🎶",name:"Flûte"}, xylophone:{icon:"🪵",name:"Xylo"},
-  marimba:{icon:"🥁",name:"Marimba"}, bells:{icon:"🔔",name:"Cloches"}, harp:{icon:"🪷",name:"Harpe"},
-  strings:{icon:"🎻",name:"Cordes"}, pad:{icon:"🌫",name:"Nappe"}, organ:{icon:"⛪",name:"Orgue"},
-  bass:{icon:"🎚",name:"Basse"}, pluck:{icon:"🎸",name:"Pincée"}, lead:{icon:"🎛",name:"Lead"},
-  voice:{icon:"🗣",name:"Voix"}, guitar:{icon:"🎸",name:"Guitare"}
-};
+let INSTR = "piano";
 
 async function initAudio(){
   await Tone.start();
   Tone.context.lookAhead = 0.02;
-  master = new Tone.Gain(0.85).toDestination();
-  reverb = new Tone.Reverb({ decay: 4, wet: 0.3 }).connect(master);
-  mel = new Tone.MonoSynth({
-    oscillator: PRESETS.piano.osc, envelope: PRESETS.piano.env,
-    filterEnvelope:{attack:0.01,decay:0.3,sustain:0.4,release:0.6,baseFrequency:800,octaves:2.5},
-    portamento: 0.02, volume: -6
-  }).connect(reverb);
-  chord = new Tone.PolySynth(Tone.Synth, {
-    oscillator:{ type:"triangle" },
-    envelope:{ attack:0.08, decay:0.4, sustain:0.6, release:1.2 }, volume: -14
-  }).connect(reverb);
-  await reverb.generate();
+  master = new Tone.Gain(0.9).toDestination();
+  reverb = new Tone.Reverb({ decay: 3.5, wet: 0.3 }).connect(master);
+  mel   = new Tone.PolySynth(Tone.Synth, {}).connect(reverb);
+  chord = new Tone.PolySynth(Tone.Synth, {}).connect(reverb);
+  setInstrument(INSTR);
   AUDIO_READY = true;
 }
-function setSound(name){
-  if (!AUDIO_READY) return;
-  const p = PRESETS[name] || PRESETS.piano;
-  try { mel.set({ oscillator: p.osc, envelope: p.env }); } catch(e){}
-  currentSound = name;
+function setInstrument(key){
+  INSTR = key;
+  const p = INSTRUMENTS[key] || INSTRUMENTS.piano;
+  mel.set({ oscillator: p.osc, envelope: p.env });
+  chord.set({ oscillator: { type: "triangle" }, envelope: { attack: 0.03, decay: 0.3, sustain: 0.7, release: 1.2 } });
+  chord.volume.value = -6;
 }
 
-// ================================================================
-// MUSIC THEORY
-// ================================================================
-const PENTA_SEMI = [0, 2, 4, 7, 9]; // C D E G A
-const ROOT_MIDI = 60;
-const NOTE_LABELS_FR = ["Do","Ré","Mi","Sol","La"];
-function melodyFreq(idx){
-  const midi = ROOT_MIDI + PENTA_SEMI[clamp(idx, 0, 4)];
-  return Tone.Frequency(midi, "midi").toFrequency();
+// ---------- music logic ----------
+const KEY_ROOTS = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+const SCALE_STEPS = { maj:[0,2,4,5,7,9,11], min:[0,2,3,5,7,8,10] };
+function midiToFreq(m){ return Tone.Frequency(m, "midi").toFrequency(); }
+function midiToName(m){ return Tone.Frequency(m, "midi").toNote(); }
+function melodyNotes(rk, md, oct){
+  const base = 12 * (oct+1) + (KEY_ROOTS[rk] || 7);
+  const steps = SCALE_STEPS[md] || SCALE_STEPS.maj;
+  return [0,2,4,5,6].map(i => midiToFreq(base + steps[i]));
 }
-function chordNotes(n){
-  n = clamp(n, 1, 5);
-  const roots = [0, 7, 5, 2, 9];
-  const base = ROOT_MIDI - 12 + roots[n-1];
-  return [ base, base + 4, base + 7 ].map(m => Tone.Frequency(m, "midi").toFrequency());
+function chordNotes(n, rk, md, oct){
+  const base = 12 * oct + (KEY_ROOTS[rk] || 7);
+  const degIdx = clamp(n-1, 0, 4);
+  const steps = SCALE_STEPS[md] || SCALE_STEPS.maj;
+  const root = base + steps[degIdx];
+  const third = root + (md === "maj" ? 4 : 3);
+  const fifth = root + 7;
+  return { notes: [midiToFreq(root), midiToFreq(third), midiToFreq(fifth)], symbol: midiToName(root).replace(/[0-9]/g,"") + (md==="maj"?"":"m") };
 }
-let MEL_ON = false, CHORD_ON = false, LAST_MEL = -1, LAST_CHORD = -1;
-function playMelody(idx){
-  if (!AUDIO_READY) return;
-  if (!MEL_ON || idx !== LAST_MEL){
-    try { mel.triggerAttack(melodyFreq(idx)); } catch(e){}
-    MEL_ON = true; LAST_MEL = idx;
-  }
-}
-function stopMelody(){
-  if (!AUDIO_READY) return;
-  if (MEL_ON){ try { mel.triggerRelease(); } catch(e){}; MEL_ON = false; LAST_MEL = -1; }
-}
-function playChord(n){
-  if (!AUDIO_READY) return;
-  if (!CHORD_ON || n !== LAST_CHORD){
-    if (CHORD_ON){ try { chord.releaseAll(); } catch(e){} }
-    try { chord.triggerAttack(chordNotes(n)); } catch(e){}
-    CHORD_ON = true; LAST_CHORD = n;
-  }
-}
-function stopChord(){
-  if (!AUDIO_READY) return;
-  if (CHORD_ON){ try { chord.releaseAll(); } catch(e){}; CHORD_ON = false; LAST_CHORD = -1; }
-}
+let MEL_ACTIVE = null, CHORD_ACTIVE = null;
 
-// ================================================================
-// HANDS
-// ================================================================
+// ---------- hands ----------
 let hands;
 async function initHands(){
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: CAM_FACING, width: { ideal: 960 }, height: { ideal: 720 } },
-      audio: false
-    });
-    video.srcObject = stream;
-    await video.play();
-  } catch (err){
-    showError("Caméra refusée. Autorise l'accès à la caméra dans les réglages du navigateur.");
-    throw err;
-  }
-  hands = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}` });
-  hands.setOptions({
-    maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5, selfieMode: true
-  });
+  hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}` });
+  hands.setOptions({ maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.55, minTrackingConfidence: 0.5, selfieMode: true });
   hands.onResults(r => latest = r);
-  async function pump(){
-    if (video.readyState >= 2){
-      try { await hands.send({ image: video }); } catch(e){}
-    }
-    requestAnimationFrame(pump);
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "user", width:{ ideal: 1280 }, height:{ ideal: 720 } },
+    audio: false
+  });
+  video.srcObject = stream;
+  await video.play();
+  async function loop(){
+    if (video.readyState >= 2) await hands.send({ image: video });
+    requestAnimationFrame(loop);
   }
-  pump();
+  loop();
+}
+
+const FINGERS = [
+  { name:"thumb",  mcp:2,  pip:3,  tip:4,  color:"#ffd166" },
+  { name:"index",  mcp:5,  pip:6,  tip:8,  color:"#44e0ff" },
+  { name:"middle", mcp:9,  pip:10, tip:12, color:"#ff2d7a" },
+  { name:"ring",   mcp:13, pip:14, tip:16, color:"#9cff6b" },
+  { name:"pinky",  mcp:17, pip:18, tip:20, color:"#c689ff" }
+];
+function detectExtended(lm){
+  const wrist = lm[0], out = [];
+  for (let i = 0; i < 5; i++){
+    const f = FINGERS[i];
+    const tip = lm[f.tip], pip = lm[f.pip], mcp = lm[f.mcp];
+    if (i === 0){
+      const palm = lm[9];
+      out.push(Math.hypot(tip.x-palm.x, tip.y-palm.y) > Math.hypot(mcp.x-palm.x, mcp.y-palm.y) * 1.15);
+    } else {
+      if (Math.hypot(tip.x-wrist.x, tip.y-wrist.y) < Math.hypot(pip.x-wrist.x, pip.y-wrist.y) * 1.05){ out.push(false); continue; }
+      const a = { x: pip.x-mcp.x, y: pip.y-mcp.y }, b = { x: tip.x-pip.x, y: tip.y-pip.y };
+      const la = Math.hypot(a.x,a.y) || 1e-6, lb = Math.hypot(b.x,b.y) || 1e-6;
+      out.push((a.x*b.x + a.y*b.y)/(la*lb) > 0.55);
+    }
+  }
+  return out;
 }
 
 function lmToPx(ux, uy){
-  // selfieMode:true + CSS scaleX(-1) → use ux as-is (both inversions combined cancel)
   const vw = video.videoWidth || 960, vh = video.videoHeight || 720;
-  const s = Math.max(W / vw, H / vh);
-  const dw = vw * s, dh = vh * s;
-  const ox = (W - dw) / 2, oy = (H - dh) / 2;
-  return { x: ox + ux * dw, y: oy + uy * dh };
-}
-function detectExtended(lm){
-  const palmX = lm[0].x;
-  const thumbExt = Math.abs(lm[4].x - palmX) > 0.1;
-  const fingers = [[8,6],[12,10],[16,14],[20,18]];
-  const ext = fingers.map(([tip, pip]) => (lm[pip].y - lm[tip].y) > 0.02);
-  return [thumbExt, ...ext];
+  const s = Math.max(W/vw, H/vh);
+  const dw = vw*s, dh = vh*s;
+  const ox = (W-dw)/2, oy = (H-dh)/2;
+  return { x: ox + ux*dw, y: oy + uy*dh };
 }
 
-// ================================================================
-// THREE.JS — env map + materials
-// ================================================================
-function buildEnv(){
-  const pmrem = new THREE.PMREMGenerator(renderer3D);
-  pmrem.compileEquirectangularShader();
-  const W2 = 1024, H2 = 512;
-  const c = document.createElement("canvas"); c.width = W2; c.height = H2;
-  const ctx = c.getContext("2d");
-  const sky = ctx.createLinearGradient(0, 0, 0, H2);
-  sky.addColorStop(0, "#06061a");
-  sky.addColorStop(0.5, "#242460");
-  sky.addColorStop(0.55, "#4a4a9e");
-  sky.addColorStop(0.65, "#1a1a3a");
-  sky.addColorStop(1, "#040408");
-  ctx.fillStyle = sky; ctx.fillRect(0, 0, W2, H2);
-  ctx.globalCompositeOperation = "lighter";
-  const spots = [
-    {x:200,y:140,r:200,c:"rgba(95,216,255,.6)"},
-    {x:520,y:70,r:180,c:"rgba(255,255,255,.8)"},
-    {x:820,y:150,r:200,c:"rgba(255,92,138,.55)"},
-    {x:400,y:380,r:240,c:"rgba(200,159,255,.5)"},
-    {x:760,y:400,r:220,c:"rgba(165,255,130,.4)"}
-  ];
-  for (const s of spots){
-    const g = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r);
-    g.addColorStop(0,s.c); g.addColorStop(1,"transparent");
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
-  }
-  const tex = new THREE.CanvasTexture(c);
-  tex.mapping = THREE.EquirectangularReflectionMapping;
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const env = pmrem.fromEquirectangular(tex).texture;
-  tex.dispose(); pmrem.dispose();
-  return env;
-}
-
-function initThree(){
-  renderer3D = new THREE.WebGLRenderer({ canvas: three, alpha: true, antialias: true, powerPreference: "high-performance" });
-  renderer3D.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer3D.setSize(W, H, false);
-  renderer3D.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer3D.toneMappingExposure = 1.1;
-  renderer3D.outputColorSpace = THREE.SRGBColorSpace;
-  scene3D = new THREE.Scene();
-  camera3D = new THREE.PerspectiveCamera(55, W/H, 0.1, 100);
-  camera3D.position.set(0, 0, 5);
-  envMap = buildEnv();
-  scene3D.environment = envMap;
-  scene3D.add(new THREE.AmbientLight(0xffffff, 0.4));
-  const key = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(3, 4, 5); scene3D.add(key);
-  const rim = new THREE.PointLight(0x5fd8ff, 1.4, 15); rim.position.set(-3, -2, 3); scene3D.add(rim);
-  const rim2 = new THREE.PointLight(0xff5c8a, 1.1, 15); rim2.position.set(3, 2, 3); scene3D.add(rim2);
-  sceneRoot = new THREE.Group();
-  scene3D.add(sceneRoot);
-}
-
-// ------------ objets à manipuler dans une seule main ------------
-// Chaque objet lévite au-dessus de la paume, taille proportionnelle à la main.
-// Poing fermé = tenir strict · ouvrir en lançant = throw · attraper à la volée.
-const OBJECTS = [
-  { key:"cube",     emoji:"🧊", name:"Cube",      baseScale:0.22 },
-  { key:"sphere",   emoji:"🔮", name:"Sphère",    baseScale:0.22 },
-  { key:"crystal",  emoji:"💎", name:"Cristal",   baseScale:0.24 },
-  { key:"heart",    emoji:"💗", name:"Cœur",      baseScale:0.22 },
-  { key:"star",     emoji:"⭐", name:"Étoile",    baseScale:0.26 },
-  { key:"donut",    emoji:"🍩", name:"Beignet",   baseScale:0.24 },
-  { key:"pyramid",  emoji:"🔺", name:"Pyramide",  baseScale:0.24 },
-  { key:"planet",   emoji:"🪐", name:"Planète",   baseScale:0.26 },
-  { key:"mercury",  emoji:"⚫", name:"Mercure",   baseScale:0.22 },
-  { key:"prism",    emoji:"🌈", name:"Prisme",    baseScale:0.24 }
-];
-
-let sceneObjs = [];       // dispose list
-let sceneState = {};      // per-object scratch
-
-// physics state for the one levitating object
-const PHY = {
-  pos: new THREE.Vector3(0, 0, 0),
-  vel: new THREE.Vector3(0, 0, 0),
-  scale: 1,
-  targetScale: 1,
-  state: "hover",            // "hover" | "held" | "thrown"
-  justThrown: 0,
-  trailPoints: [],
-  baseVerts: null            // for mercury deformation
-};
-
-// right-hand position history (world-space) for throw velocity
-const HAND_HIST = [];        // {x,y,z, time}
-const HAND_HIST_MAX = 6;
-
-function disposeScene(){
-  for (const o of sceneObjs){
-    sceneRoot.remove(o);
-    if (o.geometry) o.geometry.dispose();
-    if (o.material){
-      if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
-      else o.material.dispose();
-    }
-  }
-  sceneObjs = [];
-  sceneState = {};
-  PHY.baseVerts = null;
-}
-
-function matChrome(){
-  return new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, metalness: 1, roughness: 0.08,
-    envMapIntensity: 2.2, clearcoat: 1, clearcoatRoughness: 0.03
-  });
-}
-function matGlass(c){
-  return new THREE.MeshPhysicalMaterial({
-    color: c, metalness: 0, roughness: 0.05, transmission: 0.9, thickness: 1, ior: 1.5,
-    transparent: true, envMapIntensity: 1.8, attenuationDistance: 1.5, attenuationColor: c
-  });
-}
-function matGlow(c){
-  return new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.9, metalness: 0.4, roughness: 0.3 });
-}
-function matGem(c){
-  return new THREE.MeshPhysicalMaterial({
-    color: c, metalness: 0.1, roughness: 0.05,
-    transmission: 0.6, thickness: 0.6, ior: 2.4,
-    clearcoat: 1, envMapIntensity: 2.4, iridescence: 1, iridescenceIOR: 1.6
-  });
-}
-function matMetal(c){
-  return new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: 0.2, envMapIntensity: 1.8 });
-}
-
-// --- geometry helpers ---
-function heartGeometry(){
-  // extruded heart from a shape
-  const s = new THREE.Shape();
-  const x = 0, y = 0;
-  s.moveTo(x, y);
-  s.bezierCurveTo(x, y - 0.3, x - 0.5, y - 0.3, x - 0.5, y + 0.1);
-  s.bezierCurveTo(x - 0.5, y + 0.4, x - 0.2, y + 0.6, x, y + 0.75);
-  s.bezierCurveTo(x + 0.2, y + 0.6, x + 0.5, y + 0.4, x + 0.5, y + 0.1);
-  s.bezierCurveTo(x + 0.5, y - 0.3, x, y - 0.3, x, y);
-  const g = new THREE.ExtrudeGeometry(s, { depth: 0.2, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06, bevelSegments: 4, steps: 1 });
-  g.center();
-  return g;
-}
-function starGeometry(){
-  const s = new THREE.Shape();
-  const spikes = 5, outer = 0.5, inner = 0.22;
-  for (let i = 0; i < spikes * 2; i++){
-    const r = (i % 2 === 0) ? outer : inner;
-    const a = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
-    const px = Math.cos(a) * r, py = Math.sin(a) * r;
-    if (i === 0) s.moveTo(px, py); else s.lineTo(px, py);
-  }
-  s.closePath();
-  const g = new THREE.ExtrudeGeometry(s, { depth: 0.14, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 3, steps: 1 });
-  g.center();
-  return g;
-}
-
-function buildScene(kind){
-  disposeScene();
-  currentScene = kind;
-  const col = COLOR_OBJ.clone();
-  let mesh = null;
-
-  if (kind === "cube"){
-    const g = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-    mesh = new THREE.Mesh(g, matChrome());
-  } else if (kind === "sphere"){
-    const g = new THREE.SphereGeometry(0.5, 48, 36);
-    mesh = new THREE.Mesh(g, matGlass(col));
-    // inner glowing core
-    const core = new THREE.Mesh(new THREE.SphereGeometry(0.2, 20, 14), matGlow(col));
-    mesh.add(core);
-  } else if (kind === "crystal"){
-    const g = new THREE.OctahedronGeometry(0.55, 0);
-    g.scale(1, 1.8, 1);
-    mesh = new THREE.Mesh(g, matGem(col));
-  } else if (kind === "heart"){
-    const g = heartGeometry();
-    mesh = new THREE.Mesh(g, new THREE.MeshPhysicalMaterial({
-      color: 0xff5c8a, metalness: 0.3, roughness: 0.2, emissive: 0xff5c8a, emissiveIntensity: 0.25, envMapIntensity: 1.5, clearcoat: 1
-    }));
-  } else if (kind === "star"){
-    const g = starGeometry();
-    mesh = new THREE.Mesh(g, new THREE.MeshPhysicalMaterial({
-      color: 0xffcf6b, metalness: 1, roughness: 0.15, envMapIntensity: 2
-    }));
-  } else if (kind === "donut"){
-    const g = new THREE.TorusGeometry(0.42, 0.18, 24, 48);
-    mesh = new THREE.Mesh(g, matMetal(col));
-  } else if (kind === "pyramid"){
-    const g = new THREE.ConeGeometry(0.55, 0.9, 4);
-    mesh = new THREE.Mesh(g, matChrome());
-  } else if (kind === "planet"){
-    const g = new THREE.SphereGeometry(0.5, 48, 32);
-    mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
-      color: col, metalness: 0.3, roughness: 0.5, emissive: col.clone().multiplyScalar(0.15)
-    }));
-    // ring
-    const rg = new THREE.TorusGeometry(0.8, 0.03, 8, 48);
-    const rm = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
-    const ring = new THREE.Mesh(rg, rm);
-    ring.rotation.x = Math.PI * 0.42;
-    mesh.add(ring);
-  } else if (kind === "mercury"){
-    const g = new THREE.IcosahedronGeometry(0.5, 4);
-    PHY.baseVerts = g.attributes.position.array.slice();
-    mesh = new THREE.Mesh(g, matChrome());
-  } else if (kind === "prism"){
-    const g = new THREE.OctahedronGeometry(0.55, 0);
-    mesh = new THREE.Mesh(g, matGem(0xffffff));
-  }
-
-  if (mesh){
-    sceneRoot.add(mesh);
-    sceneObjs.push(mesh);
-    sceneState.mesh = mesh;
-    sceneState.baseScale = (OBJECTS.find(o => o.key === kind) || { baseScale: 0.22 }).baseScale;
-  }
-
-  // reset physics
-  PHY.pos.set(0, 0, 0);
-  PHY.vel.set(0, 0, 0);
-  PHY.state = "hover";
-  PHY.scale = PHY.targetScale = 1;
-  HAND_HIST.length = 0;
-  return;
-}
-
-// ---------- scene per-frame ----------
-function updateScene(t, dt, hand){
-  const mesh = sceneState.mesh;
-  if (!mesh) return;
-
-  // ---- hand -> world anchor above palm ----
-  let anchor = null, palmWidthN = 0.15, handOpen = false, handVisible = false;
-  if (hand){
-    handVisible = true;
-    const z0 = camera3D.position.z;
-    const vHeight = 2 * Math.tan((camera3D.fov * Math.PI / 180) / 2) * z0;
-    const vWidth = vHeight * camera3D.aspect;
-    const wx = (hand.palmUx - 0.5) * vWidth;
-    const wy = (0.5 - hand.palmUy) * vHeight;
-    anchor = new THREE.Vector3(wx, wy + 0.5, 0);
-    palmWidthN = hand.palmWidthN;
-    handOpen = hand.extCount >= 3;
-    HAND_HIST.push({ x: wx, y: wy, z: 0, time: performance.now() });
-    while (HAND_HIST.length > HAND_HIST_MAX) HAND_HIST.shift();
-  }
-
-  // ---- hand velocity ----
-  let handVel = new THREE.Vector3(0, 0, 0);
-  if (HAND_HIST.length >= 2){
-    const first = HAND_HIST[0], last = HAND_HIST[HAND_HIST.length - 1];
-    const dts = Math.max(0.001, (last.time - first.time) * 0.001);
-    handVel.set((last.x - first.x) / dts, (last.y - first.y) / dts, 0);
-  }
-
-  // ---- scale from palm width ----
-  const REF_W = 0.18;
-  const palmRatio = clamp(palmWidthN / REF_W, 0.35, 2.2);
-  PHY.targetScale = sceneState.baseScale * palmRatio * 6.0;
-  PHY.scale += (PHY.targetScale - PHY.scale) * 0.18;
-  mesh.scale.setScalar(PHY.scale);
-
-  // ---- state machine ----
-  if (PHY.state === "hover"){
-    if (handVisible && anchor){
-      const bob = Math.sin(t * 2.2) * 0.04;
-      const target = anchor.clone(); target.y += bob;
-      PHY.pos.lerp(target, 0.22);
-      if (!handOpen && hand.extCount <= 1){
-        PHY.state = "held";
-      }
-    }
-  } else if (PHY.state === "held"){
-    if (handVisible && anchor){
-      const target = anchor.clone(); target.y -= 0.25;
-      PHY.pos.lerp(target, 0.4);
-      if (handOpen){
-        if (handVel.length() > 1.2){
-          PHY.vel.copy(handVel).multiplyScalar(1.6);
-          PHY.vel.z = 0;
-          PHY.state = "thrown";
-          PHY.justThrown = 0.5;
-        } else {
-          PHY.state = "hover";
-        }
-      }
-    } else {
-      PHY.state = "hover";
-    }
-  } else if (PHY.state === "thrown"){
-    PHY.vel.y -= 4.5 * dt;
-    PHY.vel.multiplyScalar(0.99);
-    PHY.pos.addScaledVector(PHY.vel, dt);
-    PHY.justThrown = Math.max(0, PHY.justThrown - dt);
-
-    if (handVisible && anchor && handOpen && PHY.justThrown === 0){
-      const d = PHY.pos.distanceTo(anchor);
-      if (d < 0.8 * palmRatio){
-        PHY.state = "hover";
-        PHY.vel.set(0, 0, 0);
-      }
-    }
-
-    if (PHY.pos.y < -3 || Math.abs(PHY.pos.x) > 6){
-      if (handVisible && anchor){
-        PHY.pos.copy(anchor);
-      } else {
-        PHY.pos.set(0, 0, 0);
-      }
-      PHY.vel.set(0, 0, 0);
-      PHY.state = "hover";
-    }
-  }
-
-  mesh.position.copy(PHY.pos);
-
-  // ---- rotation style per state ----
-  const k = currentScene;
-  if (PHY.state === "thrown"){
-    mesh.rotation.x += 2.5 * dt;
-    mesh.rotation.y += 3.1 * dt;
-    mesh.rotation.z += 1.7 * dt;
-  } else if (PHY.state === "held"){
-    mesh.rotation.x = Math.sin(t * 0.4) * 0.1;
-    mesh.rotation.y += 0.5 * dt;
-  } else {
-    mesh.rotation.y += ((k === "planet" || k === "donut") ? 0.8 : 0.4) * dt;
-    mesh.rotation.x = Math.sin(t * 0.6) * 0.1;
-  }
-
-  // mercury deform
-  if (k === "mercury" && PHY.baseVerts){
-    const pos = mesh.geometry.attributes.position;
-    const base = PHY.baseVerts;
-    const amp = (PHY.state === "thrown") ? 0.18 : 0.08;
-    for (let i = 0; i < pos.count; i++){
-      const bx = base[i*3], by = base[i*3+1], bz = base[i*3+2];
-      const n = Math.sin(bx*3 + t*2) * Math.cos(by*3 + t*1.3) * Math.sin(bz*3 + t*0.9);
-      const s = 1 + n * amp;
-      pos.array[i*3  ] = bx * s;
-      pos.array[i*3+1] = by * s;
-      pos.array[i*3+2] = bz * s;
-    }
-    pos.needsUpdate = true;
-    mesh.geometry.computeVertexNormals();
-  }
-
-  // dynamic caption
-  const cap = document.getElementById("caption");
-  if (cap){
-    if (!handVisible) cap.textContent = "montre ta main a la camera";
-    else if (PHY.state === "hover") cap.textContent = "ferme le poing pour saisir";
-    else if (PHY.state === "held")  cap.textContent = "ouvre la main pour lacher - lance d'un coup pour jeter";
-    else if (PHY.state === "thrown") cap.textContent = "approche la main ouverte pour rattraper";
-  }
-}
-
-// ================================================================
-// RENDER
-// ================================================================
-let LAST = performance.now();
-function renderFrame(){
-  const now = performance.now();
-  const dt = Math.min(0.05, (now - LAST) * 0.001);
-  LAST = now;
-  const t = now * 0.001;
-
+function drawBones(showBones){
+  g.clearRect(0, 0, W, H);
+  if (!showBones) return;
   const list = latest.multiHandLandmarks || [];
   const handed = latest.multiHandedness || [];
-  fxCtx.clearRect(0, 0, W, H);
-  bonesCtx.clearRect(0, 0, W, H);
-
-  // bones overlay — thin, elegant
-  const CONN = [[0,4],[0,5],[5,8],[0,9],[9,12],[0,13],[13,16],[0,17],[17,20],[5,9],[9,13],[13,17]];
-  for (let i = 0; i < list.length; i++){
-    const lm = list[i];
-    const col = (handed[i]?.label === "Right") ? "rgba(95,216,255,.9)" : "rgba(255,92,138,.9)";
-    bonesCtx.strokeStyle = col;
-    bonesCtx.lineWidth = 1.2;
-    for (const [a,b] of CONN){
-      const A = lmToPx(lm[a].x, lm[a].y);
-      const B = lmToPx(lm[b].x, lm[b].y);
-      bonesCtx.beginPath(); bonesCtx.moveTo(A.x, A.y); bonesCtx.lineTo(B.x, B.y); bonesCtx.stroke();
+  const EDGES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+  for (let hi = 0; hi < list.length; hi++){
+    const lm = list[hi];
+    const label = handed[hi]?.label || (hi === 0 ? "Right" : "Left");
+    const col = label === "Right" ? "#44e0ff" : "#ff2d7a";
+    g.strokeStyle = col; g.lineWidth = 2.5; g.lineCap = "round";
+    for (const [a,b] of EDGES){
+      const A = lmToPx(lm[a].x, lm[a].y), B = lmToPx(lm[b].x, lm[b].y);
+      g.beginPath(); g.moveTo(A.x, A.y); g.lineTo(B.x, B.y); g.stroke();
     }
-    bonesCtx.fillStyle = "rgba(255,255,255,.95)";
-    for (let k = 0; k < 21; k++){
-      const p = lmToPx(lm[k].x, lm[k].y);
-      bonesCtx.beginPath(); bonesCtx.arc(p.x, p.y, 2.2, 0, Math.PI*2); bonesCtx.fill();
+    g.fillStyle = col;
+    for (let i = 0; i < lm.length; i++){
+      const p = lmToPx(lm[i].x, lm[i].y);
+      g.beginPath(); g.arc(p.x, p.y, i === 0 ? 5 : 3.5, 0, Math.PI*2); g.fill();
     }
   }
+}
 
-  // summarize pinches
-  const pinches = [];
+// ---------- three.js scene for sense (levitation objects, 1-2 hands) ----------
+const OBJECTS = [
+  { key:"cube",    label:"Cube",     emoji:"🧊", baseScale: 0.22 },
+  { key:"sphere",  label:"Sphère",   emoji:"🔵", baseScale: 0.26 },
+  { key:"crystal", label:"Cristal",  emoji:"💎", baseScale: 0.24 },
+  { key:"heart",   label:"Cœur",     emoji:"❤️", baseScale: 0.28 },
+  { key:"star",    label:"Étoile",   emoji:"⭐", baseScale: 0.30 },
+  { key:"donut",   label:"Donut",    emoji:"🍩", baseScale: 0.30 },
+  { key:"pyramid", label:"Pyramide", emoji:"🔺", baseScale: 0.26 },
+  { key:"planet",  label:"Planète",  emoji:"🪐", baseScale: 0.28 },
+  { key:"mercury", label:"Mercure",  emoji:"🪩", baseScale: 0.24 },
+  { key:"prism",   label:"Prisme",   emoji:"🔷", baseScale: 0.24 }
+];
+const HAND_HIST_MAX = 8;
+const HAND_HIST_R = [], HAND_HIST_L = [];
+
+const PHY_R = { pos: null, vel: null, scale: 0.6, targetScale: 1, state: "hover", mesh: null, baseScale: 0.22, justThrown: 0, baseVerts: null };
+const PHY_L = { pos: null, vel: null, scale: 0.6, targetScale: 1, state: "hover", mesh: null, baseScale: 0.22, justThrown: 0, baseVerts: null };
+
+function initThree(){
+  const T = THREE;
+  renderer3D = new T.WebGLRenderer({ canvas: threeC, antialias: true, alpha: true });
+  renderer3D.setPixelRatio(DPR);
+  renderer3D.setSize(W, H, false);
+  renderer3D.setClearColor(0x000000, 0);
+  renderer3D.toneMapping = T.ACESFilmicToneMapping;
+  renderer3D.toneMappingExposure = 1.1;
+  renderer3D.outputColorSpace = T.SRGBColorSpace;
+
+  scene3D = new T.Scene();
+  camera3D = new T.PerspectiveCamera(50, W/H, 0.1, 100);
+  camera3D.position.set(0, 0, 4);
+  sceneRoot = new T.Group(); scene3D.add(sceneRoot);
+
+  envMap = buildEnv();
+  scene3D.environment = envMap;
+  scene3D.add(new T.AmbientLight(0xffffff, 0.35));
+  const key = new T.DirectionalLight(0xffffff, 1.1); key.position.set(3,4,5); scene3D.add(key);
+  const rim = new T.PointLight(0xff4a9c, 1.2, 12); rim.position.set(-3,-2,3); scene3D.add(rim);
+  const fill = new T.PointLight(0x44e0ff, 1.0, 12); fill.position.set(3,-2,3); scene3D.add(fill);
+
+  PHY_R.pos = new T.Vector3(0,0,0); PHY_R.vel = new T.Vector3();
+  PHY_L.pos = new T.Vector3(0,0,0); PHY_L.vel = new T.Vector3();
+
+  rebuildMesh(PHY_R, OBJ_KEY, 0x44e0ff);
+  rebuildMesh(PHY_L, OBJ_KEY, 0xff2d7a);
+}
+function buildEnv(){
+  const pm = new THREE.PMREMGenerator(renderer3D);
+  pm.compileEquirectangularShader();
+  const c = document.createElement("canvas"); c.width = 512; c.height = 256;
+  const ctx = c.getContext("2d");
+  const grad = ctx.createLinearGradient(0,0,0,256);
+  grad.addColorStop(0, "#0a0a16"); grad.addColorStop(0.5, "#223044"); grad.addColorStop(1, "#5a6a80");
+  ctx.fillStyle = grad; ctx.fillRect(0,0,512,256);
+  ctx.fillStyle = "rgba(255,70,140,.65)"; ctx.beginPath(); ctx.arc(140, 100, 70, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "rgba(60,180,255,.65)"; ctx.beginPath(); ctx.arc(380, 110, 70, 0, Math.PI*2); ctx.fill();
+  const t = new THREE.CanvasTexture(c);
+  t.mapping = THREE.EquirectangularReflectionMapping;
+  const em = pm.fromEquirectangular(t).texture;
+  pm.dispose(); t.dispose();
+  return em;
+}
+function rebuildMesh(phy, kind, accentHex){
+  const T = THREE;
+  if (phy.mesh){ sceneRoot.remove(phy.mesh); phy.mesh.geometry && phy.mesh.geometry.dispose(); phy.mesh.material && phy.mesh.material.dispose(); phy.mesh = null; }
+  let geo;
+  if (kind === "cube")        geo = new T.BoxGeometry(1,1,1);
+  else if (kind === "sphere") geo = new T.SphereGeometry(0.7, 42, 32);
+  else if (kind === "crystal")geo = new T.OctahedronGeometry(0.85, 2);
+  else if (kind === "heart"){
+    const s = new T.Shape();
+    s.moveTo(0, 0.5); s.bezierCurveTo(0,0.9,0.6,0.9,0.6,0.5); s.bezierCurveTo(0.6,0.2,0,0.1,0,-0.2);
+    s.bezierCurveTo(0,0.1,-0.6,0.2,-0.6,0.5); s.bezierCurveTo(-0.6,0.9,0,0.9,0,0.5);
+    geo = new T.ExtrudeGeometry(s, { depth: 0.3, bevelEnabled: true, bevelSize: 0.05, bevelThickness: 0.05 });
+    geo.center();
+  }
+  else if (kind === "star"){
+    const s = new T.Shape();
+    for (let i=0;i<10;i++){ const a=i*Math.PI/5, r=i%2===0?0.9:0.38; s.lineTo(Math.cos(a)*r, Math.sin(a)*r); }
+    s.closePath();
+    geo = new T.ExtrudeGeometry(s, { depth: 0.2, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03 });
+    geo.center();
+  }
+  else if (kind === "donut")  geo = new T.TorusGeometry(0.55, 0.22, 24, 60);
+  else if (kind === "pyramid")geo = new T.TetrahedronGeometry(0.85, 0);
+  else if (kind === "planet") geo = new T.SphereGeometry(0.75, 40, 28);
+  else if (kind === "mercury")geo = new T.IcosahedronGeometry(0.7, 5);
+  else if (kind === "prism")  geo = new T.CylinderGeometry(0.0, 0.7, 1.0, 3);
+  else                        geo = new T.BoxGeometry(1,1,1);
+
+  let mat;
+  if (kind === "mercury") mat = new T.MeshPhysicalMaterial({ color: 0xc0c7d0, metalness: 1, roughness: 0.05, clearcoat: 1 });
+  else if (kind === "planet") mat = new T.MeshPhysicalMaterial({ color: accentHex, metalness: 0.5, roughness: 0.3, clearcoat: 0.8 });
+  else if (kind === "crystal") mat = new T.MeshPhysicalMaterial({ color: accentHex, metalness: 0.3, roughness: 0.05, transmission: 0.7, thickness: 0.6, clearcoat: 1 });
+  else mat = new T.MeshPhysicalMaterial({ color: accentHex, metalness: 0.4, roughness: 0.25, clearcoat: 0.8 });
+
+  phy.mesh = new T.Mesh(geo, mat);
+  phy.mesh.scale.setScalar(0.6);
+  if (kind === "mercury") phy.baseVerts = new Float32Array(geo.attributes.position.array);
+  else phy.baseVerts = null;
+  const obj = OBJECTS.find(o => o.key === kind);
+  phy.baseScale = obj ? obj.baseScale : 0.22;
+  sceneRoot.add(phy.mesh);
+}
+function setObjKey(key){
+  OBJ_KEY = key;
+  rebuildMesh(PHY_R, key, 0x44e0ff);
+  rebuildMesh(PHY_L, key, 0xff2d7a);
+}
+
+function updateSense(dt, now){
+  const list = latest.multiHandLandmarks || [];
+  const handed = latest.multiHandedness || [];
+  let rightHand = null, leftHand = null;
   for (let i = 0; i < list.length; i++){
-    const lm = list[i];
     const label = handed[i]?.label || (i === 0 ? "Right" : "Left");
-    const palmPx = lmToPx((lm[0].x + lm[9].x)/2, (lm[0].y + lm[9].y)/2);
-    pinches.push({
-      label, lm, palmPx,
-      ndcX: ((palmPx.x / W) * 2 - 1),
-      ndcY: -((palmPx.y / H) * 2 - 1),
-      ext: detectExtended(lm)
-    });
+    if (label === "Right") rightHand = list[i]; else leftHand = list[i];
   }
+  tickPhysics(PHY_R, rightHand, dt, now, HAND_HIST_R);
+  tickPhysics(PHY_L, leftHand,  dt, now, HAND_HIST_L);
+  renderer3D.render(scene3D, camera3D);
+}
+function tickPhysics(phy, hand, dt, now, hist){
+  if (!phy.mesh) return;
+  // world anchor above palm (lm 9 — middle base)
+  let anchor = null, palmWidthN = 0.15, handOpen = false, extCount = 0;
+  if (hand){
+    const z0 = camera3D.position.z;
+    const vH = 2 * Math.tan((camera3D.fov * Math.PI / 180) / 2) * z0;
+    const vW = vH * camera3D.aspect;
+    const palmX = hand[9].x, palmY = hand[9].y;
+    const wx = (palmX - 0.5) * vW;
+    const wy = (0.5 - palmY) * vH;
+    anchor = new THREE.Vector3(wx, wy + 0.4, 0);
+    palmWidthN = Math.hypot(hand[5].x - hand[17].x, hand[5].y - hand[17].y);
+    const ext = detectExtended(hand);
+    extCount = ext.filter(Boolean).length;
+    handOpen = extCount >= 3;
+    hist.push({ x: wx, y: wy, time: now });
+    while (hist.length > HAND_HIST_MAX) hist.shift();
+  }
+
+  // velocity
+  let handVel = new THREE.Vector3();
+  if (hist.length >= 2){
+    const f = hist[0], l = hist[hist.length-1];
+    const dts = Math.max(0.001, (l.time - f.time) * 0.001);
+    handVel.set((l.x - f.x)/dts, (l.y - f.y)/dts, 0);
+  }
+
+  const REF_W = 0.18;
+  const palmRatio = clamp(palmWidthN / REF_W, 0.35, 2.2);
+  phy.targetScale = phy.baseScale * palmRatio * 5.5;
+  phy.scale += (phy.targetScale - phy.scale) * 0.18;
+  phy.mesh.scale.setScalar(phy.scale);
+
+  if (phy.state === "hover"){
+    if (hand && anchor){
+      const bob = Math.sin(now * 0.0022) * 0.04;
+      const target = anchor.clone(); target.y += bob;
+      phy.pos.lerp(target, 0.22);
+      if (!handOpen && extCount <= 1) phy.state = "held";
+    }
+  } else if (phy.state === "held"){
+    if (hand && anchor){
+      const target = anchor.clone(); target.y -= 0.25;
+      phy.pos.lerp(target, 0.4);
+      if (handOpen){
+        if (handVel.length() > 1.1){
+          phy.vel.copy(handVel).multiplyScalar(1.6); phy.vel.z = 0;
+          phy.state = "thrown"; phy.justThrown = 0.5;
+        } else phy.state = "hover";
+      }
+    } else phy.state = "hover";
+  } else if (phy.state === "thrown"){
+    phy.vel.y -= 4.5 * dt;
+    phy.vel.multiplyScalar(0.99);
+    phy.pos.addScaledVector(phy.vel, dt);
+    phy.justThrown = Math.max(0, phy.justThrown - dt);
+    if (hand && anchor && handOpen && phy.justThrown === 0){
+      if (phy.pos.distanceTo(anchor) < 0.8 * palmRatio){ phy.state = "hover"; phy.vel.set(0,0,0); }
+    }
+    if (phy.pos.y < -3 || Math.abs(phy.pos.x) > 6){
+      if (hand && anchor) phy.pos.copy(anchor); else phy.pos.set(0,0,0);
+      phy.vel.set(0,0,0); phy.state = "hover";
+    }
+  }
+  phy.mesh.position.copy(phy.pos);
+
+  if (phy.state === "thrown"){ phy.mesh.rotation.x += 2.5*dt; phy.mesh.rotation.y += 3.1*dt; phy.mesh.rotation.z += 1.7*dt; }
+  else if (phy.state === "held"){ phy.mesh.rotation.x = Math.sin(now*0.0004)*0.1; phy.mesh.rotation.y += 0.5*dt; }
+  else { phy.mesh.rotation.y += 0.5*dt; phy.mesh.rotation.x = Math.sin(now*0.0006)*0.1; }
+
+  if (OBJ_KEY === "mercury" && phy.baseVerts){
+    const pos = phy.mesh.geometry.attributes.position, base = phy.baseVerts;
+    const amp = (phy.state === "thrown") ? 0.18 : 0.08;
+    const t = now * 0.002;
+    for (let i = 0; i < pos.count; i++){
+      const bx=base[i*3], by=base[i*3+1], bz=base[i*3+2];
+      const n = Math.sin(bx*3+t*2)*Math.cos(by*3+t*1.3)*Math.sin(bz*3+t*0.9);
+      const s = 1 + n * amp;
+      pos.array[i*3  ] = bx*s; pos.array[i*3+1] = by*s; pos.array[i*3+2] = bz*s;
+    }
+    pos.needsUpdate = true; phy.mesh.geometry.computeVertexNormals();
+  }
+}
+
+// ---------- FLUX (GPU particles, 2-hand attractors) ----------
+class OneEuro{
+  constructor(minCut=1.0, beta=0.08, dCut=1.0){ this.minCut=minCut; this.beta=beta; this.dCut=dCut; this.xPrev=null; this.dxPrev=0; this.tPrev=0; }
+  _alpha(c,dt){ const tau=1/(2*Math.PI*c); return 1/(1+tau/dt); }
+  filter(x,t){ if (this.xPrev===null){ this.xPrev=x; this.tPrev=t; return x; }
+    const dt=Math.max(1e-3, t-this.tPrev);
+    const dx=(x-this.xPrev)/dt;
+    const aD=this._alpha(this.dCut, dt); const edx=aD*dx+(1-aD)*this.dxPrev;
+    const cut=this.minCut+this.beta*Math.abs(edx);
+    const a=this._alpha(cut, dt); const y=a*x+(1-a)*this.xPrev;
+    this.xPrev=y; this.dxPrev=edx; this.tPrev=t; return y; }
+  reset(){ this.xPrev=null; this.dxPrev=0; this.tPrev=0; }
+}
+
+const FLUX = {
+  ready: false, N: 14000,
+  scn: null, cam: null, pts: null, ptsMat: null, orthoCam: null, quad: null,
+  sceneRT: null, trailA: null, trailB: null, brightRT: null, bloomH: null, bloomV: null,
+  mFade: null, mBright: null, mBlurH: null, mBlurV: null, mFinal: null,
+  attrs: null, filtersR: [], filtersL: [], hue: 0.58, uHandOn: 0, uBurst: 0, uFist: 0,
+
+  init(){
+    if (this.ready) return;
+    const T = THREE;
+    this.scn = new T.Scene();
+    this.cam = new T.PerspectiveCamera(60, W/Math.max(1,H), 0.1, 50);
+    this.cam.position.set(0,0,4);
+    this.orthoCam = new T.OrthographicCamera(-1,1,1,-1,0,1);
+    this.quad = new T.Mesh(new T.PlaneGeometry(2,2), new T.MeshBasicMaterial());
+    for (let i=0;i<42;i++){ this.filtersR.push(new OneEuro(1.2, 0.06)); this.filtersL.push(new OneEuro(1.2, 0.06)); }
+    this.attrs = [];
+    for (let i=0;i<6;i++) this.attrs.push(new T.Vector3());
+    // 6 attractors = 3 per hand (palm + index + thumb); unused ones stay at origin
+
+    const N = this.N;
+    const geo = new T.BufferGeometry();
+    const pos = new Float32Array(N*3), seed = new Float32Array(N*4);
+    for (let i=0;i<N;i++){ seed[i*4]=Math.random(); seed[i*4+1]=Math.random(); seed[i*4+2]=Math.random(); seed[i*4+3]=Math.random(); }
+    geo.setAttribute("position", new T.BufferAttribute(pos, 3));
+    geo.setAttribute("aSeed", new T.BufferAttribute(seed, 4));
+    geo.boundingSphere = new T.Sphere(new T.Vector3(), 20);
+
+    const vs = `
+      attribute vec4 aSeed;
+      uniform float uTime, uDPR, uHandOn, uBurst, uFist, uHue;
+      uniform vec3 uAttr[6];
+      uniform float uOrbit; uniform vec2 uSpread;
+      uniform float uDriftAmp, uAttrStrength, uHueBase, uHueSpread, uZSpread;
+      varying vec3 vCol; varying float vA;
+      vec3 hash3(vec3 p){ p=fract(p*vec3(.1031,.103,.0973)); p+=dot(p,p.yxz+33.33); return fract((p.xxy+p.yxx)*p.zyx); }
+      float noise(vec3 p){
+        vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+        float n000=hash3(i).x, n100=hash3(i+vec3(1,0,0)).x, n010=hash3(i+vec3(0,1,0)).x, n110=hash3(i+vec3(1,1,0)).x;
+        float n001=hash3(i+vec3(0,0,1)).x, n101=hash3(i+vec3(1,0,1)).x, n011=hash3(i+vec3(0,1,1)).x, n111=hash3(i+vec3(1,1,1)).x;
+        float nx00=mix(n000,n100,f.x), nx10=mix(n010,n110,f.x), nx01=mix(n001,n101,f.x), nx11=mix(n011,n111,f.x);
+        return mix(mix(nx00,nx10,f.y), mix(nx01,nx11,f.y), f.z);
+      }
+      void main(){
+        float life = fract(aSeed.w + uTime*0.05);
+        vA = smoothstep(0.,0.15,life) * smoothstep(1.,0.85,life);
+        float arm = floor(aSeed.x * 3.0);
+        float ang = aSeed.y*6.2831 + uTime*(0.18 + aSeed.z*0.1) + arm*2.09;
+        float rad = uSpread.x * pow(aSeed.z, 0.9) + aSeed.x*0.3;
+        vec3 orbit = vec3(cos(ang)*rad, sin(ang)*rad*0.82, (aSeed.x-0.5)*uZSpread);
+        float fx = (aSeed.y-0.5)*uSpread.x*2.0 + sin(uTime + aSeed.x*6.283)*0.5;
+        float fy = (aSeed.z-0.5)*uSpread.y*2.0;
+        float fz = (aSeed.x-0.5)*uZSpread;
+        vec3 flow = vec3(fx, fy, fz);
+        vec3 p = mix(flow, orbit, uOrbit);
+        float amp = uDriftAmp + uBurst*0.6;
+        p.x += (noise(p*1.4 + uTime*0.12)-0.5) * amp;
+        p.y += (noise(p.yzx*1.6 + uTime*0.09)-0.5) * amp;
+        p.z += (noise(p.zxy*1.2 + uTime*0.07)-0.5) * amp*0.5;
+        for (int k=0;k<6;k++){
+          vec3 d = uAttr[k] - p;
+          float r2 = max(0.35, dot(d,d));
+          float g = (k==0 || k==3) ? 0.6 : 0.18;
+          p += d/r2 * uHandOn * g * uAttrStrength * (0.7 + uBurst*1.6);
+        }
+        p += (-p) * uFist * 0.15;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        float sz = 0.55 + aSeed.x*0.9 + uBurst*1.0;
+        gl_PointSize = sz * uDPR * (240./max(0.1,-mv.z));
+        float hue = fract(uHueBase + uHue*0.1 + aSeed.y*uHueSpread);
+        vec3 base = 0.5 + 0.5*cos(6.2831*(vec3(hue) + vec3(0,0.33,0.66)));
+        vCol = mix(base, vec3(1,0.75,0.42), uBurst*0.7);
+      }
+    `;
+    const fs = `
+      varying vec3 vCol; varying float vA;
+      void main(){
+        vec2 uv = gl_PointCoord - 0.5;
+        float d = length(uv);
+        if (d > 0.5) discard;
+        float a = smoothstep(0.5,0.0,d); a *= a;
+        gl_FragColor = vec4(vCol * a * 0.5, a * vA * 0.6);
+      }
+    `;
+    this.ptsMat = new T.ShaderMaterial({
+      vertexShader: vs, fragmentShader: fs,
+      uniforms:{
+        uTime:{value:0}, uDPR:{value:Math.min(window.devicePixelRatio||1,2)},
+        uHandOn:{value:0}, uBurst:{value:0}, uFist:{value:0}, uHue:{value:this.hue},
+        uAttr:{value:this.attrs},
+        uOrbit:{value:1.0}, uSpread:{value:new T.Vector2(2.8,2.3)},
+        uDriftAmp:{value:0.6}, uAttrStrength:{value:1.0},
+        uHueBase:{value:0.58}, uHueSpread:{value:0.35}, uZSpread:{value:0.5}
+      },
+      transparent:true, depthTest:false, depthWrite:false, blending:T.AdditiveBlending
+    });
+    this.pts = new T.Points(geo, this.ptsMat); this.pts.frustumCulled = false; this.scn.add(this.pts);
+    this._buildRTs(); this._buildPostShaders();
+    this.ready = true; FLUX_READY = true;
+    this.setScene("galaxy");
+  },
+
+  _buildRTs(){
+    const T = THREE;
+    const dpr = Math.min(window.devicePixelRatio||1,2);
+    const w = Math.max(2, Math.floor(W*dpr)), h = Math.max(2, Math.floor(H*dpr));
+    const hw = Math.max(2, w>>1), hh = Math.max(2, h>>1);
+    const qw = Math.max(2, hw>>1), qh = Math.max(2, hh>>1);
+    const opts = { minFilter:T.LinearFilter, magFilter:T.LinearFilter, type:T.UnsignedByteType, format:T.RGBAFormat };
+    for (const k of ["sceneRT","trailA","trailB","brightRT","bloomH","bloomV"]) if (this[k]) this[k].dispose();
+    this.sceneRT  = new T.WebGLRenderTarget(w, h, opts);
+    this.trailA   = new T.WebGLRenderTarget(w, h, opts);
+    this.trailB   = new T.WebGLRenderTarget(w, h, opts);
+    this.brightRT = new T.WebGLRenderTarget(hw, hh, opts);
+    this.bloomH   = new T.WebGLRenderTarget(qw, qh, opts);
+    this.bloomV   = new T.WebGLRenderTarget(qw, qh, opts);
+  },
+
+  _buildPostShaders(){
+    const T = THREE;
+    const vsQ = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+    this.mFade = new T.ShaderMaterial({
+      uniforms:{ tPrev:{value:null}, tScene:{value:null}, uDecay:{value:.905}, uSwirl:{value:.0018} },
+      vertexShader: vsQ,
+      fragmentShader:`varying vec2 vUv; uniform sampler2D tPrev, tScene; uniform float uDecay, uSwirl;
+        void main(){ vec2 d=vUv-0.5; float r=length(d); float ang=uSwirl*(0.3+r*2.0);
+          float ca=cos(ang), sa=sin(ang); vec2 rot=vec2(ca*d.x - sa*d.y, sa*d.x + ca*d.y);
+          vec2 sh = 0.5 + rot + d*0.004;
+          vec3 prev = texture2D(tPrev, sh).rgb * uDecay;
+          vec3 cur  = texture2D(tScene, vUv).rgb;
+          gl_FragColor = vec4(max(prev, cur), 1.0);
+        }`,
+      depthTest:false, depthWrite:false
+    });
+    this.mBright = new T.ShaderMaterial({
+      uniforms:{ tSrc:{value:null}, uTh:{value:.88} }, vertexShader: vsQ,
+      fragmentShader:`varying vec2 vUv; uniform sampler2D tSrc; uniform float uTh;
+        void main(){ vec3 c=texture2D(tSrc, vUv).rgb; float b=max(max(c.r,c.g),c.b);
+          float m = smoothstep(uTh, uTh+0.25, b);
+          gl_FragColor = vec4(c * m * 0.6, 1.0); }`
+    });
+    const gauss = `varying vec2 vUv; uniform sampler2D tSrc; uniform vec2 uDir;
+      void main(){ vec3 s = vec3(0.0);
+        s += texture2D(tSrc, vUv).rgb * 0.227027;
+        s += texture2D(tSrc, vUv + uDir*1.3846).rgb * 0.316216;
+        s += texture2D(tSrc, vUv - uDir*1.3846).rgb * 0.316216;
+        s += texture2D(tSrc, vUv + uDir*3.2307).rgb * 0.070270;
+        s += texture2D(tSrc, vUv - uDir*3.2307).rgb * 0.070270;
+        gl_FragColor = vec4(s, 1.0);
+      }`;
+    this.mBlurH = new T.ShaderMaterial({ uniforms:{ tSrc:{value:null}, uDir:{value:new T.Vector2(1,0)} }, vertexShader: vsQ, fragmentShader: gauss });
+    this.mBlurV = new T.ShaderMaterial({ uniforms:{ tSrc:{value:null}, uDir:{value:new T.Vector2(0,1)} }, vertexShader: vsQ, fragmentShader: gauss });
+    this.mFinal = new T.ShaderMaterial({
+      uniforms:{ tTrail:{value:null}, tBloom:{value:null}, uChroma:{value:.003}, uTime:{value:0}, uGain:{value:1.35} },
+      vertexShader: vsQ,
+      fragmentShader:`varying vec2 vUv; uniform sampler2D tTrail, tBloom; uniform float uChroma, uTime, uGain;
+        void main(){ vec2 d = vUv - 0.5;
+          float r = texture2D(tTrail, vUv + d*uChroma).r + texture2D(tBloom, vUv + d*uChroma).r;
+          float g = texture2D(tTrail, vUv).g + texture2D(tBloom, vUv).g;
+          float b = texture2D(tTrail, vUv - d*uChroma).b + texture2D(tBloom, vUv - d*uChroma).b;
+          vec3 col = vec3(r,g,b) * uGain;
+          col = col / (1.0 + col); col = pow(col, vec3(0.88));
+          float grain = fract(sin(dot(vUv*1024.0 + uTime, vec2(12.9898, 78.233)))*43758.5453);
+          col += (grain - 0.5) * 0.02;
+          float v = smoothstep(1.2, 0.3, length(d)*2.0);
+          col *= v;
+          gl_FragColor = vec4(col, 1.0);
+        }`
+    });
+  },
+
+  PRESETS:{
+    galaxy:{ orbit:1.0, spread:[2.8,2.3], drift:0.6, attr:1.0, hueBase:0.58, hueSpread:0.35, zSpread:0.5, decay:0.908, swirl:0.0014, chroma:0.003, bloomTh:0.88, gain:1.35 },
+    aurora:{ orbit:0.0, spread:[5.5,1.4], drift:1.1, attr:0.55, hueBase:0.38, hueSpread:0.3,  zSpread:0.25, decay:0.955, swirl:0.0006, chroma:0.0025, bloomTh:0.8, gain:1.5 },
+    ink:   { orbit:0.0, spread:[3.0,3.0], drift:0.45, attr:1.2, hueBase:0.55, hueSpread:0.08, zSpread:1.0, decay:0.97, swirl:0.002, chroma:0.002, bloomTh:0.9, gain:1.2 },
+    plasma:{ orbit:1.0, spread:[2.2,2.2], drift:0.28, attr:1.6, hueBase:0.72, hueSpread:0.22, zSpread:0.4, decay:0.9, swirl:0.0032, chroma:0.007, bloomTh:0.78, gain:1.6 },
+    field: { orbit:0.0, spread:[4.5,2.8], drift:1.3, attr:0.35, hueBase:0.58, hueSpread:0.45, zSpread:0.9, decay:0.93, swirl:0.0008, chroma:0.004, bloomTh:0.86, gain:1.4 }
+  },
+  activeScene:"galaxy",
+
+  setScene(k){
+    const p = this.PRESETS[k]; if (!p || !this.ptsMat) return;
+    this.activeScene = k;
+    const u = this.ptsMat.uniforms;
+    u.uOrbit.value = p.orbit;
+    u.uSpread.value.set(p.spread[0], p.spread[1]);
+    u.uDriftAmp.value = p.drift; u.uAttrStrength.value = p.attr;
+    u.uHueBase.value = p.hueBase; u.uHueSpread.value = p.hueSpread; u.uZSpread.value = p.zSpread;
+    this._decay = p.decay; this._swirl = p.swirl; this._chroma = p.chroma; this._gain = p.gain;
+    if (this.mBright) this.mBright.uniforms.uTh.value = p.bloomTh;
+    for (const rt of [this.trailA, this.trailB]){
+      if (!rt) continue;
+      renderer3D.setRenderTarget(rt);
+      renderer3D.setClearColor(0x000000, 1); renderer3D.clear(true,true,true);
+    }
+    renderer3D.setRenderTarget(null);
+  },
+
+  resize(){
+    if (!this.ready) return;
+    this.cam.aspect = W/Math.max(1,H); this.cam.updateProjectionMatrix();
+    this.ptsMat.uniforms.uDPR.value = Math.min(window.devicePixelRatio||1, 2);
+    this._buildRTs();
+  },
+
+  tick(dt, t){
+    if (!this.ready) return;
+    const list = latest.multiHandLandmarks || [];
+    const handed = latest.multiHandedness || [];
+    let right = null, left = null;
+    for (let i = 0; i < list.length; i++){
+      const label = handed[i]?.label || (i === 0 ? "Right" : "Left");
+      if (label === "Right") right = list[i]; else left = list[i];
+    }
+    const handCount = list.length;
+    el("hands-val").textContent = handCount;
+
+    const vH = 2 * Math.tan((60*Math.PI/180)/2) * 4.0;
+    const vW = vH * (W/Math.max(1,H));
+    const toX = ux => (ux - 0.5) * vW * 0.42;
+    const toY = uy => (0.5 - uy) * vH * 0.42;
+
+    // 6 attractors: [R palm, R index, R thumb, L palm, L index, L thumb]
+    const pickIdx = [9, 8, 4];
+    for (let slot = 0; slot < 3; slot++){
+      const idx = pickIdx[slot];
+      if (right){
+        const px = this.filtersR[idx*2].filter(right[idx].x, t);
+        const py = this.filtersR[idx*2+1].filter(right[idx].y, t);
+        this.attrs[slot].set(toX(px), toY(py), 0);
+      } else { this.attrs[slot].multiplyScalar(0.9); }
+      if (left){
+        const px = this.filtersL[idx*2].filter(left[idx].x, t);
+        const py = this.filtersL[idx*2+1].filter(left[idx].y, t);
+        this.attrs[slot + 3].set(toX(px), toY(py), 0);
+      } else { this.attrs[slot + 3].multiplyScalar(0.9); }
+    }
+
+    let burstTarget = 0, fistTarget = 0, gestLabel = "—";
+    for (const h of [right, left]){
+      if (!h) continue;
+      const ext = detectExtended(h);
+      const n = ext.filter(Boolean).length;
+      if (n >= 4){ gestLabel = "ouverte"; }
+      if (n <= 1){ fistTarget = 1; gestLabel = "poing"; }
+      const pD = Math.hypot(h[4].x - h[8].x, h[4].y - h[8].y);
+      if (pD < 0.06){ burstTarget = 1; gestLabel = "pincement"; }
+    }
+    el("gest-val").textContent = gestLabel;
+
+    const hon = (right || left) ? 1 : 0;
+    this.uHandOn += (hon - this.uHandOn) * 0.18;
+    this.uBurst  += (burstTarget - this.uBurst) * 0.22;
+    this.uFist   += (fistTarget - this.uFist) * 0.15;
+    if (!(right || left)){ this.filtersR.forEach(f=>f.reset()); this.filtersL.forEach(f=>f.reset()); }
+
+    this.hue = (this.hue + dt * 0.012) % 1;
+    const U = this.ptsMat.uniforms;
+    U.uTime.value = t; U.uHandOn.value = this.uHandOn; U.uBurst.value = this.uBurst; U.uFist.value = this.uFist; U.uHue.value = this.hue;
+    this.mFinal.uniforms.uTime.value = t;
+    this.mFade.uniforms.uDecay.value   = (this._decay  || 0.908) - this.uBurst * 0.05;
+    this.mFade.uniforms.uSwirl.value   = (this._swirl  || 0.0014) + this.uFist * 0.0028;
+    this.mFinal.uniforms.uChroma.value = (this._chroma || 0.003) + this.uBurst * 0.005;
+    this.mFinal.uniforms.uGain.value   = (this._gain   || 1.35) + this.uBurst * 0.35;
+  },
+
+  _drawQuad(mat, target){
+    this.quad.material = mat;
+    renderer3D.setRenderTarget(target || null);
+    renderer3D.render(this.quad, this.orthoCam);
+  },
+
+  render(){
+    if (!this.ready) return;
+    renderer3D.setRenderTarget(this.sceneRT);
+    renderer3D.setClearColor(0x000000, 1); renderer3D.clear(true,true,true);
+    renderer3D.render(this.scn, this.cam);
+
+    this.mFade.uniforms.tPrev.value  = this.trailB.texture;
+    this.mFade.uniforms.tScene.value = this.sceneRT.texture;
+    this._drawQuad(this.mFade, this.trailA);
+    const tmp = this.trailB; this.trailB = this.trailA; this.trailA = tmp;
+
+    this.mBright.uniforms.tSrc.value = this.trailB.texture;
+    this._drawQuad(this.mBright, this.brightRT);
+    const bw = this.bloomH.width, bh = this.bloomH.height;
+    this.mBlurH.uniforms.tSrc.value = this.brightRT.texture;
+    this.mBlurH.uniforms.uDir.value.set(1/bw, 0);
+    this._drawQuad(this.mBlurH, this.bloomH);
+    this.mBlurV.uniforms.tSrc.value = this.bloomH.texture;
+    this.mBlurV.uniforms.uDir.value.set(0, 1/bh);
+    this._drawQuad(this.mBlurV, this.bloomV);
+
+    this.mFinal.uniforms.tTrail.value = this.trailB.texture;
+    this.mFinal.uniforms.tBloom.value = this.bloomV.texture;
+    this._drawQuad(this.mFinal, null);
+    renderer3D.setRenderTarget(null);
+  }
+};
+
+// ---------- music render tick ----------
+function updateMusic(){
+  const list = latest.multiHandLandmarks || [];
+  const handed = latest.multiHandedness || [];
+  let right = null, left = null;
+  for (let i=0;i<list.length;i++){
+    const label = handed[i]?.label || (i===0?"Right":"Left");
+    if (label === "Right") right = list[i]; else left = list[i];
+  }
+  const rk = el("opt-key").value;
+  const md = el("opt-scale").value;
+  const oct = parseInt(el("opt-oct").value, 10);
+  const rev = parseFloat(el("opt-rev").value);
+  if (reverb) reverb.wet.rampTo(rev, 0.08);
+  const notes = melodyNotes(rk, md, oct);
+
+  // melody on right hand : highest extended finger drives note
+  if (right){
+    const ext = detectExtended(right);
+    let chosen = -1;
+    for (let i=4;i>=0;i--){ if (ext[i]){ chosen = i; break; } }
+    if (chosen >= 0){
+      const f = notes[chosen];
+      if (MEL_ACTIVE !== chosen){
+        if (MEL_ACTIVE !== null) mel.triggerRelease([notes[MEL_ACTIVE]]);
+        mel.triggerAttack(f);
+        MEL_ACTIVE = chosen;
+      }
+      const label = midiToName(12*(oct+1) + (KEY_ROOTS[rk]||7) + SCALE_STEPS[md][[0,2,4,5,6][chosen]]);
+      el("note-val").textContent = label;
+    } else if (MEL_ACTIVE !== null){
+      mel.triggerRelease([notes[MEL_ACTIVE]]); MEL_ACTIVE = null;
+      el("note-val").textContent = "—";
+    }
+  } else if (MEL_ACTIVE !== null){
+    mel.triggerRelease([notes[MEL_ACTIVE]]); MEL_ACTIVE = null;
+    el("note-val").textContent = "—";
+  }
+
+  // chord on left hand : number of extended fingers
+  if (left){
+    const ext = detectExtended(left);
+    const n = ext.filter(Boolean).length;
+    if (n > 0){
+      const c = chordNotes(n, rk, md, oct);
+      if (!CHORD_ACTIVE || CHORD_ACTIVE.n !== n){
+        if (CHORD_ACTIVE) chord.triggerRelease(CHORD_ACTIVE.notes);
+        chord.triggerAttack(c.notes);
+        CHORD_ACTIVE = { n, notes: c.notes, symbol: c.symbol };
+      }
+      el("chord-val").textContent = c.symbol;
+    } else if (CHORD_ACTIVE){
+      chord.triggerRelease(CHORD_ACTIVE.notes); CHORD_ACTIVE = null;
+      el("chord-val").textContent = "—";
+    }
+  } else if (CHORD_ACTIVE){
+    chord.triggerRelease(CHORD_ACTIVE.notes); CHORD_ACTIVE = null;
+    el("chord-val").textContent = "—";
+  }
+}
+function stopAllNotes(){
+  if (MEL_ACTIVE !== null && mel){ mel.releaseAll(); MEL_ACTIVE = null; }
+  if (CHORD_ACTIVE && chord){ chord.releaseAll(); CHORD_ACTIVE = null; }
+}
+
+// ---------- main loop ----------
+function render(){
+  const now = performance.now();
+  const dt = Math.min(0.05, (now - lastT)/1000); lastT = now;
+  const list = latest.multiHandLandmarks || [];
+  const hasHand = list.length > 0;
+  el("toast").classList.toggle("on", !hasHand && MODE !== "music");
 
   if (MODE === "music"){
-    three.style.display = "none";
-    const right = pinches.find(p => p.label === "Right") || pinches[0];
-    const left  = pinches.find(p => p.label === "Left")  || (pinches.length > 1 ? pinches[1] : null);
-    let played = -1;
-    if (right){
-      let chosen = -1;
-      for (let i = 4; i >= 0; i--){ if (right.ext[i]){ chosen = i; break; } }
-      if (chosen >= 0){ playMelody(chosen); played = chosen; $("t-note").textContent = NOTE_LABELS_FR[chosen]; }
-      else { stopMelody(); $("t-note").textContent = "—"; }
-    } else { stopMelody(); $("t-note").textContent = "—"; }
-    if (left && left !== right){
-      const count = left.ext.filter(Boolean).length;
-      if (count > 0){ playChord(count); $("t-chord").textContent = "Accord " + count; }
-      else { stopChord(); $("t-chord").textContent = ""; }
-    } else { stopChord(); $("t-chord").textContent = ""; }
-
-    // soft tap ripple at the fingertip actually playing
-    if (played >= 0 && right){
-      const tipIdx = [4, 8, 12, 16, 20][played];
-      const p = lmToPx(right.lm[tipIdx].x, right.lm[tipIdx].y);
-      fxCtx.beginPath();
-      const rad = 22 + Math.sin(t * 6) * 4;
-      fxCtx.strokeStyle = COLOR_HEX;
-      fxCtx.lineWidth = 2;
-      fxCtx.arc(p.x, p.y, rad, 0, Math.PI*2); fxCtx.stroke();
-    }
+    threeC.style.display = "none";
+    if (AUDIO_READY && !mutedFlag) updateMusic();
   } else if (MODE === "sense"){
-    stopMelody(); stopChord();
-    three.style.display = "block";
-    // pick a single hand to track (right preferred, else first visible)
-    let hand = null;
-    if (list.length){
-      const idx = handed.findIndex(h => h && h.label === "Right");
-      const useIdx = (idx >= 0) ? idx : 0;
-      const lm = list[useIdx];
-      // normalized palm center
-      const palmUx = (lm[0].x + lm[9].x) / 2;
-      const palmUy = (lm[0].y + lm[9].y) / 2;
-      // normalized palm width (across the knuckles), as fraction of frame
-      const palmWidthN = Math.hypot(lm[5].x - lm[17].x, lm[5].y - lm[17].y);
-      const ext = detectExtended(lm);
-      const extCount = ext.filter(Boolean).length;
-      hand = { palmUx, palmUy, palmWidthN, ext, extCount, lm };
-      // palm halo on fx canvas — visual feedback that hand is seen
-      const palmPx = lmToPx(palmUx, palmUy);
-      const halo = 40 + palmWidthN * 400;
-      fxCtx.beginPath();
-      fxCtx.strokeStyle = (PHY.state === "held") ? "rgba(255,92,138,.5)" : (PHY.state === "thrown") ? "rgba(255,207,107,.5)" : "rgba(95,216,255,.45)";
-      fxCtx.lineWidth = 2;
-      fxCtx.arc(palmPx.x, palmPx.y, halo, 0, Math.PI*2); fxCtx.stroke();
-    } else {
-      HAND_HIST.length = 0;
-    }
-    updateScene(t, dt, hand);
-    renderer3D.render(scene3D, camera3D);
-  } else {
-    three.style.display = "none";
-    stopMelody(); stopChord();
+    threeC.style.display = "block";
+    updateSense(dt, now);
+  } else if (MODE === "flux"){
+    threeC.style.display = "block";
+    if (!FLUX.ready) FLUX.init();
+    FLUX.tick(dt, now * 0.001);
+    FLUX.render();
   }
 
-  requestAnimationFrame(renderFrame);
+  const showBones = el("opt-bones").value === "1";
+  drawBones(showBones);
+  requestAnimationFrame(render);
 }
 
-// ================================================================
-// UI
-// ================================================================
+// ---------- UI ----------
+function renderInstrumentRow(){
+  const host = el("inst-row"); host.innerHTML = "";
+  Object.entries(INSTRUMENTS).forEach(([k, i]) => {
+    const b = document.createElement("button");
+    b.className = "pill" + (k === INSTR ? " on" : "");
+    b.innerHTML = `<div class="emoji">${i.emoji}</div><div>${i.label}</div>`;
+    b.addEventListener("click", () => {
+      INSTR = k; setInstrument(k);
+      host.querySelectorAll(".pill").forEach(p => p.classList.toggle("on", p === b));
+    });
+    host.appendChild(b);
+  });
+}
+function renderObjectRow(){
+  const host = el("obj-row"); host.innerHTML = "";
+  OBJECTS.forEach(o => {
+    const b = document.createElement("button");
+    b.className = "pill lime" + (o.key === OBJ_KEY ? " on" : "");
+    b.innerHTML = `<div class="emoji">${o.emoji}</div><div>${o.label}</div>`;
+    b.addEventListener("click", () => {
+      setObjKey(o.key);
+      host.querySelectorAll(".pill").forEach(p => p.classList.toggle("on", p === b));
+    });
+    host.appendChild(b);
+  });
+}
 function setMode(m){
   MODE = m;
-  document.querySelectorAll("#modebar button").forEach(b => b.classList.toggle("on", b.dataset.mode === m));
-  $("readout").classList.toggle("hide", m !== "music");
-  $("tray-row-music").classList.toggle("hide", m !== "music");
-  $("tray-row-sense").classList.toggle("hide", m !== "sense");
-  $("create-pane").classList.toggle("hide", m !== "create");
-  $("create-cta").classList.toggle("hide", m !== "create");
-  $("tray").style.display = (m === "create") ? "none" : "block";
-  $("caption").textContent = (m === "music") ? "lève un doigt pour jouer · do majeur pentatonique"
-    : (m === "sense") ? "bouge les mains pour animer la forme"
-    : "";
-  showHint(m === "music" ? "lève un doigt pour jouer" : m === "sense" ? "pince ou écarte les mains" : "", 3500);
+  document.querySelectorAll("#tabs button").forEach(b => {
+    const active = b.dataset.mode === m;
+    b.classList.toggle("on", active);
+    b.classList.toggle("music", active && m === "music");
+    b.classList.toggle("sense", active && m === "sense");
+    b.classList.toggle("flux",  active && m === "flux");
+  });
+  el("shelf-music").classList.toggle("hide", m !== "music");
+  el("shelf-sense").classList.toggle("hide", m !== "sense");
+  el("shelf-flux").classList.toggle("hide", m !== "flux");
+  el("fluxbar").classList.toggle("on", m === "flux");
+  if (m !== "music") stopAllNotes();
+  const cap = el("caption");
+  if (m === "music") cap.textContent = "MAIN DROITE = MÉLODIE · MAIN GAUCHE = ACCORD";
+  if (m === "sense") cap.textContent = "LÈVE UNE MAIN · POING SAISIT · PAUME OUVERTE JETTE";
+  if (m === "flux")  cap.textContent = "DEUX MAINS ATTIRENT · POING RASSEMBLE · PINCEMENT ILLUMINE";
+  if (m === "flux" && FLUX.ready) FLUX.resize();
 }
 
-function buildTrays(){
-  // music tray — 14 instruments
-  const mt = $("tray-row-music");
-  Object.keys(PRESETS).forEach(k => {
-    const d = document.createElement("div");
-    d.className = "chip" + (k === currentSound ? " on" : "");
-    d.dataset.sound = k;
-    d.innerHTML = `<span class="glyph">${SOUND_META[k].icon}</span>${SOUND_META[k].name}`;
-    d.addEventListener("click", () => {
-      mt.querySelectorAll(".chip").forEach(c => c.classList.remove("on"));
-      d.classList.add("on");
-      setSound(k);
-    });
-    mt.appendChild(d);
-  });
-  // sense tray — all 14 scenes
-  const st = $("tray-row-sense");
-  OBJECTS.forEach(s => {
-    const d = document.createElement("div");
-    d.className = "chip" + (s.key === currentScene ? " on" : "");
-    d.dataset.scene = s.key;
-    d.innerHTML = `<span class="glyph">${s.emoji}</span>${s.name}`;
-    d.addEventListener("click", () => {
-      st.querySelectorAll(".chip").forEach(c => c.classList.remove("on"));
-      d.classList.add("on");
-      buildScene(s.key);
-    });
-    st.appendChild(d);
-  });
-}
-
-let hintTO;
-function showHint(text, ms){
-  const h = $("hint");
-  if (!text){ h.classList.add("hide"); return; }
-  $("hint-text").textContent = text;
-  h.classList.remove("hide");
-  clearTimeout(hintTO);
-  hintTO = setTimeout(() => h.classList.add("hide"), ms || 3000);
-}
-
-// ================================================================
-// CREATE PANE
-// ================================================================
-const COLOR_CHOICES = [
-  { key:"cyan",   hex:"#5fd8ff", name:"Cyan" },
-  { key:"pink",   hex:"#ff5c8a", name:"Rose" },
-  { key:"violet", hex:"#c89fff", name:"Violet" },
-  { key:"green",  hex:"#a5ff82", name:"Vert" },
-  { key:"gold",   hex:"#ffcf6b", name:"Or" },
-  { key:"white",  hex:"#ffffff", name:"Blanc" }
-];
-const CREATE = { sound: "piano", color: "cyan", shape: "cube" };
-
-function buildCreateCards(){
-  const s = $("c-sounds");
-  Object.entries(PRESETS).forEach(([k]) => {
-    const meta = SOUND_META[k];
-    const d = document.createElement("div");
-    d.className = "create-tile" + (k === CREATE.sound ? " on" : "");
-    d.dataset.key = k;
-    d.innerHTML = `<div class="emoji">${meta.icon}</div><div class="name">${meta.name}</div>`;
-    d.addEventListener("click", () => {
-      CREATE.sound = k;
-      s.querySelectorAll(".create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === k));
-    });
-    s.appendChild(d);
-  });
-  const c = $("c-colors");
-  COLOR_CHOICES.forEach(cc => {
-    const d = document.createElement("div");
-    d.className = "create-tile" + (cc.key === CREATE.color ? " on" : "");
-    d.dataset.key = cc.key;
-    d.innerHTML = `<div class="create-swatch" style="background:${cc.hex}"></div><div class="name">${cc.name}</div>`;
-    d.addEventListener("click", () => {
-      CREATE.color = cc.key;
-      c.querySelectorAll(".create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === cc.key));
-    });
-    c.appendChild(d);
-  });
-  const sh = $("c-shapes");
-  OBJECTS.forEach(scp => {
-    const d = document.createElement("div");
-    d.className = "create-tile" + (scp.key === CREATE.shape ? " on" : "");
-    d.dataset.key = scp.key;
-    d.innerHTML = `<div class="emoji">${scp.emoji}</div><div class="name">${scp.name}</div>`;
-    d.addEventListener("click", () => {
-      CREATE.shape = scp.key;
-      sh.querySelectorAll(".create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === scp.key));
-    });
-    sh.appendChild(d);
-  });
-  $("c-apply").addEventListener("click", () => {
-    setSound(CREATE.sound);
-    document.querySelectorAll("#tray-row-music .chip").forEach(b => b.classList.toggle("on", b.dataset.sound === CREATE.sound));
-    const col = COLOR_CHOICES.find(c => c.key === CREATE.color);
-    if (col){ COLOR_HEX = col.hex; COLOR_OBJ = new THREE.Color(col.hex); }
-    buildScene(CREATE.shape);
-    document.querySelectorAll("#tray-row-sense .chip").forEach(b => b.classList.toggle("on", b.dataset.scene === CREATE.shape));
-    setMode("sense");
-  });
-  $("c-reset").addEventListener("click", () => {
-    CREATE.sound = "piano"; CREATE.color = "cyan"; CREATE.shape = "cube";
-    document.querySelectorAll("#c-sounds .create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === "piano"));
-    document.querySelectorAll("#c-colors .create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === "cyan"));
-    document.querySelectorAll("#c-shapes .create-tile").forEach(t => t.classList.toggle("on", t.dataset.key === "cube"));
-  });
-}
-
-// ================================================================
-// TOOLS + BOOT
-// ================================================================
-$("tool-fullscreen").addEventListener("click", () => {
-  const r = document.documentElement;
-  if (!document.fullscreenElement){
-    (r.requestFullscreen || r.webkitRequestFullscreen).call(r).catch(()=>{});
-  } else {
-    (document.exitFullscreen || document.webkitExitFullscreen).call(document).catch(()=>{});
-  }
-});
-$("tool-flip").addEventListener("click", async () => {
-  CAM_FACING = (CAM_FACING === "user") ? "environment" : "user";
+// ---------- boot wiring ----------
+el("btn-start").addEventListener("click", async () => {
+  const b = el("btn-start");
+  b.disabled = true; b.textContent = "démarrage…";
   try {
-    const old = video.srcObject;
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: CAM_FACING }, audio: false });
-    if (old) old.getTracks().forEach(t => t.stop());
-    video.srcObject = stream;
-    await video.play();
-  } catch(e){}
-});
-
-document.querySelectorAll("#modebar button").forEach(btn => {
-  btn.addEventListener("click", () => setMode(btn.dataset.mode));
-});
-
-function showError(msg){ $("err-msg").textContent = msg; $("err").classList.add("show"); }
-
-$("go").addEventListener("click", async () => {
-  const go = $("go");
-  go.disabled = true; go.textContent = "Préparation…";
-  try {
+    sizeCanvas();
     await initAudio();
     await initHands();
     initThree();
-    buildTrays();
-    buildCreateCards();
-    buildScene("cube");
-    $("start").classList.add("hide");
-    $("hud").classList.remove("hide");
+    renderInstrumentRow();
+    renderObjectRow();
+    el("boot").classList.add("hide");
+    el("hud").classList.remove("hide");
     setMode("music");
-    sizeCanvas();
-    renderFrame();
-  } catch(err){
-    go.disabled = false; go.textContent = "Recommencer";
-    console.error(err);
+    lastT = performance.now();
+    requestAnimationFrame(render);
+  } catch (e){
+    b.disabled = false; b.textContent = "Réessayer";
+    alert("Impossible de démarrer :\n" + (e && e.message ? e.message : e));
   }
 });
-</script>
 
+document.querySelectorAll("#tabs button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+document.querySelectorAll("#fluxbar button").forEach(b => b.addEventListener("click", () => {
+  const k = b.dataset.fx;
+  document.querySelectorAll("#fluxbar button").forEach(x => x.classList.toggle("on", x === b));
+  if (FLUX.ready) FLUX.setScene(k);
+}));
+
+el("btn-settings").addEventListener("click", () => el("drawer").classList.toggle("open"));
+el("drawer-close").addEventListener("click", () => el("drawer").classList.remove("open"));
+el("opt-mute").addEventListener("change", (e) => {
+  mutedFlag = e.target.value === "1";
+  if (master) master.gain.rampTo(mutedFlag ? 0 : 0.9, 0.1);
+  if (mutedFlag) stopAllNotes();
+});
+</script>
 </body>
 </html>

@@ -55,6 +55,54 @@
   .modebar button.on{background:#fff;color:#000}
   .modebar button.on.sense{background:#fff;color:#000}
   .modebar button.on.patch{background:#fff;color:#000}
+  .modebar button.on.flux{background:linear-gradient(90deg,#44e0ff,#c689ff);color:#000}
+
+  /* ---------- Intro cinematic — monogram P → PALMA ---------- */
+  #intro{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#0a0e1a 0%,#000 70%);display:grid;place-items:center;overflow:hidden;animation:introOut .9s cubic-bezier(.65,.05,.35,1) 4.3s forwards}
+  #intro.gone{display:none}
+  @keyframes introOut{ to { opacity:0; pointer-events:none } }
+
+  .intro-stage{display:flex;flex-direction:column;align-items:center;gap:40px;transform-origin:center;animation:stageZoom 1.25s cubic-bezier(.55,.1,.3,1) 3.25s forwards}
+  @keyframes stageZoom{
+    0%  { transform: scale(1); filter: blur(0) }
+    60% { transform: scale(1.4); filter: blur(1px) }
+    100%{ transform: scale(7); filter: blur(8px); opacity: 0 }
+  }
+
+  .intro-svg{width:260px;height:260px;overflow:visible}
+  .intro-svg .p-stroke{
+    stroke-dasharray: 1100;
+    stroke-dashoffset: 1100;
+    animation: pDraw 1.9s cubic-bezier(.65,.03,.35,1) .35s forwards;
+  }
+  @keyframes pDraw{ to { stroke-dashoffset: 0 } }
+  .intro-svg .p-halo{opacity:0;transform-origin:center;animation:haloIn 1.6s ease .4s forwards}
+  @keyframes haloIn{ 0%{opacity:0;transform:scale(.4)} 100%{opacity:1;transform:scale(1)} }
+  .intro-svg .p-ring{opacity:0;transform-origin:center;transform-box:fill-box;animation:ringIn 1.4s ease .9s forwards, ringSpin 24s linear 2.3s infinite}
+  @keyframes ringIn{ 0%{opacity:0;transform:scale(.8)} 100%{opacity:.6;transform:scale(1)} }
+  @keyframes ringSpin{ to { transform: rotate(360deg) scale(1) } }
+
+  .intro-wordmark{display:flex;gap:18px;font-family:var(--sans);font-weight:800;font-size:44px;letter-spacing:.42em;color:#fff;padding-left:.42em;text-shadow:0 0 24px rgba(158,200,255,.35)}
+  .intro-wordmark span{opacity:0;transform:translateY(16px);display:inline-block;animation:wordLetter .6s cubic-bezier(.3,.9,.3,1) forwards}
+  .intro-wordmark span:nth-child(1){animation-delay:2.05s}
+  .intro-wordmark span:nth-child(2){animation-delay:2.18s}
+  .intro-wordmark span:nth-child(3){animation-delay:2.31s}
+  .intro-wordmark span:nth-child(4){animation-delay:2.44s}
+  .intro-wordmark span:nth-child(5){animation-delay:2.57s}
+  @keyframes wordLetter{ 0%{opacity:0;transform:translateY(16px);filter:blur(4px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
+
+  .intro-sub{font-family:var(--mono);font-size:10px;letter-spacing:.55em;text-transform:uppercase;color:rgba(158,200,255,.55);opacity:0;animation:subIn .8s ease 2.9s forwards}
+  @keyframes subIn{ to { opacity:1 } }
+
+  /* ---------- Flux sub-scene bar ---------- */
+  .fluxbar{position:absolute;top:66px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:0;background:rgba(10,10,16,.72);border:1px solid var(--edge);border-radius:2px;backdrop-filter:blur(14px);pointer-events:auto;font-family:var(--mono);z-index:7}
+  .fluxbar.on{display:flex}
+  .fluxbar button{background:transparent;border:none;border-right:1px solid var(--edge);color:var(--dim);padding:10px 16px;font:inherit;font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;border-radius:0;transition:all .14s;position:relative}
+  .fluxbar button:last-child{border-right:none}
+  .fluxbar button:hover{color:var(--ink);background:rgba(255,255,255,.03)}
+  .fluxbar button.on{color:#fff;background:rgba(68,224,255,.1);box-shadow:inset 0 -2px 0 var(--cold)}
+  .fluxbar button .k{display:block;font-size:8px;color:var(--dim);margin-top:2px;letter-spacing:.2em}
+  .fluxbar button.on .k{color:var(--cold)}
 
   /* ---------- hand-guide modal ---------- */
   .guide-modal{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(5,5,10,.76);backdrop-filter:blur(8px);pointer-events:auto;animation:fadein .18s ease}
@@ -398,6 +446,37 @@
 </style>
 </head>
 <body>
+  <!-- ---------- Cinematic intro — monogram P then PALMA ---------- -->
+  <div id="intro" aria-hidden="true">
+    <div class="intro-stage">
+      <svg class="intro-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <radialGradient id="pHalo" cx="50%" cy="50%" r="60%">
+            <stop offset="0%"  stop-color="#9ec8ff" stop-opacity=".22"/>
+            <stop offset="55%" stop-color="#6aa5ff" stop-opacity=".08"/>
+            <stop offset="100%" stop-color="#000"    stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="pStroke" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#9ec8ff"/>
+          </linearGradient>
+          <filter id="pGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="3.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <circle class="p-halo" cx="200" cy="200" r="160" fill="url(#pHalo)"/>
+        <circle class="p-ring" cx="200" cy="200" r="170" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+        <path   class="p-stroke" filter="url(#pGlow)"
+                d="M 140 340 L 140 80 L 230 80 C 288 80, 310 118, 310 160 C 310 204, 288 236, 230 236 L 140 236"
+                fill="none" stroke="url(#pStroke)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="intro-wordmark" aria-hidden="true">
+        <span>P</span><span>A</span><span>L</span><span>M</span><span>A</span>
+      </div>
+      <div class="intro-sub">GESTURE INSTRUMENT · 1Z4K</div>
+    </div>
+  </div>
 <div class="titlebar" id="titlebar">
   Palma — 1Z4K
   <div class="wincontrols">
@@ -551,6 +630,14 @@
         <button id="mode-music" class="on" data-mode="music">musique</button>
         <button id="mode-sense" data-mode="sense">sensoriel</button>
         <button id="mode-create" data-mode="create">créer</button>
+        <button id="mode-flux"   data-mode="flux">flux</button>
+      </div>
+      <div class="fluxbar" id="fluxbar">
+        <button data-fx="galaxy"   class="on">galaxie<span class="k">F1</span></button>
+        <button data-fx="aurora">aurore<span class="k">F2</span></button>
+        <button data-fx="ink">encre<span class="k">F3</span></button>
+        <button data-fx="plasma">plasma<span class="k">F4</span></button>
+        <button data-fx="field">champ<span class="k">F5</span></button>
       </div>
       <div class="top-right">
         <div class="mini-chip" id="chip-key">KEY<b id="r-key">G maj</b></div>
@@ -808,6 +895,17 @@
 // --------------------------------------------------------------------------
 // Palma — Built by 1Z4K
 // --------------------------------------------------------------------------
+// ==========================================================================
+// INTRO — monogram P → PALMA wordmark → zoom fade to launcher (pure CSS)
+// ==========================================================================
+(function intro(){
+  const overlay = document.getElementById("intro");
+  if (!overlay) return;
+  // CSS handles timing; JS just removes the node once the fade-out keyframe is done.
+  // Keyframes: pDraw ends ~2.25s, wordmark done ~3.2s, stageZoom ends ~4.5s, introOut ends ~5.2s.
+  setTimeout(() => overlay.classList.add("gone"), 5300);
+})();
+
 
 const el    = (id) => document.getElementById(id);
 const clamp = (v,a,b) => v<a?a:v>b?b:v;
@@ -999,8 +1097,8 @@ let latest = { multiHandLandmarks: [], multiHandedness: [] };
 async function initHands(){
   hands = new Hands({ locateFile: (f) => `./vendor/${f}` });
   hands.setOptions({
-    maxNumHands: 2, modelComplexity: 1,
-    minDetectionConfidence: 0.65, minTrackingConfidence: 0.6,
+    maxNumHands: 2, modelComplexity: 0,
+    minDetectionConfidence: 0.55, minTrackingConfidence: 0.5,
     selfieMode: true
   });
   hands.onResults((r) => {
@@ -1013,7 +1111,12 @@ async function initHands(){
     }
   });
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "user", width: {ideal: 1280}, height: {ideal: 720} },
+    video: {
+      facingMode: "user",
+      width:     { ideal: 1920 },
+      height:    { ideal: 1080 },
+      frameRate: { ideal: 60, min: 30 }
+    },
     audio: false
   });
   video.srcObject = stream;
@@ -1265,6 +1368,7 @@ function setMode(m){
   const covBtn = el("mode-cover"); if (covBtn){ covBtn.classList.toggle("on", m === "cover"); covBtn.classList.toggle("cover", m === "cover"); }
   el("mode-create").classList.toggle("on", m === "create");
   el("mode-create").classList.toggle("create", m === "create");
+  const fluxBtn = el("mode-flux"); if (fluxBtn){ fluxBtn.classList.toggle("on", m === "flux"); fluxBtn.classList.toggle("flux", m === "flux"); }
   el("palette-music").classList.toggle("hide", m !== "music");
   el("palette-sense").classList.toggle("hide", m !== "sense");
   el("btn-dismiss").style.display = (m === "sense") ? "grid" : "none";
@@ -1277,7 +1381,7 @@ function setMode(m){
   el("cover-stage").classList.toggle("hide", m !== "cover");
   el("create-stage").classList.toggle("hide", m !== "create");
   el("patch-stage").classList.toggle("hide", true); // legacy — hidden
-  threeC.style.display = (m === "sense" && is3DScene(SENSE_SCENE)) ? "block" : "none";
+  threeC.style.display = ((m === "sense" && is3DScene(SENSE_SCENE)) || m === "flux") ? "block" : "none";
   // bottom caption only in sense/music
   el("scene-caption").parentElement.style.display = (m === "cover" || m === "create") ? "none" : "flex";
   if (m === "sense"){
@@ -1301,15 +1405,35 @@ function setMode(m){
     coverStop();
     if (AUDIO_READY) master.gain.rampTo(0, 0.1);
     clearPatchThree();
+  } else if (m === "flux"){
+    stopMelody(); stopChord();
+    coverStop();
+    if (AUDIO_READY) master.gain.rampTo(0, 0.1);
+    clearPatchThree();
+    if (typeof FLUX !== "undefined" && !FLUX.ready) FLUX.init();
+    if (typeof FLUX !== "undefined") FLUX.resize();
+    el("scene-caption").textContent = "FLUX — OPEN HAND ATTRACTS · PINCH TO BURST · FIST TO IGNITE · F1–F5 PRESETS";
+    const _fb = el("fluxbar"); if (_fb) _fb.classList.add("on");
   }
   updateLegend();
   clearFx();
+  const _fb2 = el("fluxbar"); if (_fb2 && MODE !== "flux") _fb2.classList.remove("on");
 }
 
 el("mode-music").addEventListener("click", () => setMode("music"));
 el("mode-sense").addEventListener("click", () => setMode("sense"));
 const _mc = el("mode-cover"); if (_mc) _mc.addEventListener("click", () => setMode("cover"));
 el("mode-create").addEventListener("click", () => setMode("create"));
+const _mf = el("mode-flux"); if (_mf) _mf.addEventListener("click", () => setMode("flux"));
+
+// fluxbar sub-scene switcher
+document.querySelectorAll("#fluxbar button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.fx;
+    document.querySelectorAll("#fluxbar button").forEach(b => b.classList.toggle("on", b === btn));
+    if (typeof FLUX !== "undefined" && FLUX.ready) FLUX.setScene(key);
+  });
+});
 
 const SCENES_3D   = ["sphere","wave","blob","galaxy","cards","card","lens","taffy","sculpt","plot3d","prism","voxelbox","tunnel","ribbon","lattice","tornado","bloom","chrome","glass","mercury"];
 const SCENES_SPAWN= ["cards","card","lens","taffy","sculpt","galaxy","wave","plot3d","prism","voxelbox","pointcloud","tunnel","ribbon","lattice","tornado","bloom","chrome","glass","mercury"];
@@ -5869,6 +5993,22 @@ function renderFrame(){
     return;
   }
 
+  if (MODE === "flux"){
+    clearFx();
+    // pick dominant hand (first visible, right preferred)
+    let hand = null;
+    for (let i = 0; i < list.length; i++){
+      const label = handed[i]?.label || (i === 0 ? "Right" : "Left");
+      if (label === "Right"){ hand = list[i]; break; }
+      if (!hand) hand = list[i];
+    }
+    FLUX.tick(dt, now * 0.001, hand);
+    FLUX.render();
+    drawBones();
+    requestAnimationFrame(renderFrame);
+    return;
+  }
+
   if (MODE === "music"){
     clearFx();
     const rk = el("key").value, md = el("scalemode").value;
@@ -6111,6 +6251,15 @@ function wireUI(){
     if (e.key === "1"){ setMode("music"); }
     if (e.key === "2"){ setMode("sense"); }
     if (e.key === "3"){ setMode("create"); }
+    if (e.key === "4"){ setMode("flux"); }
+    if (MODE === "flux"){
+      const map = { F1: "galaxy", F2: "aurora", F3: "ink", F4: "plasma", F5: "field" };
+      if (map[e.key]){
+        e.preventDefault();
+        if (typeof FLUX !== "undefined" && FLUX.ready) FLUX.setScene(map[e.key]);
+        document.querySelectorAll("#fluxbar button").forEach(b => b.classList.toggle("on", b.dataset.fx === map[e.key]));
+      }
+    }
     if (e.key === "l" || e.key === "L"){ SHOW_AR_LABELS = !SHOW_AR_LABELS; }
     if (e.key === "?" || e.key === "h" || e.key === "H"){
       e.preventDefault();
@@ -6532,6 +6681,515 @@ function renderCreateCards(){
 
 // render cards once the DOM is ready
 renderCreateCards();
+
+// ==================================================================
+// FLUX — GPU particle galaxy, feedback trails, bloom, chroma shift
+// TouchDesigner-style live visuals driven by MediaPipe + one-euro
+// ==================================================================
+class OneEuro {
+  constructor(minCut=1.0, beta=0.08, dCut=1.0){
+    this.minCut = minCut; this.beta = beta; this.dCut = dCut;
+    this.xPrev = null; this.dxPrev = 0; this.tPrev = 0;
+  }
+  _alpha(cutoff, dt){
+    const tau = 1.0 / (2 * Math.PI * cutoff);
+    return 1.0 / (1.0 + tau / dt);
+  }
+  filter(x, t){
+    if (this.xPrev === null){ this.xPrev = x; this.tPrev = t; return x; }
+    const dt = Math.max(1e-3, t - this.tPrev);
+    const dx = (x - this.xPrev) / dt;
+    const aD = this._alpha(this.dCut, dt);
+    const edx = aD * dx + (1 - aD) * this.dxPrev;
+    const cutoff = this.minCut + this.beta * Math.abs(edx);
+    const a = this._alpha(cutoff, dt);
+    const y = a * x + (1 - a) * this.xPrev;
+    this.xPrev = y; this.dxPrev = edx; this.tPrev = t;
+    return y;
+  }
+  reset(){ this.xPrev = null; this.dxPrev = 0; this.tPrev = 0; }
+}
+
+const FLUX = {
+  ready: false,
+  N: 32000,
+  // three
+  scn: null, cam: null, pts: null, ptsMat: null,
+  orthoCam: null, quad: null,
+  // RTs
+  sceneRT: null, trailA: null, trailB: null,
+  brightRT: null, bloomH: null, bloomV: null,
+  // shaders
+  mFade: null, mBright: null, mBlurH: null, mBlurV: null, mFinal: null,
+  // state
+  attrArr: null, filters: [], tPrev: 0,
+  uHandOn: 0, uBurst: 0, uFist: 0, uAudio: 0,
+  // palette (hue base 0..1)
+  hue: 0.58,
+
+  init(){
+    if (this.ready) return;
+    const T = THREE;
+    // particle scene + camera
+    this.scn = new T.Scene();
+    this.cam = new T.PerspectiveCamera(60, W/Math.max(1,H), 0.1, 50);
+    this.cam.position.set(0, 0, 4);
+    this.cam.lookAt(0,0,0);
+
+    // ortho full-screen quad camera + mesh
+    this.orthoCam = new T.OrthographicCamera(-1,1,1,-1,0,1);
+    this.quad = new T.Mesh(new T.PlaneGeometry(2,2), new T.MeshBasicMaterial());
+
+    // 21 one-euro filters (x,y per landmark), pack as 21*2
+    for (let i = 0; i < 21 * 2; i++) this.filters.push(new OneEuro(1.2, 0.06, 1.0));
+
+    // attractors: 6 vec3 (palm + 5 tips)
+    this.attrArr = [];
+    for (let i = 0; i < 6; i++) this.attrArr.push(new T.Vector3(0,0,0));
+
+    // ---- particle geometry ----
+    const N = this.N;
+    const geo = new T.BufferGeometry();
+    const pos = new Float32Array(N * 3); // dummy origin, moved in shader
+    const seed = new Float32Array(N * 4);
+    for (let i = 0; i < N; i++){
+      seed[i*4+0] = Math.random();
+      seed[i*4+1] = Math.random();
+      seed[i*4+2] = Math.random();
+      seed[i*4+3] = Math.random();
+    }
+    geo.setAttribute("position", new T.BufferAttribute(pos, 3));
+    geo.setAttribute("aSeed", new T.BufferAttribute(seed, 4));
+    geo.boundingSphere = new T.Sphere(new T.Vector3(0,0,0), 20);
+
+    const vs = `
+      precision highp float;
+      attribute vec4 aSeed;
+      uniform float uTime;
+      uniform float uDPR;
+      uniform float uHandOn;
+      uniform float uBurst;
+      uniform float uFist;
+      uniform float uHue;
+      uniform vec3 uAttr[6];
+      uniform float uOrbit;
+      uniform vec2  uSpread;
+      uniform float uDriftAmp;
+      uniform float uAttrStrength;
+      uniform float uHueBase;
+      uniform float uHueSpread;
+      uniform float uHorizFlow;
+      uniform float uZSpread;
+      varying vec3 vCol;
+      varying float vA;
+
+      vec3 hash3(vec3 p){
+        p = fract(p * vec3(0.1031, 0.1030, 0.0973));
+        p += dot(p, p.yxz + 33.33);
+        return fract((p.xxy + p.yxx) * p.zyx);
+      }
+      float noise(vec3 p){
+        vec3 i = floor(p); vec3 f = fract(p); f = f*f*(3.0-2.0*f);
+        float n000 = hash3(i).x;
+        float n100 = hash3(i + vec3(1.0,0.0,0.0)).x;
+        float n010 = hash3(i + vec3(0.0,1.0,0.0)).x;
+        float n110 = hash3(i + vec3(1.0,1.0,0.0)).x;
+        float n001 = hash3(i + vec3(0.0,0.0,1.0)).x;
+        float n101 = hash3(i + vec3(1.0,0.0,1.0)).x;
+        float n011 = hash3(i + vec3(0.0,1.0,1.0)).x;
+        float n111 = hash3(i + vec3(1.0,1.0,1.0)).x;
+        float nx00 = mix(n000, n100, f.x);
+        float nx10 = mix(n010, n110, f.x);
+        float nx01 = mix(n001, n101, f.x);
+        float nx11 = mix(n011, n111, f.x);
+        float nxy0 = mix(nx00, nx10, f.y);
+        float nxy1 = mix(nx01, nx11, f.y);
+        return mix(nxy0, nxy1, f.z);
+      }
+
+      void main(){
+        float life = fract(aSeed.w + uTime * 0.05);
+        vA = smoothstep(0.0, 0.15, life) * smoothstep(1.0, 0.85, life);
+
+        // --- orbit path (spiral disc) ---
+        float arm = floor(aSeed.x * 3.0);
+        float ang = aSeed.y * 6.2831 + uTime * (0.18 + aSeed.z * 0.1) + arm * 2.09;
+        float rad = uSpread.x * pow(aSeed.z, 0.9) + aSeed.x * 0.3;
+        vec3 orbitPos = vec3(cos(ang) * rad, sin(ang) * rad * 0.82, (aSeed.x - 0.5) * uZSpread);
+
+        // --- flat flow path (horizontal with layering) ---
+        float flowX = (aSeed.y - 0.5) * uSpread.x * 2.0 + sin(uTime * uHorizFlow + aSeed.x * 6.283) * 0.5;
+        float flowY = (aSeed.z - 0.5) * uSpread.y * 2.0;
+        float flowZ = (aSeed.x - 0.5) * uZSpread;
+        vec3 flowPos = vec3(flowX, flowY, flowZ);
+
+        vec3 p = mix(flowPos, orbitPos, uOrbit);
+
+        // --- fluid drift ---
+        float n1 = noise(p * 1.4 + uTime * 0.12);
+        float n2 = noise(p.yzx * 1.6 + uTime * 0.09);
+        float n3 = noise(p.zxy * 1.2 + uTime * 0.07);
+        float amp = uDriftAmp + uBurst * 0.6;
+        p.x += (n1 - 0.5) * amp;
+        p.y += (n2 - 0.5) * amp;
+        p.z += (n3 - 0.5) * amp * 0.5;
+
+        // --- attractors (palm + 5 tips) ---
+        for (int k = 0; k < 6; k++){
+          vec3 d = uAttr[k] - p;
+          float r2 = max(0.35, dot(d, d));
+          float g = (k == 0) ? 0.6 : 0.18;
+          p += d / r2 * uHandOn * g * uAttrStrength * (0.7 + uBurst * 1.8);
+        }
+
+        // --- fist collapse ---
+        p += (-p) * uFist * 0.15;
+
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        float sz = 0.55 + aSeed.x * 0.9 + uBurst * 1.0;
+        gl_PointSize = sz * uDPR * (240.0 / max(0.1, -mv.z));
+
+        float hue = fract(uHueBase + uHue * 0.1 + aSeed.y * uHueSpread);
+        vec3 base = 0.5 + 0.5 * cos(6.2831 * (vec3(hue) + vec3(0.0, 0.33, 0.66)));
+        vec3 warm = vec3(1.0, 0.75, 0.42);
+        vCol = mix(base, warm, uBurst * 0.7);
+      }
+    `;
+    const fs = `
+      precision highp float;
+      varying vec3 vCol;
+      varying float vA;
+      void main(){
+        vec2 uv = gl_PointCoord - 0.5;
+        float d = length(uv);
+        if (d > 0.5) discard;
+        float a = smoothstep(0.5, 0.0, d);
+        a = a * a;
+        gl_FragColor = vec4(vCol * a * 0.5, a * vA * 0.6);
+      }
+    `;
+    this.ptsMat = new T.ShaderMaterial({
+      vertexShader: vs, fragmentShader: fs,
+      uniforms: {
+        uTime: { value: 0 }, uDPR: { value: Math.min(window.devicePixelRatio || 1, 2) },
+        uHandOn: { value: 0 }, uBurst: { value: 0 }, uFist: { value: 0 },
+        uHue: { value: this.hue },
+        uAttr: { value: this.attrArr },
+        uOrbit:        { value: 1.0 },
+        uSpread:       { value: new THREE.Vector2(2.8, 2.3) },
+        uDriftAmp:     { value: 0.6 },
+        uAttrStrength: { value: 1.0 },
+        uHueBase:      { value: 0.58 },
+        uHueSpread:    { value: 0.35 },
+        uHorizFlow:    { value: 0.4 },
+        uZSpread:      { value: 0.5 }
+      },
+      transparent: true, depthTest: false, depthWrite: false,
+      blending: T.AdditiveBlending
+    });
+    this.pts = new T.Points(geo, this.ptsMat);
+    this.pts.frustumCulled = false;
+    this.scn.add(this.pts);
+
+    // ---- RTs + post shaders ----
+    this._buildRTs();
+    this._buildPostShaders();
+    this.ready = true;
+    this.setScene("galaxy");
+  },
+
+  PRESETS: {
+    galaxy: { orbit: 1.0, spread: [2.8, 2.3], drift: 0.6, attr: 1.0, hueBase: 0.58, hueSpread: 0.35, horiz: 0.4, zSpread: 0.5, decay: 0.908, swirl: 0.0014, chroma: 0.003, bloomTh: 0.88, gain: 1.35 },
+    aurora: { orbit: 0.0, spread: [5.5, 1.4], drift: 1.1, attr: 0.55, hueBase: 0.38, hueSpread: 0.3,  horiz: 0.6, zSpread: 0.25, decay: 0.955, swirl: 0.0006, chroma: 0.0025, bloomTh: 0.8,  gain: 1.5  },
+    ink:    { orbit: 0.0, spread: [3.0, 3.0], drift: 0.45, attr: 1.2, hueBase: 0.55, hueSpread: 0.08, horiz: 0.2, zSpread: 1.0,  decay: 0.97,  swirl: 0.002,  chroma: 0.002, bloomTh: 0.9,  gain: 1.2  },
+    plasma: { orbit: 1.0, spread: [2.2, 2.2], drift: 0.28, attr: 1.6, hueBase: 0.72, hueSpread: 0.22, horiz: 0.5, zSpread: 0.4,  decay: 0.9,   swirl: 0.0032, chroma: 0.007, bloomTh: 0.78, gain: 1.6  },
+    field:  { orbit: 0.0, spread: [4.5, 2.8], drift: 1.3, attr: 0.35, hueBase: 0.58, hueSpread: 0.45, horiz: 0.3, zSpread: 0.9,  decay: 0.93,  swirl: 0.0008, chroma: 0.004, bloomTh: 0.86, gain: 1.4  }
+  },
+  activeScene: "galaxy",
+
+  setScene(key){
+    const p = this.PRESETS[key];
+    if (!p || !this.ptsMat) return;
+    this.activeScene = key;
+    const u = this.ptsMat.uniforms;
+    u.uOrbit.value        = p.orbit;
+    u.uSpread.value.set(p.spread[0], p.spread[1]);
+    u.uDriftAmp.value     = p.drift;
+    u.uAttrStrength.value = p.attr;
+    u.uHueBase.value      = p.hueBase;
+    u.uHueSpread.value    = p.hueSpread;
+    u.uHorizFlow.value    = p.horiz;
+    u.uZSpread.value      = p.zSpread;
+    // post defaults — tick() overrides decay/swirl/chroma/gain with hand-reactive values anchored on these
+    this._presetDecay  = p.decay;
+    this._presetSwirl  = p.swirl;
+    this._presetChroma = p.chroma;
+    this._presetGain   = p.gain;
+    if (this.mBright) this.mBright.uniforms.uTh.value = p.bloomTh;
+    // reset trail so no cross-scene bleed
+    const r = renderer;
+    if (r && this.trailA && this.trailB){
+      for (const rt of [this.trailA, this.trailB]){
+        r.setRenderTarget(rt); r.setClearColor(0x000000, 1); r.clear(true, true, true);
+      }
+      r.setRenderTarget(null);
+    }
+  },
+
+  _buildRTs(){
+    const T = THREE;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(2, Math.floor(W * dpr));
+    const h = Math.max(2, Math.floor(H * dpr));
+    const halfW = Math.max(2, (w >> 1)), halfH = Math.max(2, (h >> 1));
+    const qW = Math.max(2, (halfW >> 1)), qH = Math.max(2, (halfH >> 1));
+    const opts = { minFilter: T.LinearFilter, magFilter: T.LinearFilter, type: T.UnsignedByteType, format: T.RGBAFormat };
+    // dispose first
+    for (const k of ["sceneRT","trailA","trailB","brightRT","bloomH","bloomV"]){
+      if (this[k]) this[k].dispose();
+    }
+    this.sceneRT  = new T.WebGLRenderTarget(w, h, opts);
+    this.trailA   = new T.WebGLRenderTarget(w, h, opts);
+    this.trailB   = new T.WebGLRenderTarget(w, h, opts);
+    this.brightRT = new T.WebGLRenderTarget(halfW, halfH, opts);
+    this.bloomH   = new T.WebGLRenderTarget(qW, qH, opts);
+    this.bloomV   = new T.WebGLRenderTarget(qW, qH, opts);
+  },
+
+  _buildPostShaders(){
+    const T = THREE;
+    const vsQuad = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+
+    // feedback fade + radial swirl
+    this.mFade = new T.ShaderMaterial({
+      uniforms: { tPrev: { value: null }, tScene: { value: null }, uDecay: { value: 0.905 }, uSwirl: { value: 0.0018 } },
+      vertexShader: vsQuad,
+      fragmentShader: `
+        precision highp float;
+        varying vec2 vUv;
+        uniform sampler2D tPrev;
+        uniform sampler2D tScene;
+        uniform float uDecay;
+        uniform float uSwirl;
+        void main(){
+          vec2 d = vUv - 0.5;
+          float r = length(d);
+          float ang = uSwirl * (0.3 + r * 2.0);
+          float ca = cos(ang), sa = sin(ang);
+          vec2 rot = vec2(ca * d.x - sa * d.y, sa * d.x + ca * d.y);
+          vec2 shifted = 0.5 + rot + d * 0.004;
+          vec3 prev = texture2D(tPrev, shifted).rgb * uDecay;
+          vec3 cur  = texture2D(tScene, vUv).rgb;
+          // max keeps the trail fading, prevents additive saturation
+          gl_FragColor = vec4(max(prev, cur), 1.0);
+        }
+      `,
+      depthTest: false, depthWrite: false, transparent: false
+    });
+
+    // bright pass
+    this.mBright = new T.ShaderMaterial({
+      uniforms: { tSrc: { value: null }, uTh: { value: 0.88 } },
+      vertexShader: vsQuad,
+      fragmentShader: `
+        precision highp float;
+        varying vec2 vUv;
+        uniform sampler2D tSrc;
+        uniform float uTh;
+        void main(){
+          vec3 c = texture2D(tSrc, vUv).rgb;
+          float b = max(max(c.r, c.g), c.b);
+          float m = smoothstep(uTh, uTh + 0.25, b);
+          gl_FragColor = vec4(c * m * 0.6, 1.0);
+        }
+      `,
+      depthTest: false, depthWrite: false
+    });
+
+    const gauss = (dirExpr) => `
+      precision highp float;
+      varying vec2 vUv;
+      uniform sampler2D tSrc;
+      uniform vec2 uDir;
+      void main(){
+        vec3 s = vec3(0.0);
+        s += texture2D(tSrc, vUv).rgb * 0.227027;
+        s += texture2D(tSrc, vUv + uDir * 1.3846153846).rgb * 0.316216;
+        s += texture2D(tSrc, vUv - uDir * 1.3846153846).rgb * 0.316216;
+        s += texture2D(tSrc, vUv + uDir * 3.2307692308).rgb * 0.070270;
+        s += texture2D(tSrc, vUv - uDir * 3.2307692308).rgb * 0.070270;
+        gl_FragColor = vec4(s, 1.0);
+      }`;
+    this.mBlurH = new T.ShaderMaterial({
+      uniforms: { tSrc: { value: null }, uDir: { value: new T.Vector2(1,0) } },
+      vertexShader: vsQuad, fragmentShader: gauss("x"),
+      depthTest: false, depthWrite: false
+    });
+    this.mBlurV = new T.ShaderMaterial({
+      uniforms: { tSrc: { value: null }, uDir: { value: new T.Vector2(0,1) } },
+      vertexShader: vsQuad, fragmentShader: gauss("y"),
+      depthTest: false, depthWrite: false
+    });
+
+    // final composite: trail + bloom + rgb-shift + vignette
+    this.mFinal = new T.ShaderMaterial({
+      uniforms: {
+        tTrail: { value: null }, tBloom: { value: null },
+        uChroma: { value: 0.004 }, uTime: { value: 0 }, uGain: { value: 1.35 }
+      },
+      vertexShader: vsQuad,
+      fragmentShader: `
+        precision highp float;
+        varying vec2 vUv;
+        uniform sampler2D tTrail;
+        uniform sampler2D tBloom;
+        uniform float uChroma;
+        uniform float uTime;
+        uniform float uGain;
+        void main(){
+          vec2 d = vUv - 0.5;
+          float r = texture2D(tTrail, vUv + d * uChroma).r + texture2D(tBloom, vUv + d * uChroma).r;
+          float g = texture2D(tTrail, vUv).g                   + texture2D(tBloom, vUv).g;
+          float b = texture2D(tTrail, vUv - d * uChroma).b + texture2D(tBloom, vUv - d * uChroma).b;
+          vec3 col = vec3(r, g, b) * uGain;
+          // reinhard tonemap keeps hotspots from blowing out
+          col = col / (1.0 + col);
+          col = pow(col, vec3(0.88));
+          // film grain
+          float grain = fract(sin(dot(vUv * 1024.0 + uTime, vec2(12.9898, 78.233))) * 43758.5453);
+          col += (grain - 0.5) * 0.02;
+          // vignette
+          float v = smoothstep(1.2, 0.3, length(d) * 2.0);
+          col *= v;
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `,
+      depthTest: false, depthWrite: false
+    });
+  },
+
+  resize(){
+    if (!this.ready) return;
+    this.cam.aspect = W / Math.max(1,H);
+    this.cam.updateProjectionMatrix();
+    this.ptsMat.uniforms.uDPR.value = Math.min(window.devicePixelRatio || 1, 2);
+    this._buildRTs();
+  },
+
+  tick(dt, t, hand){
+    if (!this.ready) return;
+    this.tPrev = t;
+    this.ptsMat.uniforms.uTime.value = t;
+    this.mFinal.uniforms.uTime.value = t;
+
+    // hand filter + attractor placement
+    if (hand){
+      // view frame in world units at z=0 (cam at 4, fov 60 → h = 2*tan(30°)*4 ≈ 4.62)
+      const vH = 2 * Math.tan((60 * Math.PI / 180) / 2) * 4.0;
+      const vW = vH * (W / Math.max(1, H));
+      const toX = (ux) => (ux - 0.5) * vW * 0.42;
+      const toY = (uy) => (0.5 - uy) * vH * 0.42;
+
+      // smooth 21 landmarks
+      const sm = [];
+      for (let i = 0; i < 21; i++){
+        const px = this.filters[i*2].filter(hand[i].x, t);
+        const py = this.filters[i*2+1].filter(hand[i].y, t);
+        sm.push({ x: px, y: py });
+      }
+      // attractor 0 = palm (lm 9), 1..5 = tips (4,8,12,16,20)
+      const tipIdx = [9, 4, 8, 12, 16, 20];
+      for (let k = 0; k < 6; k++){
+        const p = sm[tipIdx[k]];
+        this.attrArr[k].set(toX(p.x), toY(p.y), 0);
+      }
+      // gestures from smoothed landmarks
+      const ext = detectExtended(sm, 1.0);
+      const extCount = ext.filter(Boolean).length;
+      const open = extCount >= 4;
+      const fist = extCount <= 1;
+      // pinch = thumb tip (4) near index tip (8)
+      const thumb = sm[4], index = sm[8];
+      const pinchD = Math.hypot(thumb.x - index.x, thumb.y - index.y);
+      const pinch = pinchD < 0.06;
+
+      // decay targets
+      const targetHandOn = 1;
+      const targetBurst = pinch ? 1 : (open ? 0.1 : 0);
+      const targetFist  = fist ? 1 : 0;
+      this.uHandOn += (targetHandOn - this.uHandOn) * 0.18;
+      this.uBurst  += (targetBurst  - this.uBurst)  * 0.22;
+      this.uFist   += (targetFist   - this.uFist)   * 0.15;
+    } else {
+      // reset filters so re-entry snaps clean
+      for (const f of this.filters) f.reset();
+      this.uHandOn += (0 - this.uHandOn) * 0.08;
+      this.uBurst  *= 0.9;
+      this.uFist   *= 0.9;
+      // pull attractors back to origin so field goes quiet
+      for (let k = 0; k < 6; k++){
+        this.attrArr[k].multiplyScalar(0.9);
+      }
+    }
+    this.ptsMat.uniforms.uHandOn.value = this.uHandOn;
+    this.ptsMat.uniforms.uBurst.value  = this.uBurst;
+    this.ptsMat.uniforms.uFist.value   = this.uFist;
+    // hue drifts slowly, pinch shifts it warm
+    this.hue = (this.hue + dt * 0.012) % 1;
+    this.ptsMat.uniforms.uHue.value = this.hue;
+
+    // feedback decay is longer when hand is still, shorter on burst (faster trails)
+    this.mFade.uniforms.uDecay.value   = (this._presetDecay  || 0.908) - this.uBurst * 0.05;
+    this.mFade.uniforms.uSwirl.value   = (this._presetSwirl  || 0.0014) + this.uFist * 0.0028;
+    this.mFinal.uniforms.uChroma.value = (this._presetChroma || 0.003) + this.uBurst * 0.005;
+    this.mFinal.uniforms.uGain.value   = (this._presetGain   || 1.35) + this.uBurst * 0.35;
+  },
+
+  _drawQuad(mat, target){
+    this.quad.material = mat;
+    renderer.setRenderTarget(target || null);
+    renderer.render(this.quad, this.orthoCam);
+  },
+
+  render(){
+    if (!this.ready) return;
+    // 1) particles into sceneRT
+    renderer.setRenderTarget(this.sceneRT);
+    renderer.setClearColor(0x000000, 1); renderer.clear(true, true, true);
+    renderer.render(this.scn, this.cam);
+
+    // 2) feedback: trailA = trailB (prev) * decay + sceneRT
+    this.mFade.uniforms.tPrev.value  = this.trailB.texture;
+    this.mFade.uniforms.tScene.value = this.sceneRT.texture;
+    this._drawQuad(this.mFade, this.trailA);
+    // swap
+    const tmp = this.trailB; this.trailB = this.trailA; this.trailA = tmp;
+
+    // 3) bloom: bright pass from trailB
+    this.mBright.uniforms.tSrc.value = this.trailB.texture;
+    this._drawQuad(this.mBright, this.brightRT);
+    // blur H → V
+    const bw = this.bloomH.width, bh = this.bloomH.height;
+    this.mBlurH.uniforms.tSrc.value = this.brightRT.texture;
+    this.mBlurH.uniforms.uDir.value.set(1 / bw, 0);
+    this._drawQuad(this.mBlurH, this.bloomH);
+    this.mBlurV.uniforms.tSrc.value = this.bloomH.texture;
+    this.mBlurV.uniforms.uDir.value.set(0, 1 / bh);
+    this._drawQuad(this.mBlurV, this.bloomV);
+
+    // 4) final composite to screen
+    this.mFinal.uniforms.tTrail.value = this.trailB.texture;
+    this.mFinal.uniforms.tBloom.value = this.bloomV.texture;
+    this._drawQuad(this.mFinal, null);
+
+    // restore state
+    renderer.setRenderTarget(null);
+  }
+};
+
+// resize hook — rebuild RTs when window changes
+window.addEventListener("resize", () => { if (FLUX && FLUX.ready) FLUX.resize(); });
 
 </script>
 </body>
